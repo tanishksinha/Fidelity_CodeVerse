@@ -183,8 +183,8 @@ export default function UserConstellation() {
 
       {/* Star Map Canvas */}
       <div
-        className="relative overflow-hidden bg-[#050708] cursor-grab active:cursor-grabbing"
-        style={{ height: MAP_HEIGHT }}
+        className="relative w-full overflow-hidden bg-[#050708] cursor-grab active:cursor-grabbing"
+        style={{ height: MAP_HEIGHT, touchAction: 'pan-x pan-y' }}
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -207,8 +207,9 @@ export default function UserConstellation() {
 
         {/* User Dots */}
         <svg
-          width={MAP_WIDTH}
+          width="100%"
           height={MAP_HEIGHT}
+          viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
           className="absolute inset-0"
           style={{
             transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,

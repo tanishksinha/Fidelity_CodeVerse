@@ -171,7 +171,7 @@ export default function InvestmentsPage() {
             </div>
 
             <div className="grid gap-5 lg:grid-cols-[1fr_260px]">
-              <div className="h-[390px] rounded-md border border-gray-100 bg-gray-50/60 p-3">
+              <div className="min-h-[300px] h-[390px] rounded-md border border-gray-100 bg-gray-50/60 p-3">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={sipPerformance} margin={{ top: 12, right: 24, left: 0, bottom: 8 }}>
                     <CartesianGrid stroke="#E5E7EB" strokeDasharray="3 3" vertical={false} />
@@ -220,7 +220,7 @@ export default function InvestmentsPage() {
             </div>
           </div>
 
-          <div className="mt-8 grid gap-5 lg:grid-cols-3">
+          <div className="mt-8 flex flex-col md:grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {funds.map((fund) => (
               <article key={fund.name} className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
                 <div className="flex items-start justify-between gap-4">

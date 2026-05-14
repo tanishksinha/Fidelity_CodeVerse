@@ -54,11 +54,11 @@ export default function NudgeOverlay() {
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, x: 400 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: 400 }}
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -50 }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className="fixed bottom-6 right-6 z-50 w-full max-w-sm rounded-lg border border-fidelity-green/20 bg-white p-5 shadow-2xl"
+        className="fixed top-4 inset-x-4 md:inset-x-auto md:right-6 md:top-6 z-50 md:w-full md:max-w-sm rounded-2xl border border-fidelity-green/20 bg-white/95 backdrop-blur p-5 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)]"
       >
         <button
           onClick={() => setNudge(null)}

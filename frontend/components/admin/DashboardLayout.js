@@ -6,9 +6,9 @@ import { cn } from '@/lib/cn';
 
 export default function DashboardLayout({ children, activeNav = 'funnel' }) {
   return (
-    <div className="min-h-screen bg-warroom-bg text-warroom-text-primary flex font-sans selection:bg-fidelity-green">
-      {/* Institutional Sidebar */}
-      <aside className="hidden w-64 border-r border-warroom-border bg-warroom-surface lg:flex lg:flex-col">
+    <div className="min-h-screen bg-warroom-bg text-warroom-text-primary flex flex-col md:flex-row font-sans selection:bg-fidelity-green">
+      {/* Institutional Sidebar (Desktop) */}
+      <aside className="hidden w-64 border-r border-warroom-border bg-warroom-surface md:flex md:flex-col">
         <div className="p-6 border-b border-warroom-border">
           <h2 className="text-xl font-bold tracking-tight">FIDELITY</h2>
           <p className="text-xs text-warroom-text-secondary uppercase tracking-widest mt-1">Telemetry Command</p>
@@ -26,10 +26,32 @@ export default function DashboardLayout({ children, activeNav = 'funnel' }) {
       </aside>
 
       {/* Main War Room Canvas */}
-      <main className="flex-1 relative overflow-hidden">
+      <main className="flex-1 relative overflow-hidden pb-16 md:pb-0">
         {children}
       </main>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <nav className="md:hidden fixed bottom-0 w-full flex justify-around items-center bg-warroom-surface border-t border-warroom-border pb-safe z-50 h-16">
+        <MobileNavItem icon={Activity} label="Funnel" href="/admin" active={activeNav === 'funnel'} />
+        <MobileNavItem icon={Map} label="Constellation" href="/admin/constellation" active={activeNav === 'constellation'} />
+        <MobileNavItem icon={BrainCircuit} label="Inspector" active={activeNav === 'inspector'} />
+      </nav>
     </div>
+  );
+}
+
+function MobileNavItem({ icon: Icon, label, active, href = '#' }) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        'flex flex-col items-center justify-center w-full h-full text-xs transition-colors',
+        active ? 'text-fidelity-green' : 'text-warroom-text-secondary hover:text-white'
+      )}
+    >
+      <Icon size={20} className="mb-1" />
+      <span className="text-[10px] uppercase tracking-wider">{label}</span>
+    </Link>
   );
 }
 

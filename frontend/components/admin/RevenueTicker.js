@@ -85,7 +85,7 @@ export default function RevenueTicker() {
           <div className="mt-1 flex items-baseline gap-3">
             <span className="text-[10px] font-bold text-fidelity-green/50">₹</span>
             <motion.span
-              className="font-mono text-4xl font-black tracking-tight text-fidelity-green drop-shadow-[0_0_20px_rgba(0,122,51,0.5)] lg:text-5xl"
+              className="font-mono text-4xl font-black tracking-tight text-fidelity-green drop-shadow-[0_0_20px_rgba(0,122,51,0.5)] md:text-6xl"
               style={{ fontVariantNumeric: 'tabular-nums' }}
             >
               {displayRevenue}

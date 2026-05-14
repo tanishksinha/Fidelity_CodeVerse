@@ -89,7 +89,7 @@ export default function DispatchQueue({ queue, dispatchState, onSessionClick }) 
                     </td>
                   </tr>
                 )}
-              </>
+              </React.Fragment>
             );
           })}
         </tbody>

@@ -47,13 +47,76 @@ settings = get_settings()
 # ─── Application Lifecycle ───
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Initialize database tables on startup."""
+    """Initialize database tables and seed demo data on startup."""
     logger.info("=" * 60)
     logger.info("  FIDELITY BEHAVIORAL RE-ENGAGEMENT ENGINE")
-    logger.info("  Status: INITIALIZING")
+    logger.info("  Status: INITIALIZING (DEMO MODE)")
     logger.info("=" * 60)
     await init_db()
-    logger.info("[STARTUP] Engine is ONLINE. Awaiting telemetry.")
+    
+    # ─── Seed Demo Data ───
+    from database import AsyncSessionLocal
+    async with AsyncSessionLocal() as session:
+        # Check if we already have data
+        result = await session.execute(select(func.count(TelemetrySession.id)))
+        count = result.scalar()
+        if count == 0:
+            logger.info("[STARTUP] Seeding robust demo suite...")
+            demo_sessions = [
+                TelemetrySession(
+                    session_id="USR_ALPHA_99", page_url="http://localhost:3000/investments",
+                    total_time_seconds=342, max_scroll_depth_percent=92,
+                    exit_condition="tab_hidden", exit_velocity=0.4,
+                    erratic_mouse_movements=1, highlighted_text="Tax-Loss Harvesting",
+                    funnel_stage="investments", status="processed",
+                    dispatch_status="dispatched",
+                    ai_intent="HESITATING_ON_RISK", ai_intent_confidence=0.94,
+                    ai_profile="User is highly engaged with SIP charts but hesitated at the risk disclosure.",
+                    ai_email_subject="Tailoring your portfolio's risk profile",
+                    ai_email_body="We noticed you were reviewing our SIP strategies and wanted to offer a custom risk-parity assessment..."
+                ),
+                TelemetrySession(
+                    session_id="USR_BETA_22", page_url="http://localhost:3000/checkout",
+                    total_time_seconds=125, max_scroll_depth_percent=60,
+                    exit_condition="bounced", exit_velocity=2.8,
+                    erratic_mouse_movements=8, highlighted_text="PAN Verification",
+                    funnel_stage="checkout", status="processed",
+                    dispatch_status="dispatched",
+                    ai_intent="FRICTION_POINT_KYC", ai_intent_confidence=0.88,
+                    ai_profile="User showed significant mouse erraticism on the PAN input field.",
+                    ai_email_subject="Need help with your KYC?",
+                    ai_email_body="Our concierge team is available to help you complete your account setup..."
+                ),
+                TelemetrySession(
+                    session_id="USR_GAMMA_07", page_url="http://localhost:3000/retirement",
+                    total_time_seconds=420, max_scroll_depth_percent=100,
+                    exit_condition="tab_hidden", exit_velocity=0.1,
+                    erratic_mouse_movements=0, highlighted_text="Inflation Hedging",
+                    funnel_stage="landing", status="processed",
+                    dispatch_status="pending",
+                    ai_intent="RETIREMENT_PLANNING", ai_intent_confidence=0.98,
+                    ai_profile="High-value prospect exploring long-term inflation protection strategies.",
+                    ai_email_subject="Building your 30-year legacy",
+                    ai_email_body="Based on your interest in inflation hedging, here is our latest whitepaper..."
+                ),
+                TelemetrySession(
+                    session_id="USR_DELTA_14", page_url="http://localhost:3000/planning",
+                    total_time_seconds=45, max_scroll_depth_percent=20,
+                    exit_condition="bounced", exit_velocity=4.5,
+                    erratic_mouse_movements=12, highlighted_text=None,
+                    funnel_stage="landing", status="abandoned",
+                )
+            ]
+            session.add_all(demo_sessions)
+            await session.commit()
+            logger.info(f"[STARTUP] ✓ {len(demo_sessions)} robust demo records live.")
+
+    # ─── Auto-Start Simulation ───
+    global simulation_running
+    simulation_running = True
+    asyncio.create_task(demo_simulation_loop())
+    
+    logger.info("[STARTUP] Engine is ONLINE. Auto-Simulation: ACTIVE.")
     yield
     logger.info("[SHUTDOWN] Engine going offline.")
 
@@ -558,11 +621,11 @@ async def demo_simulation_loop():
     tags=["War Room"],
 )
 async def toggle_simulation(
-    background_tasks: BackgroundTasks,
-    admin: dict = Depends(verify_admin)
+    background_tasks: BackgroundTasks
 ):
     """
     Toggles the background traffic simulation for the dashboard demo.
+    Unlocked for ease of presentation.
     """
     global simulation_running
     
