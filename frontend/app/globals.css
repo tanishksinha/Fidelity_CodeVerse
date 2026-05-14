@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ───────────────────────────────────────────
+   FIDELITY DESIGN SYSTEM — Foundation Layer
+   8pt Grid · Institutional Palette · Type Scale
+   ─────────────────────────────────────────── */
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --grid-unit: 8px;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  body {
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  /* Custom focus ring for accessibility */
+  :focus-visible {
+    outline: 2px solid #007A33;
+    outline-offset: 2px;
+  }
+
+  /* Custom scrollbar for War Room */
+  .warroom-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+  .warroom-scroll::-webkit-scrollbar-track {
+    background: #0A0C0B;
+  }
+  .warroom-scroll::-webkit-scrollbar-thumb {
+    background: #2D3331;
+    border-radius: 3px;
+  }
+  .warroom-scroll::-webkit-scrollbar-thumb:hover {
+    background: #3a3f3d;
+  }
+}
+
+@layer components {
+  /* ─── Consumer Environment ─── */
+  .consumer-card {
+    @apply rounded-lg border border-gray-200 bg-white p-5 shadow-sm transition;
+  }
+
+  .consumer-card-hover {
+    @apply consumer-card hover:-translate-y-0.5 hover:border-fidelity-green/40 hover:shadow-md;
+  }
+
+  .consumer-badge {
+    @apply inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-bold uppercase tracking-wider;
+  }
+
+  .consumer-input {
+    @apply w-full rounded-md border border-gray-300 bg-white px-3 py-3 text-sm outline-none transition;
+    @apply focus:border-fidelity-green focus:ring-2 focus:ring-fidelity-green/15;
+  }
+
+  /* ─── War Room Environment ─── */
+  .warroom-panel {
+    @apply rounded-lg border border-warroom-border bg-warroom-surface;
+  }
+
+  .warroom-header {
+    @apply flex items-center justify-between border-b border-warroom-border px-5 py-4;
+  }
+
+  .warroom-badge {
+    @apply inline-flex rounded-md border px-2 py-1 font-mono text-xs uppercase;
+  }
+
+  .warroom-code {
+    @apply overflow-x-auto rounded-md border border-warroom-border bg-[#050606] p-4 font-mono text-xs leading-6 text-warroom-text-secondary;
+  }
+
+  /* ─── Grid scanline effect for War Room ─── */
+  .warroom-grid {
+    background-image:
+      linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+}
+
+@layer utilities {
+  /* 8pt spacing utilities */
+  .gap-grid-1 { gap: 8px; }
+  .gap-grid-2 { gap: 16px; }
+  .gap-grid-3 { gap: 24px; }
+  .gap-grid-4 { gap: 32px; }
+  .gap-grid-5 { gap: 40px; }
+
+  /* Telemetry pulse keyframes */
+  @keyframes telemetry-pulse {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.15); }
+  }
+  .animate-telemetry-pulse {
+    animation: telemetry-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes scan-line {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+  }
+  .animate-scan-line {
+    animation: scan-line 8s linear infinite;
+  }
+
+  /* Type scale helpers */
+  .text-kpi {
+    @apply font-mono text-xl font-bold;
+  }
+  .text-label {
+    @apply text-xs font-bold uppercase tracking-[0.14em];
+  }
+  .text-sublabel {
+    @apply text-xs text-warroom-text-secondary;
+  }
+}
