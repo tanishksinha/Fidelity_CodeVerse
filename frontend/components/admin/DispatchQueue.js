@@ -1,9 +1,18 @@
 'use client';
 
-import { Send } from 'lucide-react';
+import React, { useState } from 'react';
+import { Send, Info } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import ExplainabilityCard from './ExplainabilityCard';
 
 export default function DispatchQueue({ queue, dispatchState, onSessionClick }) {
+  const [openExplainId, setOpenExplainId] = useState(null);
+
+  const toggleExplain = (e, id) => {
+    e.stopPropagation();
+    setOpenExplainId(openExplainId === id ? null : id);
+  };
+
   return (
     <div className="warroom-panel xl:col-span-2">
       <div className="warroom-header">
@@ -24,6 +33,7 @@ export default function DispatchQueue({ queue, dispatchState, onSessionClick }) 
               <th className="px-5 py-3">Telemetry Context</th>
               <th className="px-5 py-3">Email draft</th>
               <th className="px-5 py-3">Status</th>
+              <th className="px-5 py-3 text-right">Audit</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-warroom-border">
@@ -33,11 +43,11 @@ export default function DispatchQueue({ queue, dispatchState, onSessionClick }) 
               const status = row.dispatch_status === 'dispatched' ? 'dispatched' : row.status;
 
               return (
-                <tr
-                  key={row.id}
-                  onClick={() => onSessionClick?.(row)}
-                  className="cursor-pointer transition-colors hover:bg-warroom-bg"
-                >
+                <React.Fragment key={row.id}>
+                  <tr
+                    onClick={() => onSessionClick?.(row)}
+                    className="cursor-pointer transition-colors hover:bg-warroom-bg"
+                  >
                   <td className="px-5 py-4 font-mono text-white text-xs">{row.id}</td>
                   <td className="px-5 py-4">
                     <span className={cn(
@@ -56,10 +66,33 @@ export default function DispatchQueue({ queue, dispatchState, onSessionClick }) 
                   <td className="px-5 py-4">
                     <StatusBadge status={status} />
                   </td>
+                  <td className="px-5 py-4 text-right">
+                    {(status === 'dispatched' || status === 'processed') && (
+                      <button
+                        onClick={(e) => toggleExplain(e, row.id)}
+                        className="inline-flex items-center gap-1 rounded border border-intent-analyzing/30 bg-intent-analyzing/10 px-2 py-1 text-[9px] font-bold uppercase tracking-widest text-intent-analyzing transition hover:bg-intent-analyzing/20"
+                      >
+                        <Info size={10} />
+                        Why?
+                      </button>
+                    )}
+                  </td>
                 </tr>
-              );
-            })}
-          </tbody>
+                {openExplainId === row.id && (
+                  <tr>
+                    <td colSpan={6} className="bg-warroom-bg/50 p-0">
+                      <ExplainabilityCard
+                        data={row}
+                        isOpen={true}
+                        onToggle={(e) => toggleExplain(e, row.id)}
+                      />
+                    </td>
+                  </tr>
+                )}
+              </>
+            );
+          })}
+        </tbody>
         </table>
       </div>
     </div>

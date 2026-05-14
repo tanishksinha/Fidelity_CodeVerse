@@ -1,6 +1,7 @@
 import { Inter, JetBrains_Mono } from "next/font/google";
 import Script from "next/script";
 import { Providers } from "./provider";
+import NudgeOverlay from "@/components/consumer/NudgeOverlay";
 import "./globals.css"; // We will add the Tailwind directives here later
 
 // Optimize fonts at build time. Zero layout shift.
@@ -34,6 +35,7 @@ export default function RootLayout({ children }) {
           <main className="min-h-screen flex flex-col">
             {children}
           </main>
+          <NudgeOverlay />
         </Providers>
         <Script src="/tracker.js" strategy="afterInteractive" />
       </body>

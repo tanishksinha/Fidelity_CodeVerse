@@ -1,30 +1,24 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect } from 'react';
-// If using next-themes for dark mode (highly recommended for the dashboard)
-// npm install next-themes
+import { SocketProvider } from '@/contexts/SocketContext';
 
-// --- Mock Auth Provider for JWT ---
+// --- Auth Context ---
 const AuthContext = createContext({});
-
 export const useAuth = () => useContext(AuthContext);
 
 export function Providers({ children }) {
   const [user, setUser] = useState(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
 
-  // Initial JWT Verification Simulation
   useEffect(() => {
-    const token = localStorage.getItem('fidelity_jwt');
+    const token = localStorage.getItem('fidelity_access_token');
     if (token) {
-      // In production, verify token with backend here
       setUser({ role: 'admin', id: 'USR_001' });
-      // If admin, default to War Room dark mode
-      setIsDarkMode(true); 
+      setIsDarkMode(true);
     }
   }, []);
 
-  // Theme Toggle Logic
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
@@ -35,7 +29,9 @@ export function Providers({ children }) {
 
   return (
     <AuthContext.Provider value={{ user, setUser, isDarkMode, setIsDarkMode }}>
-      {children}
+      <SocketProvider>
+        {children}
+      </SocketProvider>
     </AuthContext.Provider>
   );
 }

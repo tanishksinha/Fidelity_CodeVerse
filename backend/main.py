@@ -10,7 +10,10 @@ FastAPI backend serving three architectural pillars:
 import json
 import logging
 import sys
+import asyncio
+import random
 from contextlib import asynccontextmanager
+import socketio
 
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -75,6 +78,40 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ─── Socket.IO Server ───
+sio = socketio.AsyncServer(
+    async_mode="asgi",
+    cors_allowed_origins=[
+        settings.FRONTEND_ORIGIN,
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ]
+)
+socket_app = socketio.ASGIApp(sio, other_asgi_app=app)
+
+@sio.on('connect')
+async def connect(sid, environ, auth):
+    query_string = environ.get('QUERY_STRING', '')
+    if 'consumer_id=' in query_string:
+        consumer_id = query_string.split('consumer_id=')[1].split('&')[0]
+        await sio.enter_room(sid, consumer_id)
+        logger.info(f"[SOCKET] Consumer {consumer_id} connected ({sid})")
+    else:
+        logger.info(f"[SOCKET] Admin connected ({sid})")
+
+@sio.on('disconnect')
+def disconnect(sid):
+    logger.info(f"[SOCKET] Client disconnected ({sid})")
+
+@sio.on('manual_nudge')
+async def handle_manual_nudge(sid, data):
+    """Admin triggers an Ultra-Nudge, route it to the specific consumer's room."""
+    user_id = data.get('userId')
+    logger.info(f"[SOCKET] Admin {sid} sent manual nudge to {user_id}")
+    await sio.emit('receive_nudge', data, room=user_id)
+    # Also pulse the admin's screen for confirmation
+    await sio.emit('intervention_sent', {'user_id': user_id, 'type': 'manual'})
 
 
 # ═══════════════════════════════════════════════════════
@@ -444,6 +481,102 @@ async def dispatch_emails(
 
 
 # ═══════════════════════════════════════════════════════
+# PILLAR D: DEMO SIMULATION LOOP
+# ═══════════════════════════════════════════════════════
+
+simulation_running = False
+
+async def demo_simulation_loop():
+    global simulation_running
+    logger.info("[SIMULATION] Starting traffic simulation loop...")
+    
+    # Generate 40 initial "active" users for the constellation map
+    active_users = []
+    for i in range(40):
+        active_users.append({
+            "user_id": f"USR_{random.randint(1000, 9999)}",
+            "score": random.randint(10, 80),
+            "time_on_site": random.randint(10, 120),
+            "last_page": random.choice(["/home", "/investments", "/sip-calculator", "/checkout"])
+        })
+        
+    while simulation_running:
+        try:
+            # Pick a random user to act
+            u = random.choice(active_users)
+            
+            # Increase their time and intent score slightly
+            u["time_on_site"] += 3
+            if random.random() > 0.6:
+                u["score"] = min(100, u["score"] + random.randint(1, 5))
+                
+            # Random page movement
+            if random.random() > 0.8:
+                u["last_page"] = random.choice(["/home", "/investments", "/sip-calculator", "/checkout", "/kyc-verify"])
+
+            # Emit user activity
+            await sio.emit('user_activity', {
+                "user_id": u["user_id"],
+                "score": u["score"],
+                "time_on_site": u["time_on_site"],
+                "last_page": u["last_page"],
+                "action": "mouse_move" if random.random() > 0.3 else "click"
+            })
+            
+            # Occasionally, simulate an AI trigger or manual override pulse
+            if u["score"] > 85 and random.random() > 0.8:
+                await sio.emit('intervention_sent', {"user_id": u["user_id"]})
+            
+            # Simulate a recovered conversion!
+            if random.random() > 0.95:
+                amt = random.choice([5000, 10000, 25000, 50000])
+                await sio.emit('conversion_recovered', {"amount": amt})
+                logger.info(f"[SIMULATION] Conversion Recovered: ₹{amt}")
+                
+                # Replace the user with a new one to keep the board fresh
+                active_users.remove(u)
+                active_users.append({
+                    "user_id": f"USR_{random.randint(1000, 9999)}",
+                    "score": random.randint(0, 20),
+                    "time_on_site": 0,
+                    "last_page": "/"
+                })
+
+            # Also occasionally simulate a "normal" conversion or revenue at risk
+            if random.random() > 0.98:
+                await sio.emit('revenue_at_risk', {"amount": random.choice([5000, 15000])})
+            if random.random() > 0.98:
+                await sio.emit('normal_conversion', {})
+
+        except Exception as e:
+            logger.error(f"[SIMULATION] Loop error: {e}")
+            
+        await asyncio.sleep(0.5)  # Throttle to 2 events per second
+
+@app.post(
+    "/api/admin/simulate-traffic",
+    tags=["War Room"],
+)
+async def toggle_simulation(
+    background_tasks: BackgroundTasks,
+    admin: dict = Depends(verify_admin)
+):
+    """
+    Toggles the background traffic simulation for the dashboard demo.
+    """
+    global simulation_running
+    
+    if simulation_running:
+        simulation_running = False
+        logger.info("[SIMULATION] Stopping...")
+        return {"status": "stopped"}
+    else:
+        simulation_running = True
+        background_tasks.add_task(demo_simulation_loop)
+        return {"status": "running"}
+
+
+# ═══════════════════════════════════════════════════════
 # ENTRY POINT
 # ═══════════════════════════════════════════════════════
 
@@ -451,7 +584,7 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(
-        "main:app",
+        "main:socket_app",
         host="0.0.0.0",
         port=8080,
         reload=True,

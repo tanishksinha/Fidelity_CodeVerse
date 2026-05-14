@@ -10,6 +10,7 @@ import TriggerOverride from "@/components/admin/TriggerOverride";
 import LiveTelemetryBar from "@/components/admin/LiveTelemetryBar";
 import KpiStrip from "@/components/admin/KpiStrip";
 import DashboardLayout from "@/components/admin/DashboardLayout";
+import RevenueTicker from "@/components/admin/RevenueTicker";
 import { AuthService } from "@/services/auth";
 import { fetchFunnelStats, fetchBouncedSessions, runEngine, dispatchInterventions } from "@/services/api";
 
@@ -87,7 +88,10 @@ export default function AdminPage() {
 
   return (
     <DashboardLayout activeNav="funnel">
-      <div className="warroom-grid min-h-screen">
+      <div className="warroom-grid min-h-screen flex flex-col">
+        {/* Butterfly Effect Revenue Ticker */}
+        <RevenueTicker />
+
         {/* Header */}
         <header className="border-b border-warroom-border bg-warroom-bg/95 px-5 py-4 lg:px-8">
           <div className="flex flex-col justify-between gap-4 xl:flex-row xl:items-center">

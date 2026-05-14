@@ -2,6 +2,8 @@
 
 import { motion } from 'framer-motion';
 import { BrainCircuit, Mail, X, Activity } from 'lucide-react';
+import SessionGhost from './SessionGhost';
+import ManualNudge from './ManualNudge';
 
 export default function IntentInspector({ session, onClose }) {
   if (!session) return null;
@@ -111,6 +113,12 @@ export default function IntentInspector({ session, onClose }) {
             </div>
           </section>
         )}
+
+        {/* Manual Nudge (God Mode) */}
+        <ManualNudge userId={session.id} userName="Investor" />
+
+        {/* Session Ghost */}
+        <SessionGhost events={[]} sessionId={session.id} />
       </div>
     </motion.aside>
   );
