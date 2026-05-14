@@ -35,12 +35,26 @@ export default function ConsumerHeader({ active }) {
           >
             Investments
           </Link>
-          <span data-track="nav_retirement_placeholder" className="transition-colors hover:text-fidelity-green">
+          <Link
+            href="/retirement"
+            data-track="nav_retirement"
+            className={cn(
+              "transition-colors hover:text-fidelity-green",
+              active === "retirement" && "text-fidelity-green"
+            )}
+          >
             Retirement
-          </span>
-          <span data-track="nav_planning_placeholder" className="transition-colors hover:text-fidelity-green">
+          </Link>
+          <Link
+            href="/planning"
+            data-track="nav_planning"
+            className={cn(
+              "transition-colors hover:text-fidelity-green",
+              active === "planning" && "text-fidelity-green"
+            )}
+          >
             Planning
-          </span>
+          </Link>
           <Link
             href="/checkout"
             data-track="nav_open_account"
