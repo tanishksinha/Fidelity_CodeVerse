@@ -18,8 +18,16 @@ class HesitationZone(BaseModel):
     hover_duration_ms: float
 
 
+class ClickEvent(BaseModel):
+    element_id: str
+    page_url: Optional[str] = None
+    timestamp: Optional[str] = None
+
+
 class FrictionSignals(BaseModel):
     erratic_mouse_movements: int = 0
+    scroll_thrash_count: int = 0
+    rage_clicks: int = 0
     highlighted_text: Optional[str] = None
 
 
@@ -28,6 +36,8 @@ class BehavioralTelemetry(BaseModel):
     max_scroll_depth_percent: float = 0
     hesitation_zones: list[HesitationZone] = []
     friction_signals: FrictionSignals = FrictionSignals()
+    click_events: list[ClickEvent] = []
+    form_completed: bool = False
     exit_condition: Optional[str] = None
     exit_velocity: str = "normal"
 
@@ -37,6 +47,7 @@ class TelemetryPayload(BaseModel):
     Exact shape of the JSON fired by the Ghost SDK's navigator.sendBeacon().
     """
     session_id: str
+    user_id: Optional[str] = None
     timestamp: Optional[str] = None
     page_url: Optional[str] = None
     behavioral_telemetry: BehavioralTelemetry = BehavioralTelemetry()
@@ -95,3 +106,35 @@ class EngineRunResponse(BaseModel):
     skipped_count: int
     errors: list[str] = []
     message: str
+
+
+# ═══════════════════════════════════════════════════════
+# CONSUMER AUTH MODELS
+# ═══════════════════════════════════════════════════════
+
+class RegisterRequest(BaseModel):
+    name: str
+    email: str
+    password: str
+
+
+class ConsumerLoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+# ═══════════════════════════════════════════════════════
+# ADMIN USER TABLE MODEL
+# ═══════════════════════════════════════════════════════
+
+class UserDetail(BaseModel):
+    id: int
+    name: str
+    email: str
+    created_at: Optional[str] = None
+    last_visit: Optional[str] = None
+    pages_visited: int = 0
+    total_events: int = 0
+    total_clicks: int = 0
+    rules_triggered: int = 0
+    emails_sent: int = 0

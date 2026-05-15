@@ -22,15 +22,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth import create_access_token, verify_admin
 from config import get_settings
-from database import TelemetrySession, get_db, init_db
+from database import TelemetrySession, User, get_db, init_db
 from engine import analyze_session
 from models import (
+    ConsumerLoginRequest,
     EngineRunResponse,
     FunnelStats,
     LoginRequest,
     LoginResponse,
+    RegisterRequest,
     SessionDetail,
     TelemetryPayload,
+    UserDetail,
 )
 
 # ─── Logging Configuration ───
@@ -55,19 +58,39 @@ async def lifespan(app: FastAPI):
     await init_db()
     
     # ─── Seed Demo Data ───
+    import hashlib
     from database import AsyncSessionLocal
     async with AsyncSessionLocal() as session:
-        # Check if we already have data
+        # Seed 5 dummy users
+        result = await session.execute(select(func.count(User.id)))
+        user_count = result.scalar()
+        if user_count == 0:
+            logger.info("[STARTUP] Seeding 5 registered consumer accounts...")
+            dummy_pw = hashlib.sha256("demo123".encode()).hexdigest()
+            demo_users = [
+                User(name="Arjun Mehta", email="arjun.mehta@demo.com", password_hash=dummy_pw),
+                User(name="Priya Sharma", email="priya.sharma@demo.com", password_hash=dummy_pw),
+                User(name="Rahul Desai", email="rahul.desai@demo.com", password_hash=dummy_pw),
+                User(name="Sneha Iyer", email="sneha.iyer@demo.com", password_hash=dummy_pw),
+                User(name="Vikram Patel", email="vikram.patel@demo.com", password_hash=dummy_pw),
+            ]
+            session.add_all(demo_users)
+            await session.flush()
+            logger.info("[STARTUP] ✓ 5 dummy users created (password: demo123)")
+
+        # Seed telemetry sessions linked to users
         result = await session.execute(select(func.count(TelemetrySession.id)))
         count = result.scalar()
         if count == 0:
             logger.info("[STARTUP] Seeding robust demo suite...")
             demo_sessions = [
                 TelemetrySession(
-                    session_id="USR_ALPHA_99", page_url="http://localhost:3000/investments",
+                    session_id="USR_ALPHA_99", user_id="arjun.mehta@demo.com",
+                    page_url="http://localhost:3000/investments",
                     total_time_seconds=342, max_scroll_depth_percent=92,
                     exit_condition="tab_hidden", exit_velocity=0.4,
                     erratic_mouse_movements=1, highlighted_text="Tax-Loss Harvesting",
+                    click_events_json='[{"element_id":"btn_know_more_axis","page_url":"/investments"},{"element_id":"hero_explore_sips_cta","page_url":"/"}]',
                     funnel_stage="investments", status="processed",
                     dispatch_status="dispatched",
                     ai_intent="HESITATING_ON_RISK", ai_intent_confidence=0.94,
@@ -76,10 +99,12 @@ async def lifespan(app: FastAPI):
                     ai_email_body="We noticed you were reviewing our SIP strategies and wanted to offer a custom risk-parity assessment..."
                 ),
                 TelemetrySession(
-                    session_id="USR_BETA_22", page_url="http://localhost:3000/checkout",
+                    session_id="USR_BETA_22", user_id="priya.sharma@demo.com",
+                    page_url="http://localhost:3000/checkout",
                     total_time_seconds=125, max_scroll_depth_percent=60,
                     exit_condition="bounced", exit_velocity=2.8,
                     erratic_mouse_movements=8, highlighted_text="PAN Verification",
+                    click_events_json='[{"element_id":"checkout_pan_ssn_sensitive_field","page_url":"/checkout"},{"element_id":"checkout_continue_to_kyc_button","page_url":"/checkout"}]',
                     funnel_stage="checkout", status="processed",
                     dispatch_status="dispatched",
                     ai_intent="FRICTION_POINT_KYC", ai_intent_confidence=0.88,
@@ -88,11 +113,13 @@ async def lifespan(app: FastAPI):
                     ai_email_body="Our concierge team is available to help you complete your account setup..."
                 ),
                 TelemetrySession(
-                    session_id="USR_GAMMA_07", page_url="http://localhost:3000/retirement",
+                    session_id="USR_GAMMA_07", user_id="rahul.desai@demo.com",
+                    page_url="http://localhost:3000/retirement",
                     total_time_seconds=420, max_scroll_depth_percent=100,
                     exit_condition="tab_hidden", exit_velocity=0.1,
                     erratic_mouse_movements=0, highlighted_text="Inflation Hedging",
-                    funnel_stage="landing", status="processed",
+                    click_events_json='[{"element_id":"btn_start_retirement_sip","page_url":"/retirement"},{"element_id":"card_inflation_hedge","page_url":"/retirement"}]',
+                    funnel_stage="retirement", status="processed",
                     dispatch_status="pending",
                     ai_intent="RETIREMENT_PLANNING", ai_intent_confidence=0.98,
                     ai_profile="High-value prospect exploring long-term inflation protection strategies.",
@@ -100,7 +127,22 @@ async def lifespan(app: FastAPI):
                     ai_email_body="Based on your interest in inflation hedging, here is our latest whitepaper..."
                 ),
                 TelemetrySession(
-                    session_id="USR_DELTA_14", page_url="http://localhost:3000/planning",
+                    session_id="USR_DELTA_14", user_id="sneha.iyer@demo.com",
+                    page_url="http://localhost:3000/insurance",
+                    total_time_seconds=180, max_scroll_depth_percent=75,
+                    exit_condition="bounced", exit_velocity=3.2,
+                    erratic_mouse_movements=5, highlighted_text="Waiting Period: 30 days",
+                    click_events_json='[{"element_id":"btn_get_quote_term_life","page_url":"/insurance"},{"element_id":"btn_get_quote_health","page_url":"/insurance"}]',
+                    funnel_stage="insurance", status="processed",
+                    dispatch_status="pending",
+                    ai_intent="FEE_SENSITIVITY", ai_intent_confidence=0.82,
+                    ai_profile="User compared multiple insurance products but abandoned on the exclusions fine print.",
+                    ai_email_subject="Let us simplify your insurance decision",
+                    ai_email_body="We noticed you were comparing term life and health coverage. Here is a side-by-side matrix that cuts through the fine print..."
+                ),
+                TelemetrySession(
+                    session_id="USR_EPSILON_31", user_id="vikram.patel@demo.com",
+                    page_url="http://localhost:3000/planning",
                     total_time_seconds=45, max_scroll_depth_percent=20,
                     exit_condition="bounced", exit_velocity=4.5,
                     erratic_mouse_movements=12, highlighted_text=None,
@@ -203,6 +245,12 @@ def _infer_funnel_stage(page_url: str) -> str:
         return "checkout"
     elif "/investments" in url:
         return "investments"
+    elif "/insurance" in url:
+        return "insurance"
+    elif "/retirement" in url:
+        return "retirement"
+    elif "/planning" in url:
+        return "planning"
     elif url == "/" or "/page" in url or url.endswith(":3000"):
         return "landing"
     return "unknown"
@@ -239,6 +287,7 @@ async def _persist_telemetry(payload: TelemetryPayload):
             telemetry = payload.behavioral_telemetry
             record = TelemetrySession(
                 session_id=payload.session_id,
+                user_id=payload.user_id,
                 page_url=payload.page_url,
                 total_time_seconds=telemetry.total_time_seconds,
                 max_scroll_depth_percent=telemetry.max_scroll_depth_percent,
@@ -249,6 +298,10 @@ async def _persist_telemetry(payload: TelemetryPayload):
                 hesitation_zones_json=json.dumps(
                     [z.model_dump() for z in telemetry.hesitation_zones]
                 ),
+                click_events_json=json.dumps(
+                    [c.model_dump() for c in telemetry.click_events]
+                ),
+                form_completed=1 if telemetry.form_completed else 0,
                 funnel_stage=_infer_funnel_stage(payload.page_url),
                 status="abandoned",
             )
@@ -259,6 +312,26 @@ async def _persist_telemetry(payload: TelemetryPayload):
                 f"[INGESTION] ✓ Payload secured for session: {payload.session_id} "
                 f"(stage: {record.funnel_stage}, time: {telemetry.total_time_seconds}s)"
             )
+
+            # ─── ML Churn Prediction (Real-Time) ───
+            try:
+                from processor import should_we_nudge
+                ml_input = {
+                    "duration": telemetry.total_time_seconds,
+                    "clicks": telemetry.friction_signals.erratic_mouse_movements,
+                    "past_visits": 1,
+                }
+                is_churning = should_we_nudge(ml_input)
+                logger.info(f"[ML] Session {payload.session_id} → churn={is_churning}")
+
+                if is_churning:
+                    import random
+                    risk_amount = random.choice([5000, 10000, 15000, 25000])
+                    await sio.emit('revenue_at_risk', {"amount": risk_amount, "session_id": payload.session_id})
+                    logger.info(f"[ML] ⚠ Revenue at risk: ₹{risk_amount} for {payload.session_id}")
+            except Exception as ml_err:
+                logger.warning(f"[ML] Predictor unavailable: {ml_err}")
+
         except Exception as e:
             await session.rollback()
             logger.error(f"[INGESTION] ✗ Database write failed: {e}")
@@ -423,6 +496,91 @@ async def login(body: LoginRequest):
     )
 
 
+# ─── Consumer Registration ───
+@app.post("/api/auth/register", tags=["Auth"])
+async def register_consumer(body: RegisterRequest, db: AsyncSession = Depends(get_db)):
+    """Register a new consumer user."""
+    import hashlib
+    existing = await db.execute(select(User).where(User.email == body.email))
+    if existing.scalar_one_or_none():
+        raise HTTPException(status_code=400, detail="Email already registered.")
+
+    pw_hash = hashlib.sha256(body.password.encode()).hexdigest()
+    user = User(name=body.name, email=body.email, password_hash=pw_hash)
+    db.add(user)
+    await db.commit()
+    logger.info(f"[AUTH] ✓ New consumer registered: {body.email}")
+    return {"status": "registered", "email": body.email}
+
+
+# ─── Consumer Login ───
+@app.post("/api/auth/consumer-login", tags=["Auth"])
+async def consumer_login(body: ConsumerLoginRequest, db: AsyncSession = Depends(get_db)):
+    """Authenticate a consumer user and issue JWT."""
+    import hashlib
+    result = await db.execute(select(User).where(User.email == body.email))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
+
+    pw_hash = hashlib.sha256(body.password.encode()).hexdigest()
+    if user.password_hash != pw_hash:
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
+
+    token = create_access_token(user.email, role="consumer")
+    logger.info(f"[AUTH] ✓ Consumer login: {user.email}")
+    return {"access_token": token, "token_type": "bearer", "role": "consumer", "name": user.name, "email": user.email}
+
+
+# ─── Admin: All Users with Behavior Stats ───
+@app.get("/api/admin/users", response_model=list[UserDetail], tags=["War Room"])
+async def get_all_users(
+    db: AsyncSession = Depends(get_db),
+    admin: dict = Depends(verify_admin),
+):
+    """Returns all registered users with aggregated behavior statistics."""
+    users_result = await db.execute(select(User).order_by(User.id))
+    users = users_result.scalars().all()
+
+    user_details = []
+    for u in users:
+        # Aggregate telemetry for this user
+        sessions_result = await db.execute(
+            select(TelemetrySession).where(TelemetrySession.user_id == u.email)
+        )
+        sessions = sessions_result.scalars().all()
+
+        total_clicks = 0
+        pages = set()
+        for s in sessions:
+            pages.add(s.funnel_stage)
+            try:
+                clicks = json.loads(s.click_events_json or "[]")
+                total_clicks += len(clicks)
+            except Exception:
+                pass
+
+        last_visit = sessions[-1].timestamp.isoformat() if sessions else None
+        rules_triggered = sum(1 for s in sessions if s.status == "processed")
+        emails_sent = sum(1 for s in sessions if s.dispatch_status == "dispatched")
+
+        user_details.append(UserDetail(
+            id=u.id,
+            name=u.name,
+            email=u.email,
+            created_at=u.created_at.isoformat() if u.created_at else None,
+            last_visit=last_visit,
+            pages_visited=len(pages),
+            total_events=len(sessions),
+            total_clicks=total_clicks,
+            rules_triggered=rules_triggered,
+            emails_sent=emails_sent,
+        ))
+
+    logger.info(f"[WAR ROOM] Served {len(user_details)} user profiles.")
+    return user_details
+
+
 @app.get(
     "/api/admin/funnel-stats",
     response_model=FunnelStats,
@@ -560,7 +718,7 @@ async def demo_simulation_loop():
             "user_id": f"USR_{random.randint(1000, 9999)}",
             "score": random.randint(10, 80),
             "time_on_site": random.randint(10, 120),
-            "last_page": random.choice(["/home", "/investments", "/sip-calculator", "/checkout"])
+            "last_page": random.choice(["/", "/investments", "/insurance", "/retirement", "/checkout", "/planning"])
         })
         
     while simulation_running:
@@ -575,7 +733,7 @@ async def demo_simulation_loop():
                 
             # Random page movement
             if random.random() > 0.8:
-                u["last_page"] = random.choice(["/home", "/investments", "/sip-calculator", "/checkout", "/kyc-verify"])
+                u["last_page"] = random.choice(["/", "/investments", "/insurance", "/retirement", "/checkout", "/planning"])
 
             # Emit user activity
             await sio.emit('user_activity', {

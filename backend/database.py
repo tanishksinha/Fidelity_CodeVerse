@@ -55,6 +55,7 @@ class TelemetrySession(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     session_id = Column(String(64), unique=True, nullable=False, index=True)
+    user_id = Column(String(128), nullable=True, index=True)  # linked registered user
     page_url = Column(String(512), nullable=True)
     timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
@@ -66,16 +67,17 @@ class TelemetrySession(Base):
     erratic_mouse_movements = Column(Integer, default=0)
     highlighted_text = Column(Text, nullable=True)
 
-    # Hesitation zones stored as JSON string: [{"element_id": "...", "hover_duration_ms": 4500}]
+    # Hesitation zones stored as JSON string
     hesitation_zones_json = Column(Text, default="[]")
 
+    # ─── Click Events + Form Completion ───
+    click_events_json = Column(Text, default="[]")
+    form_completed = Column(Integer, default=0)  # 0 or 1
+
     # ─── Derived Funnel Stage ───
-    # Inferred from page_url: "landing" | "investments" | "checkout" | "unknown"
     funnel_stage = Column(String(32), default="unknown")
 
     # ─── Processing Status ───
-    # "abandoned" = captured but not yet analyzed
-    # "processed" = LLM has run, intent + email generated
     status = Column(String(16), default="abandoned", index=True)
 
     # ─── AI-Generated Fields (populated by the Nightly Brain) ───
@@ -86,11 +88,23 @@ class TelemetrySession(Base):
     ai_email_body = Column(Text, nullable=True)
 
     # ─── Dispatch Status ───
-    # "pending" | "dispatched"
     dispatch_status = Column(String(16), default="pending")
 
     def __repr__(self):
         return f"<TelemetrySession(session_id={self.session_id}, status={self.status})>"
+
+
+# ─── Registered User Table ───
+class User(Base):
+    """Consumer user accounts for JWT-based authentication."""
+
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(128), nullable=False)
+    email = Column(String(256), unique=True, nullable=False, index=True)
+    password_hash = Column(String(256), nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 # ─── Database Lifecycle ───
