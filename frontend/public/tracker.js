@@ -17,7 +17,7 @@
   };
 
   const sessionData = {
-    session_id: 'usr_' + Math.random().toString(36).substring(2, 11),
+    session_id: localStorage.getItem('fidelity_ghost_id') || 'usr_' + Math.random().toString(36).substring(2, 11),
     timestamp: new Date().toISOString(),
     page_url: window.location.pathname,
     behavioral_telemetry: {
@@ -131,13 +131,12 @@
   document.addEventListener('touchend', () => { lastTouchY = 0; });
 
 
-  // --- 5. MOBILE FRICTION: RAGE TAPPING ---
+  // --- 5. HYBRID FRICTION: RAGE TAPPING (Supports Touch & Mouse) ---
   const tapHistory = {};
 
-  document.addEventListener('touchstart', (e) => {
+  const handleRageEvent = (e) => {
     const target = e.target.closest('[data-track]') || e.target;
-    // Generate a quick pseudo-ID if no data-track exists
-    const elementKey = target.getAttribute('data-track') || target.tagName + target.className;
+    const elementKey = target.getAttribute('data-track') || target.tagName + (target.className || '');
     
     if (!tapHistory[elementKey]) tapHistory[elementKey] = [];
     
@@ -149,10 +148,16 @@
     
     if (tapHistory[elementKey].length >= 3) {
       sessionData.behavioral_telemetry.friction_signals.rage_clicks += 1;
-      if (CONFIG.DEBUG) console.log(`💢 Rage Tap Detected on: ${elementKey}`);
+      if (CONFIG.DEBUG) console.log(`💢 Rage Click Detected on: ${elementKey}`);
       tapHistory[elementKey] = []; // reset
+      
+      // 🚀 LIVE TRIGGER: Send to backend immediately so the popup shows up NOW!
+      fireBeacon('live_rage_click');
     }
-  }, { passive: true });
+  };
+
+  document.addEventListener('touchstart', handleRageEvent, { passive: true });
+  document.addEventListener('mousedown', handleRageEvent, { passive: true });
 
 
   // --- 6. LEGACY DESKTOP FRICTION (Kept for hybrid fallback) ---
@@ -185,7 +190,8 @@
 
   // --- 7. THE BEACON (Mobile Kill-Switch) ---
   const fireBeacon = (exitCondition) => {
-    if (sessionData.behavioral_telemetry.exit_condition) return;
+    // For production, we usually return if already exited, 
+    // but for Hackathon testing, we want to allow multiple saves!
 
     sessionData.behavioral_telemetry.total_time_seconds = Math.round((Date.now() - entryTime) / 1000);
     sessionData.behavioral_telemetry.exit_condition = exitCondition;
