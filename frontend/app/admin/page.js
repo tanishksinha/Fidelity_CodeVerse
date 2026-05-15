@@ -11,6 +11,7 @@ import LiveTelemetryBar from "@/components/admin/LiveTelemetryBar";
 import KpiStrip from "@/components/admin/KpiStrip";
 import DashboardLayout from "@/components/admin/DashboardLayout";
 import RevenueTicker from "@/components/admin/RevenueTicker";
+import UserBehaviorTable from "@/components/admin/UserBehaviorTable";
 import { AuthService } from "@/services/auth";
 import { fetchFunnelStats, fetchBouncedSessions, runEngine, dispatchInterventions } from "@/services/api";
 
@@ -132,8 +133,10 @@ export default function AdminPage() {
             onDispatch={handleDispatch}
             status={dispatchState}
           />
+          {/* User Behavior Table */}
+          <UserBehaviorTable />
 
-          {/* Dispatch Queue */}
+          {/* Dispatch Queue / Email Log */}
           <DispatchQueue
             queue={sessionRecords}
             dispatchState={dispatchState}

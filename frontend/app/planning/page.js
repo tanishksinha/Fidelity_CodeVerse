@@ -11,7 +11,7 @@ const planningModules = [
     id: "education",
     title: "Education Funding",
     icon: GraduationCap,
-    description: "Structured investment plans to counter education inflation, utilizing tax-advantaged accounts where applicable.",
+    description: "Structured investment plans to counter education inflation, utilizing tax-exempt accounts like Sukanya Samriddhi Yojana (SSY) where applicable.",
   },
   {
     id: "estate",
@@ -23,7 +23,7 @@ const planningModules = [
     id: "philanthropy",
     title: "Charitable Giving",
     icon: HeartHandshake,
-    description: "Donor-advised funds and tax-efficient philanthropic structuring for maximum social and financial impact.",
+    description: "Section 80G registered trusts and tax-efficient philanthropic structuring for maximum social and financial impact.",
   },
 ];
 
@@ -61,7 +61,7 @@ export default function PlanningPage() {
           <div className="lg:col-span-5">
             <h2 className="text-3xl font-bold tracking-tight">Specialized Planning Modules</h2>
             <p className="mt-4 text-gray-600 leading-relaxed">
-              Select an area of focus to understand how Fidelity’s fiduciary advisors structure solutions around your specific life goals.
+              Select an area of focus to understand how Fidelity India’s SEBI-registered advisors structure solutions around your specific life goals.
             </p>
             
             <div className="mt-10 space-y-4">
@@ -117,7 +117,7 @@ export default function PlanningPage() {
                   <div className="h-1.5 w-1.5 rounded-full bg-fidelity-green" /> Documented Fiduciary Standard
                 </li>
                 <li className="flex items-center gap-3 text-sm font-medium text-gray-700">
-                  <div className="h-1.5 w-1.5 rounded-full bg-fidelity-green" /> Coordination with CPAs & Attorneys
+                  <div className="h-1.5 w-1.5 rounded-full bg-fidelity-green" /> Coordination with CAs & Legal Counsel
                 </li>
                 <li className="flex items-center gap-3 text-sm font-medium text-gray-700">
                   <div className="h-1.5 w-1.5 rounded-full bg-fidelity-green" /> Dedicated Relationship Manager

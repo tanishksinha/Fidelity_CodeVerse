@@ -105,14 +105,32 @@
   .gap-grid-4 { gap: 32px; }
   .gap-grid-5 { gap: 40px; }
 
-  /* Telemetry pulse keyframes */
+  /* Glow pulse — smooth luminous on/off, no physical movement */
   @keyframes telemetry-pulse {
-    0% { opacity: 0.6; transform: scale(1); }
-    50% { opacity: 0.2; transform: scale(1.1); }
-    100% { opacity: 0.6; transform: scale(1); }
+    0%   { opacity: 0.35; filter: drop-shadow(0 0 0px currentColor); }
+    50%  { opacity: 1;    filter: drop-shadow(0 0 8px currentColor); }  /* glow ON */
+    100% { opacity: 0.35; filter: drop-shadow(0 0 0px currentColor); }  /* glow OFF */
   }
   .animate-telemetry-pulse {
-    animation: telemetry-pulse 2.5s infinite ease-in-out;
+    animation: telemetry-pulse 2.8s infinite ease-in-out;
+  }
+  /* Staggered delay variants for de-synced constellation dots */
+  .pulse-delay-1 { animation-delay: 0.0s; }
+  .pulse-delay-2 { animation-delay: 0.4s; }
+  .pulse-delay-3 { animation-delay: 0.8s; }
+  .pulse-delay-4 { animation-delay: 1.2s; }
+  .pulse-delay-5 { animation-delay: 1.6s; }
+  .pulse-delay-6 { animation-delay: 2.0s; }
+  .pulse-delay-7 { animation-delay: 2.4s; }
+
+  /* Subtle body breathe — soft ambient glow */
+  @keyframes constellation-breathe {
+    0%   { opacity: 0.82; filter: drop-shadow(0 0 1px currentColor); }
+    50%  { opacity: 1;    filter: drop-shadow(0 0 4px currentColor); }
+    100% { opacity: 0.82; filter: drop-shadow(0 0 1px currentColor); }
+  }
+  .animate-constellation-breathe {
+    animation: constellation-breathe 5s infinite ease-in-out;
   }
 
   @keyframes scan-line {

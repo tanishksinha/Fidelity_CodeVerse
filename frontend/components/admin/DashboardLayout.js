@@ -1,6 +1,6 @@
 'use client';
 
-import { Activity, BrainCircuit, Mail, Radar, Map } from 'lucide-react';
+import { Activity, BrainCircuit, Mail, Radar, Map, Users } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/cn';
 
@@ -15,9 +15,10 @@ export default function DashboardLayout({ children, activeNav = 'funnel' }) {
         </div>
         <nav className="flex-1 p-4 space-y-2">
           <NavItem icon={Activity} label="Live Funnel" href="/admin" active={activeNav === 'funnel'} />
+          <NavItem icon={Users} label="Users" href="/admin" active={activeNav === 'users'} />
           <NavItem icon={Map} label="Constellation" href="/admin/constellation" active={activeNav === 'constellation'} />
           <NavItem icon={BrainCircuit} label="Intent Inspector" active={activeNav === 'inspector'} />
-          <NavItem icon={Mail} label="Dispatch Queue" active={activeNav === 'dispatch'} />
+          <NavItem icon={Mail} label="Email Log" active={activeNav === 'dispatch'} />
           <NavItem icon={Radar} label="Engine Health" active={activeNav === 'health'} />
         </nav>
         <div className="p-4 border-t border-warroom-border text-xs text-warroom-text-secondary font-mono">
