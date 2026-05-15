@@ -8,3 +8,7 @@ python-dotenv>=1.0.1
 pyjwt>=2.8.0
 openai>=1.50.0
 python-multipart>=0.0.9
+google-generativeai>=0.8.3
+sendgrid>=6.11.0
+twilio>=9.1.0
+groq>=0.11.0
