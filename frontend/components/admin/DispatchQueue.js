@@ -17,9 +17,9 @@ export default function DispatchQueue({ queue, dispatchState, onSessionClick }) 
     <div className="warroom-panel xl:col-span-2">
       <div className="warroom-header">
         <div>
-          <h2 className="font-bold">Dispatch Queue</h2>
+          <h2 className="font-bold">Email &amp; Intervention Log</h2>
           <p className="mt-1 text-sublabel">
-            AI-generated emails mapped to individual hesitation signatures.
+            AI-generated re-engagement emails mapped to individual hesitation signatures.
           </p>
         </div>
         <Send className="text-intent-analyzing" size={20} />

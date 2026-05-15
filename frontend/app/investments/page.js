@@ -75,6 +75,30 @@ const funds = [
     detail:
       "Designed for tax efficiency with a statutory lock-in and equity-linked return profile.",
   },
+  {
+    name: "Fidelity Large Cap Index Fund",
+    category: "Large-cap passive",
+    cagr: "14.2%",
+    risk: "Moderate",
+    minSip: "$100",
+    track: "know_more_large_cap_index",
+    exitLoadTrack: "exit_load_large_cap_index",
+    expenseTrack: "expense_ratio_large_cap_index",
+    detail:
+      "Low-cost passive exposure to the top 100 companies by market capitalization. Tracks Nifty 100 with minimal tracking error.",
+  },
+  {
+    name: "Fidelity International Equity Fund",
+    category: "Global equity",
+    cagr: "16.7%",
+    risk: "Very High",
+    minSip: "$500",
+    track: "know_more_intl_equity",
+    exitLoadTrack: "exit_load_intl_equity",
+    expenseTrack: "expense_ratio_intl_equity",
+    detail:
+      "Diversified exposure to US, European, and Asian equities. Hedged for INR/USD currency risk with quarterly rebalancing.",
+  },
 ];
 
 const marketStats = [

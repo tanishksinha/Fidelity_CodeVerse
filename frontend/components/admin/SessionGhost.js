@@ -10,29 +10,76 @@ import { cn } from '@/lib/cn';
  *
  * Replays throttled mouse coordinates on a mini-site preview.
  * Uses requestAnimationFrame for smooth cursor interpolation.
- * Includes timeline scrubbing and privacy mask support.
+ * Includes timeline scrubbing, privacy mask, and narrative annotations.
  */
 
-// Simulated mouse events for demo when real data isn't available
+// ─── Rich Narrative Journey (~35 events) ───
+// Tells the story: Land → Read → Engage Chart → Fee Anxiety → KYC Friction → Exit
 const DEMO_EVENTS = [
-  { type: 'move', x: 120, y: 80, time: 0 },
-  { type: 'move', x: 200, y: 150, time: 800 },
-  { type: 'move', x: 350, y: 120, time: 1600 },
-  { type: 'click', x: 350, y: 120, time: 2000 },
-  { type: 'move', x: 400, y: 200, time: 2800 },
-  { type: 'move', x: 300, y: 300, time: 3600 },
-  { type: 'move', x: 250, y: 350, time: 4400 },
-  { type: 'scroll', x: 250, y: 350, scrollY: 200, time: 5000 },
-  { type: 'move', x: 180, y: 280, time: 5800 },
-  { type: 'click', x: 180, y: 280, time: 6200 },
-  { type: 'move', x: 400, y: 100, time: 7000 },
-  { type: 'move', x: 500, y: 180, time: 7800 },
-  { type: 'move', x: 450, y: 250, time: 8600 },
-  { type: 'move', x: 300, y: 400, time: 9400 },
-  { type: 'click', x: 300, y: 400, time: 9800 },
+  // ACT 1: Landing & Orientation (0–4s)
+  { type: 'move', x: 80,  y: 30,  time: 0 },        // Cursor appears at nav
+  { type: 'move', x: 120, y: 30,  time: 400 },       // Scanning nav items
+  { type: 'move', x: 250, y: 30,  time: 800 },       // Moving across nav
+  { type: 'move', x: 180, y: 80,  time: 1400 },      // Drops to hero text
+  { type: 'move', x: 200, y: 110, time: 2200 },      // Reading intro copy slowly
+  { type: 'move', x: 220, y: 130, time: 3200 },      // Still reading...
+  { type: 'click', x: 220, y: 130, time: 3600 },     // Clicks "Learn More"
+
+  // ACT 2: SIP Chart Engagement (4–9s)
+  { type: 'scroll', x: 220, y: 130, scrollY: 180, time: 4000 },  // Scrolls to chart
+  { type: 'move', x: 300, y: 160, time: 4800 },      // Enters chart area
+  { type: 'move', x: 350, y: 145, time: 5400 },      // Tracing the green SIP line
+  { type: 'move', x: 400, y: 130, time: 6000 },      // Following upward trend
+  { type: 'move', x: 440, y: 120, time: 6600 },      // Peak of SIP curve
+  { type: 'move', x: 460, y: 115, time: 7200 },      // Lingering on terminal value
+  { type: 'click', x: 460, y: 115, time: 7600 },     // Clicks on chart tooltip
+
+  // ACT 3: Fund Cards — Growing Interest (9–13s)
+  { type: 'scroll', x: 460, y: 115, scrollY: 400, time: 8400 },  // Scrolls to fund cards
+  { type: 'move', x: 140, y: 200, time: 9200 },      // Moves to first fund card
+  { type: 'move', x: 160, y: 240, time: 9800 },      // Reading fund name
+  { type: 'click', x: 200, y: 280, time: 10200 },    // Clicks "Know More"
+  { type: 'move', x: 300, y: 200, time: 10800 },     // Moves to second card
+  { type: 'move', x: 320, y: 240, time: 11400 },     // Comparing CAGR values
+
+  // ACT 4: Fee Anxiety — Speed Increases (13–18s)
+  { type: 'scroll', x: 320, y: 240, scrollY: 520, time: 12000 }, // Scrolls to fee details
+  { type: 'move', x: 200, y: 310, time: 12600 },     // Expense ratio section
+  { type: 'move', x: 280, y: 340, time: 13000 },     // Faster movement now
+  { type: 'move', x: 310, y: 355, time: 13300 },     // "Exit Load: 1% before 12mo"
+  { type: 'move', x: 315, y: 355, time: 13600 },     // Hovering on exit load...
+  { type: 'move', x: 318, y: 356, time: 14200 },     // Still hovering (4s dwell!)
+  { type: 'move', x: 320, y: 357, time: 14800 },     // Micro-movements = reading carefully
+  { type: 'move', x: 200, y: 310, time: 15100 },     // Jerks back up (erratic)
+  { type: 'move', x: 350, y: 370, time: 15400 },     // Shoots down (erratic)
+  { type: 'move', x: 180, y: 300, time: 15700 },     // Back up again (scroll thrash)
+
+  // ACT 5: PAN Input — Privacy Zone (18–21s)
+  { type: 'scroll', x: 180, y: 300, scrollY: 600, time: 16200 }, // Scrolls to form area
+  { type: 'move', x: 300, y: 320, time: 17000 },     // Approaches PAN field
+  { type: 'move', x: 320, y: 330, time: 17600 },     // Cursor enters privacy zone
+  { type: 'move', x: 340, y: 335, time: 18200 },     // Hovering over masked field
+  { type: 'move', x: 330, y: 330, time: 18800 },     // Hesitating...
+
+  // ACT 6: Exit Velocity — Abandonment (21–23s)
+  { type: 'move', x: 300, y: 250, time: 19200 },     // Pulls away quickly
+  { type: 'move', x: 400, y: 100, time: 19500 },     // Flying toward top-right
+  { type: 'move', x: 520, y: 30,  time: 19800 },     // Exit velocity spike
+  { type: 'move', x: 560, y: 10,  time: 20000 },     // Cursor at tab close zone
 ];
 
-// Privacy zones — coordinates ranges to mask
+// ─── Timeline Annotations ───
+const DEMO_ANNOTATIONS = [
+  { time: 3600,  label: 'CTA CLICK' },
+  { time: 7600,  label: 'CHART ENGAGEMENT' },
+  { time: 10200, label: 'FUND INTEREST' },
+  { time: 14200, label: '⚠ EXIT LOAD DWELL' },
+  { time: 15700, label: '🌀 SCROLL THRASH' },
+  { time: 18200, label: '🔒 PRIVACY ZONE' },
+  { time: 19800, label: '🚀 EXIT VELOCITY' },
+];
+
+// Privacy zones — coordinate ranges to mask
 const PRIVACY_ZONES = [
   { x: 280, y: 300, w: 200, h: 40, label: 'PAN Card' },
   { x: 280, y: 350, w: 200, h: 40, label: 'Password' },
@@ -40,6 +87,7 @@ const PRIVACY_ZONES = [
 
 export default function SessionGhost({ events, sessionId }) {
   const frameEvents = events?.length > 0 ? events : DEMO_EVENTS;
+  const annotations = events?.length > 0 ? [] : DEMO_ANNOTATIONS;
   const totalDuration = frameEvents[frameEvents.length - 1]?.time || 10000;
 
   const [isPlaying, setIsPlaying] = useState(false);
@@ -47,6 +95,7 @@ export default function SessionGhost({ events, sessionId }) {
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [isClick, setIsClick] = useState(false);
   const [scrollOffset, setScrollOffset] = useState(0);
+  const [activeAnnotation, setActiveAnnotation] = useState(null);
   const animRef = useRef(null);
   const startTimeRef = useRef(0);
   const pauseTimeRef = useRef(0);
@@ -91,8 +140,14 @@ export default function SessionGhost({ events, sessionId }) {
       .pop();
     setScrollOffset(lastScroll?.scrollY || 0);
 
+    // Show nearest annotation
+    const nearestAnnotation = annotations.find(
+      (a) => Math.abs(a.time - clamped) < 600
+    );
+    setActiveAnnotation(nearestAnnotation || null);
+
     return clamped >= totalDuration;
-  }, [frameEvents, totalDuration]);
+  }, [frameEvents, totalDuration, annotations]);
 
   // Animation loop
   const tick = useCallback((timestamp) => {
@@ -138,6 +193,7 @@ export default function SessionGhost({ events, sessionId }) {
     setProgress(0);
     setCursorPos({ x: frameEvents[0]?.x || 0, y: frameEvents[0]?.y || 0 });
     setScrollOffset(0);
+    setActiveAnnotation(null);
     if (animRef.current) cancelAnimationFrame(animRef.current);
   };
 
@@ -158,6 +214,12 @@ export default function SessionGhost({ events, sessionId }) {
   const clickMarkers = frameEvents
     .filter((e) => e.type === 'click')
     .map((e) => ({ pos: e.time / totalDuration, type: 'click' }));
+
+  // Annotation markers for the timeline
+  const annotationMarkers = annotations.map((a) => ({
+    pos: a.time / totalDuration,
+    label: a.label,
+  }));
 
   return (
     <section className="rounded-lg border border-warroom-border bg-warroom-bg overflow-hidden">
@@ -183,34 +245,82 @@ export default function SessionGhost({ events, sessionId }) {
         >
           {/* Simulated site elements */}
           <div className="p-4 space-y-4">
-            <div className="h-10 w-48 rounded bg-fidelity-green/20" />
-            <div className="h-6 w-72 rounded bg-warroom-border/30" />
-            <div className="h-4 w-96 rounded bg-warroom-border/20" />
-            <div className="h-4 w-80 rounded bg-warroom-border/20" />
-            <div className="mt-6 grid grid-cols-3 gap-3">
-              <div className="h-24 rounded bg-warroom-border/15" />
-              <div className="h-24 rounded bg-warroom-border/15" />
-              <div className="h-24 rounded bg-warroom-border/15" />
-            </div>
-            <div className="mt-6 h-6 w-40 rounded bg-warroom-border/30" />
-            <div className="h-4 w-64 rounded bg-warroom-border/20" />
-            <div className="mt-4 space-y-2">
-              <div className="h-8 w-80 rounded bg-warroom-border/15" />
-              <div className="h-8 w-80 rounded bg-warroom-border/15" />
-            </div>
-            {/* Privacy-masked fields */}
-            {PRIVACY_ZONES.map((z, i) => (
-              <div
-                key={i}
-                className="absolute flex items-center justify-center bg-black border border-intent-bounce/30 rounded"
-                style={{ left: z.x, top: z.y, width: z.w, height: z.h }}
-              >
-                <span className="text-[8px] font-mono text-intent-bounce/60 uppercase tracking-widest">
-                  {z.label} — Masked
-                </span>
+            {/* Nav bar */}
+            <div className="flex items-center gap-3">
+              <div className="h-6 w-6 rounded bg-fidelity-green/40" />
+              <div className="h-4 w-20 rounded bg-warroom-border/30" />
+              <div className="ml-auto flex gap-4">
+                <div className="h-3 w-16 rounded bg-warroom-border/20" />
+                <div className="h-3 w-16 rounded bg-warroom-border/20" />
+                <div className="h-3 w-16 rounded bg-warroom-border/20" />
               </div>
-            ))}
+            </div>
+            {/* Hero Section */}
+            <div className="mt-4">
+              <div className="h-6 w-72 rounded bg-warroom-border/30" />
+              <div className="mt-2 h-4 w-96 rounded bg-warroom-border/20" />
+              <div className="mt-1 h-4 w-80 rounded bg-warroom-border/15" />
+              <div className="mt-3 h-8 w-28 rounded bg-fidelity-green/25" /> {/* CTA button */}
+            </div>
+            {/* Chart Area */}
+            <div className="mt-4 rounded border border-warroom-border/20 p-3">
+              <div className="h-4 w-40 rounded bg-warroom-border/25 mb-2" />
+              <div className="h-32 w-full rounded bg-warroom-border/10 relative overflow-hidden">
+                {/* Simulated chart line */}
+                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 500 130">
+                  <polyline
+                    points="10,110 60,100 120,90 180,95 240,70 300,55 360,40 420,25 480,15"
+                    fill="none" stroke="#007A33" strokeWidth="2" opacity="0.4"
+                  />
+                  <polyline
+                    points="10,110 60,105 120,100 180,98 240,85 300,78 360,68 420,60 480,50"
+                    fill="none" stroke="#6B7280" strokeWidth="1.5" strokeDasharray="4 4" opacity="0.3"
+                  />
+                </svg>
+              </div>
+            </div>
+            {/* Fund Cards */}
+            <div className="mt-4 grid grid-cols-3 gap-3">
+              <div className="h-28 rounded bg-warroom-border/12 p-2">
+                <div className="h-3 w-16 rounded bg-warroom-border/25" />
+                <div className="mt-2 h-3 w-24 rounded bg-warroom-border/20" />
+                <div className="mt-auto pt-4 h-6 w-full rounded bg-fidelity-green/15" />
+              </div>
+              <div className="h-28 rounded bg-warroom-border/12 p-2">
+                <div className="h-3 w-16 rounded bg-warroom-border/25" />
+                <div className="mt-2 h-3 w-24 rounded bg-warroom-border/20" />
+                <div className="mt-auto pt-4 h-6 w-full rounded bg-fidelity-green/15" />
+              </div>
+              <div className="h-28 rounded bg-warroom-border/12 p-2">
+                <div className="h-3 w-16 rounded bg-warroom-border/25" />
+                <div className="mt-2 h-3 w-24 rounded bg-warroom-border/20" />
+                <div className="mt-auto pt-4 h-6 w-full rounded bg-fidelity-green/15" />
+              </div>
+            </div>
+            {/* Fee Section */}
+            <div className="mt-4">
+              <div className="h-4 w-32 rounded bg-warroom-border/25" />
+              <div className="mt-2 h-3 w-48 rounded bg-intent-bounce/20" /> {/* Exit Load */}
+              <div className="mt-1 h-3 w-40 rounded bg-warroom-border/15" />
+            </div>
+            {/* Form Fields */}
+            <div className="mt-4 space-y-2">
+              <div className="h-8 w-80 rounded bg-warroom-border/12 border border-warroom-border/20" />
+              <div className="h-8 w-80 rounded bg-warroom-border/12 border border-warroom-border/20" />
+            </div>
           </div>
+          {/* Privacy-masked fields */}
+          {PRIVACY_ZONES.map((z, i) => (
+            <div
+              key={i}
+              className="absolute flex items-center justify-center bg-black border border-intent-bounce/30 rounded"
+              style={{ left: z.x, top: z.y, width: z.w, height: z.h }}
+            >
+              <span className="text-[8px] font-mono text-intent-bounce/60 uppercase tracking-widest">
+                {z.label} — Masked
+              </span>
+            </div>
+          ))}
         </div>
 
         {/* Shadow Cursor */}
@@ -229,6 +339,24 @@ export default function SessionGhost({ events, sessionId }) {
           transition={{ duration: 0.3 }}
         />
 
+        {/* Cursor trail (last 3 positions ghosted) */}
+        <div
+          className="absolute z-5 rounded-full bg-intent-bounce/20 pointer-events-none"
+          style={{ width: 8, height: 8, left: cursorPos.x - 4, top: cursorPos.y - 4, transition: 'all 0.2s ease', opacity: 0.3 }}
+        />
+
+        {/* Active annotation pill */}
+        {activeAnnotation && (
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="absolute top-3 right-3 rounded-full bg-intent-analyzing/20 border border-intent-analyzing/40 px-3 py-1 text-[9px] font-mono font-bold text-intent-analyzing uppercase tracking-wider z-20"
+          >
+            {activeAnnotation.label}
+          </motion.div>
+        )}
+
         {/* Privacy mask indicator */}
         {inPrivacyZone && (
           <div className="absolute top-3 left-3 flex items-center gap-1.5 rounded bg-intent-bounce/20 border border-intent-bounce/30 px-2 py-1 text-[8px] font-mono text-intent-bounce uppercase">
@@ -244,13 +372,13 @@ export default function SessionGhost({ events, sessionId }) {
           {/* Play/Pause */}
           <button
             onClick={isPlaying ? handlePause : handlePlay}
-            className="flex h-7 w-7 items-center justify-center rounded bg-warroom-bg text-fidelity-green hover:bg-warroom-border transition"
+            className="flex h-8 w-8 min-w-[44px] min-h-[44px] items-center justify-center rounded bg-warroom-bg text-fidelity-green hover:bg-warroom-border transition"
           >
             {isPlaying ? <Pause size={12} /> : <Play size={12} />}
           </button>
           <button
             onClick={handleReset}
-            className="flex h-7 w-7 items-center justify-center rounded bg-warroom-bg text-warroom-text-secondary hover:text-white transition"
+            className="flex h-8 w-8 min-w-[44px] min-h-[44px] items-center justify-center rounded bg-warroom-bg text-warroom-text-secondary hover:text-white transition"
           >
             <RotateCcw size={12} />
           </button>
@@ -266,14 +394,24 @@ export default function SessionGhost({ events, sessionId }) {
               onChange={handleScrub}
               className="w-full h-1 appearance-none rounded-full bg-warroom-border accent-intent-bounce cursor-pointer"
             />
-            {/* Event markers */}
+            {/* Click event markers */}
             {clickMarkers.map((m, i) => (
               <div
-                key={i}
+                key={`c-${i}`}
                 className="absolute top-0 h-full flex items-center pointer-events-none"
                 style={{ left: `${m.pos * 100}%` }}
               >
                 <div className="h-3 w-0.5 bg-intent-analyzing rounded-full" />
+              </div>
+            ))}
+            {/* Annotation markers */}
+            {annotationMarkers.map((m, i) => (
+              <div
+                key={`a-${i}`}
+                className="absolute top-0 h-full flex items-center pointer-events-none"
+                style={{ left: `${m.pos * 100}%` }}
+              >
+                <div className="h-4 w-0.5 bg-intent-bounce/60 rounded-full" />
               </div>
             ))}
           </div>

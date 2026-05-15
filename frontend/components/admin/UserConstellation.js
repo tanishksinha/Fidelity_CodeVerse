@@ -49,6 +49,13 @@ function timeToRadius(seconds) {
   return Math.min(22, Math.max(4, 4 + seconds / 15));
 }
 
+// Deterministic pulse delay class from user_id (1–7)
+function pulseDelayClass(userId) {
+  let h = 0;
+  for (let i = 0; i < userId.length; i++) h = ((h << 3) - h) + userId.charCodeAt(i);
+  return `pulse-delay-${(Math.abs(h) % 7) + 1}`;
+}
+
 const MAP_WIDTH = 900;
 const MAP_HEIGHT = 520;
 
@@ -233,14 +240,14 @@ export default function UserConstellation() {
 
             return (
               <g key={u.user_id} onClick={() => setSelectedUser(u)} className="cursor-pointer">
-                {/* Halo glow for high-intent */}
+                {/* Halo glow for high-intent — cardiac pulse */}
                 {glowR > 0 && (
                   <circle
                     cx={u.x}
                     cy={u.y}
                     r={r + glowR}
                     fill={`url(#glow-${u.user_id})`}
-                    className="animate-telemetry-pulse"
+                    className={`animate-telemetry-pulse ${pulseDelayClass(u.user_id)}`}
                   />
                 )}
                 {/* Intervention pulse (green flash) */}
@@ -250,7 +257,7 @@ export default function UserConstellation() {
                     <animate attributeName="opacity" from="0.7" to="0" dur="0.8s" fill="freeze" />
                   </circle>
                 )}
-                {/* Main dot */}
+                {/* Main dot — subtle breathe animation */}
                 <circle
                   cx={u.x}
                   cy={u.y}
@@ -258,7 +265,7 @@ export default function UserConstellation() {
                   fill={color}
                   stroke={color}
                   strokeWidth="0.5"
-                  opacity="0.9"
+                  className={`animate-constellation-breathe ${pulseDelayClass(u.user_id)}`}
                 />
                 {/* Score label for large dots */}
                 {r > 10 && (

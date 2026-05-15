@@ -1,11 +1,21 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { BrainCircuit, Mail, X, Activity } from 'lucide-react';
 import SessionGhost from './SessionGhost';
 import ManualNudge from './ManualNudge';
 
 export default function IntentInspector({ session, onClose }) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
   if (!session) return null;
 
   const intent = session.intent || session.ai_intent || 'Pending Analysis';
@@ -14,18 +24,28 @@ export default function IntentInspector({ session, onClose }) {
   const subject = session.email_subject || session.ai_email_subject || session.emailSubject || 'Drafting...';
   const body = session.email_body || session.ai_email_body || session.emailBody || '';
 
+  // Mobile: slide up from bottom | Desktop: slide in from right
+  const motionProps = isMobile
+    ? { initial: { y: '100%' }, animate: { y: 0 }, exit: { y: '100%' } }
+    : { initial: { x: 440, opacity: 0 }, animate: { x: 0, opacity: 1 }, exit: { x: 440, opacity: 0 } };
+
+  const panelClasses = isMobile
+    ? 'fixed bottom-0 left-0 z-50 flex w-full h-[80vh] flex-col rounded-t-3xl border-t border-warroom-border bg-warroom-surface shadow-2xl overflow-hidden'
+    : 'fixed right-0 top-0 z-50 flex h-full w-full max-w-[430px] flex-col border-l border-warroom-border bg-warroom-surface shadow-2xl overflow-hidden';
+
   return (
     <motion.aside
-      initial={{ y: '100%' }}
-      animate={{ y: 0 }}
-      exit={{ y: '100%' }}
+      {...motionProps}
       transition={{ type: 'spring', stiffness: 260, damping: 28 }}
-      className="fixed bottom-0 left-0 z-50 flex w-full h-[80vh] md:h-full md:max-w-[430px] md:right-0 md:left-auto md:top-0 flex-col rounded-t-3xl md:rounded-none border-t md:border-t-0 md:border-l border-warroom-border bg-warroom-surface shadow-2xl overflow-hidden"
+      className={panelClasses}
     >
       {/* Visual Drag Handle (Mobile only) */}
-      <div className="w-full flex justify-center pt-3 pb-1 md:hidden bg-warroom-bg cursor-grab">
-        <div className="w-12 h-1.5 rounded-full bg-warroom-border" />
-      </div>
+      {isMobile && (
+        <div className="w-full flex justify-center pt-3 pb-1 bg-warroom-bg cursor-grab">
+          <div className="w-12 h-1.5 rounded-full bg-warroom-border" />
+        </div>
+      )}
+
 
       {/* Header */}
       <div className="flex items-start justify-between border-b border-warroom-border bg-warroom-bg p-5">

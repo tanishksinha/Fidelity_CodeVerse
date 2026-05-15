@@ -18,12 +18,15 @@
 
   const sessionData = {
     session_id: 'usr_' + Math.random().toString(36).substring(2, 11),
+    user_id: localStorage.getItem('fidelity_user_email') || null,
     timestamp: new Date().toISOString(),
     page_url: window.location.pathname,
     behavioral_telemetry: {
       total_time_seconds: 0,
       max_scroll_depth_percent: 0,
       hesitation_zones: [], // populated via dwell time
+      click_events: [],     // button clicks tracked by name+page
+      form_completed: false, // checkout form submission
       friction_signals: {
         erratic_mouse_movements: 0, // legacy/desktop
         scroll_thrash_count: 0,     // mobile
@@ -154,8 +157,29 @@
     }
   }, { passive: true });
 
+  // --- 6. BUTTON CLICK TRACKING (tracked by element name + page) ---
+  document.addEventListener('click', (e) => {
+    const tracked = e.target.closest('[data-track]');
+    if (tracked) {
+      const trackId = tracked.getAttribute('data-track');
+      sessionData.behavioral_telemetry.click_events.push({
+        element_id: trackId,
+        page_url: window.location.pathname,
+        timestamp: new Date().toISOString()
+      });
+      if (CONFIG.DEBUG) console.log(`🖱️ Click tracked: ${trackId} on ${window.location.pathname}`);
+    }
+  });
 
-  // --- 6. LEGACY DESKTOP FRICTION (Kept for hybrid fallback) ---
+
+  // --- 7. FORM COMPLETION TRACKING ---
+  document.addEventListener('submit', (e) => {
+    sessionData.behavioral_telemetry.form_completed = true;
+    if (CONFIG.DEBUG) console.log('📝 Form submission captured!');
+  });
+
+
+  // --- 8. LEGACY DESKTOP FRICTION (Kept for hybrid fallback) ---
   let lastMouseY = 0;
   let mouseVelocityTracker = [];
   let mouseTimeout;
