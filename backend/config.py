@@ -26,6 +26,20 @@ class Settings(BaseSettings):
     # ─── CORS ───
     FRONTEND_ORIGIN: str = "http://localhost:3000"
 
+    # ─── Supabase ───
+    SUPABASE_URL: str = ""
+    SUPABASE_KEY: str = ""
+
+    # ─── Multi-LLM API Keys ───
+    GEMINI_API_KEY: str = ""
+    GROQ_API_KEY: str = ""
+
+    # ─── Dispatch Integrations ───
+    SENDGRID_API_KEY: str = ""
+    TWILIO_ACCOUNT_SID: str = ""
+    TWILIO_AUTH_TOKEN: str = ""
+    TWILIO_WHATSAPP_NUMBER: str = ""
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",

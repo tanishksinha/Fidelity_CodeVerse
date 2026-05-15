@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -10,8 +12,10 @@ import {
   Landmark,
   ShieldCheck,
   ChevronRight,
+  X,
 } from "lucide-react";
 import ConsumerHeader from "@/components/ConsumerHeader";
+import { useTracker } from "@/hooks/tracker";
 
 const insuranceProducts = [
   {
@@ -112,6 +116,35 @@ const insuranceProducts = [
 ];
 
 export default function InsurancePage() {
+  const router = useRouter();
+  const { pushIntentEvent } = useTracker();
+  const [quoteModalOpen, setQuoteModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [calculating, setCalculating] = useState(false);
+  const [calculatedPremium, setCalculatedPremium] = useState(null);
+
+  const handleOpenQuote = (product) => {
+    pushIntentEvent(`btn_get_quote_${product.id}_clicked`, { product: product.name });
+    setSelectedProduct(product);
+    setCalculatedPremium(null);
+    setQuoteModalOpen(true);
+  };
+
+  const handleCalculate = (e) => {
+    e.preventDefault();
+    pushIntentEvent(`quote_calculated_${selectedProduct.id}`);
+    setCalculating(true);
+    setTimeout(() => {
+      setCalculating(false);
+      setCalculatedPremium(selectedProduct.premium);
+    }, 1500);
+  };
+
+  const handleProceed = () => {
+    pushIntentEvent(`quote_proceed_${selectedProduct.id}`);
+    router.push("/checkout");
+  };
+
   return (
     <div className="min-h-screen bg-white text-gray-950">
       <ConsumerHeader active="insurance" />
@@ -209,13 +242,14 @@ export default function InsurancePage() {
                 </ul>
 
                 {/* CTA */}
-                <Link
-                  href="/checkout"
+                <button
+                  type="button"
+                  onClick={() => handleOpenQuote(product)}
                   data-track={`btn_get_quote_${product.id}`}
-                  className="mt-6 flex items-center justify-center gap-2 rounded-md bg-gray-950 px-4 py-3 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-fidelity-green"
+                  className="mt-6 flex w-full items-center justify-center gap-2 rounded-md bg-gray-950 px-4 py-3 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-fidelity-green"
                 >
                   Get Quote <ArrowRight size={14} />
-                </Link>
+                </button>
               </article>
             );
           })}
@@ -284,6 +318,80 @@ export default function InsurancePage() {
           </div>
         </div>
       </section>
+
+      {/* Quote Calculator Modal */}
+      {quoteModalOpen && selectedProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/40 px-4 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl animate-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+              <h3 className="text-xl font-bold text-gray-900">Get Quote: {selectedProduct.name}</h3>
+              <button onClick={() => setQuoteModalOpen(false)} className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-900">
+                <X size={20} />
+              </button>
+            </div>
+            
+            {!calculatedPremium ? (
+              <form onSubmit={handleCalculate} className="mt-6 space-y-5">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700">Current Age</label>
+                  <input required type="number" min="18" max="75" defaultValue="30" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-fidelity-green focus:outline-none focus:ring-1 focus:ring-fidelity-green" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700">Gender</label>
+                    <select className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-fidelity-green focus:outline-none focus:ring-1 focus:ring-fidelity-green">
+                      <option>Male</option>
+                      <option>Female</option>
+                      <option>Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700">Tobacco User</label>
+                    <select className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-fidelity-green focus:outline-none focus:ring-1 focus:ring-fidelity-green">
+                      <option>No</option>
+                      <option>Yes</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700">Desired Coverage</label>
+                  <select className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-fidelity-green focus:outline-none focus:ring-1 focus:ring-fidelity-green">
+                    <option>{selectedProduct.coverage}</option>
+                    <option>₹10 Lakh</option>
+                    <option>₹50 Lakh</option>
+                    <option>₹2 Crore</option>
+                  </select>
+                </div>
+                <button
+                  type="submit"
+                  disabled={calculating}
+                  className="mt-6 flex w-full items-center justify-center rounded-md bg-fidelity-green px-4 py-3 text-sm font-bold text-white transition hover:bg-[#009940] disabled:bg-gray-400"
+                >
+                  {calculating ? "Calculating..." : "Calculate Premium"}
+                </button>
+              </form>
+            ) : (
+              <div className="mt-6 text-center animate-in slide-in-from-bottom-4">
+                <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-fidelity-green/10 text-fidelity-green mb-4">
+                  <ShieldCheck size={32} />
+                </div>
+                <h4 className="text-sm font-bold uppercase tracking-wider text-gray-500">Estimated Premium</h4>
+                <p className="mt-2 text-4xl font-bold text-gray-900">{calculatedPremium}</p>
+                <p className="mt-2 text-sm text-gray-600">Based on standard health disclosures.</p>
+                
+                <div className="mt-8">
+                  <button
+                    onClick={handleProceed}
+                    className="flex w-full items-center justify-center gap-2 rounded-md bg-gray-950 px-4 py-3 text-sm font-bold text-white transition hover:bg-gray-800"
+                  >
+                    Proceed to Application <ArrowRight size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

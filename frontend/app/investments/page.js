@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -25,99 +27,113 @@ import { cn } from "../../lib/cn";
 import { useTracker } from "../../hooks/tracker";
 
 const sipPerformance = [
-  { month: "Jan 2021", sip: 100000, index: 100000 },
-  { month: "Jul 2021", sip: 116400, index: 110800 },
-  { month: "Jan 2022", sip: 129200, index: 119900 },
-  { month: "Jul 2022", sip: 121800, index: 112300 },
-  { month: "Jan 2023", sip: 146700, index: 131600 },
-  { month: "Jul 2023", sip: 169400, index: 148200 },
-  { month: "Jan 2024", sip: 188900, index: 162100 },
-  { month: "Jul 2024", sip: 214600, index: 181300 },
-  { month: "Jan 2025", sip: 236800, index: 197500 },
-  { month: "Jul 2025", sip: 268300, index: 217900 },
-  { month: "Jan 2026", sip: 304600, index: 241200 },
+  { month: "Jan 2021", sip: 1000000, index: 1000000 },
+  { month: "Jul 2021", sip: 1164000, index: 1108000 },
+  { month: "Jan 2022", sip: 1292000, index: 1199000 },
+  { month: "Jul 2022", sip: 1218000, index: 1123000 },
+  { month: "Jan 2023", sip: 1467000, index: 1316000 },
+  { month: "Jul 2023", sip: 1694000, index: 1482000 },
+  { month: "Jan 2024", sip: 1889000, index: 1621000 },
+  { month: "Jul 2024", sip: 2146000, index: 1813000 },
+  { month: "Jan 2025", sip: 2368000, index: 1975000 },
+  { month: "Jul 2025", sip: 2683000, index: 2179000 },
+  { month: "Jan 2026", sip: 3046000, index: 2412000 },
 ];
 
 const funds = [
   {
-    name: "Fidelity Growth Multiplier Fund",
-    category: "Mid-cap equity",
-    cagr: "18.4%",
-    risk: "High",
-    minSip: "$250",
-    track: "know_more_growth_multiplier_fund",
-    exitLoadTrack: "exit_load_penalty_growth_fund",
-    expenseTrack: "expense_ratio_growth_fund",
-    detail:
-      "Targets high-growth businesses with a 5-year holding horizon and concentrated sector exposure.",
-  },
-  {
-    name: "Fidelity Balanced Advantage SIP",
-    category: "Hybrid allocation",
-    cagr: "12.9%",
-    risk: "Moderate",
-    minSip: "$100",
-    track: "know_more_balanced_advantage_sip",
-    exitLoadTrack: "exit_load_penalty_balanced_fund",
-    expenseTrack: "expense_ratio_balanced_fund",
-    detail:
-      "Dynamically shifts between equity and debt based on valuation and volatility bands.",
-  },
-  {
-    name: "Fidelity Tax Saver ELSS",
-    category: "Tax optimized",
-    cagr: "15.1%",
-    risk: "High",
-    minSip: "$150",
-    track: "know_more_tax_saver_elss",
-    exitLoadTrack: "lock_in_clause_tax_saver",
-    expenseTrack: "expense_ratio_tax_saver",
-    detail:
-      "Designed for tax efficiency with a statutory lock-in and equity-linked return profile.",
-  },
-  {
-    name: "Fidelity Large Cap Index Fund",
-    category: "Large-cap passive",
-    cagr: "14.2%",
-    risk: "Moderate",
-    minSip: "$100",
-    track: "know_more_large_cap_index",
-    exitLoadTrack: "exit_load_large_cap_index",
-    expenseTrack: "expense_ratio_large_cap_index",
-    detail:
-      "Low-cost passive exposure to the top 100 companies by market capitalization. Tracks Nifty 100 with minimal tracking error.",
-  },
-  {
-    name: "Fidelity International Equity Fund",
-    category: "Global equity",
-    cagr: "16.7%",
+    name: "Parag Parikh Flexi Cap Fund",
+    category: "Flexi Cap",
+    cagr: "23.4%",
     risk: "Very High",
-    minSip: "$500",
-    track: "know_more_intl_equity",
-    exitLoadTrack: "exit_load_intl_equity",
-    expenseTrack: "expense_ratio_intl_equity",
-    detail:
-      "Diversified exposure to US, European, and Asian equities. Hedged for INR/USD currency risk with quarterly rebalancing.",
+    minSip: "₹1,000",
+    track: "know_more_parag_parikh_flexi",
+    exitLoadTrack: "exit_load_parag_parikh",
+    expenseTrack: "expense_ratio_parag_parikh",
+    detail: "Invests in domestic and international equities with a value-oriented bottom-up approach.",
   },
-];
-
-const marketStats = [
-  ["NIFTY 50", "+0.74%"],
-  ["S&P 500", "+0.31%"],
-  ["10Y Yield", "4.18%"],
-  ["USD/INR", "83.41"],
-  ["VIX", "13.8"],
+  {
+    name: "SBI Small Cap Fund",
+    category: "Small Cap",
+    cagr: "26.1%",
+    risk: "Very High",
+    minSip: "₹500",
+    track: "know_more_sbi_small_cap",
+    exitLoadTrack: "exit_load_sbi_small_cap",
+    expenseTrack: "expense_ratio_sbi_small_cap",
+    detail: "High growth potential by identifying undiscovered or under-researched small-cap businesses.",
+  },
+  {
+    name: "HDFC Index Fund Nifty 50 Plan",
+    category: "Index Fund",
+    cagr: "15.2%",
+    risk: "High",
+    minSip: "₹500",
+    track: "know_more_hdfc_index",
+    exitLoadTrack: "exit_load_hdfc_index",
+    expenseTrack: "expense_ratio_hdfc_index",
+    detail: "Low-cost passive exposure strictly replicating the NIFTY 50 index with minimal tracking error.",
+  },
+  {
+    name: "ICICI Prudential Balanced Advantage Fund",
+    category: "Hybrid / Dynamic Asset Allocation",
+    cagr: "13.8%",
+    risk: "Moderate",
+    minSip: "₹100",
+    track: "know_more_icici_balanced",
+    exitLoadTrack: "exit_load_icici_balanced",
+    expenseTrack: "expense_ratio_icici_balanced",
+    detail: "Dynamically shifts between equity and debt based on in-house valuation models to cushion downside risk.",
+  },
+  {
+    name: "Nippon India Liquid Fund",
+    category: "Debt / Liquid",
+    cagr: "6.9%",
+    risk: "Low",
+    minSip: "₹1,000",
+    track: "know_more_nippon_liquid",
+    exitLoadTrack: "exit_load_nippon_liquid",
+    expenseTrack: "expense_ratio_nippon_liquid",
+    detail: "Highly liquid parking fund investing in short-term money market instruments with maturity up to 91 days.",
+  },
 ];
 
 export default function InvestmentsPage() {
+  const router = useRouter();
   const { pushIntentEvent } = useTracker();
+  const [expandedFund, setExpandedFund] = useState(null);
+  const [marketData, setMarketData] = useState([
+    ["NIFTY 50", "Loading..."],
+    ["S&P 500", "Loading..."],
+    ["USD/INR", "Loading..."]
+  ]);
+
+  useEffect(() => {
+    fetch("http://localhost:8080/api/market-data")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === "success") {
+          setMarketData(data.data);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch market data:", err));
+  }, []);
 
   const handleKnowMore = (fund) => {
+    // Track the telemetry first
     pushIntentEvent("fund_know_more_clicked", {
       fund: fund.name,
       track: fund.track,
       inferred_stage: "pre_checkout_hesitation",
     });
+    
+    // Toggle the UI state
+    setExpandedFund(expandedFund === fund.name ? null : fund.name);
+  };
+
+  const handleInvestNow = (fund) => {
+    pushIntentEvent(`btn_invest_now_clicked`, { fund: fund.name });
+    router.push("/checkout");
   };
 
   return (
@@ -125,10 +141,22 @@ export default function InvestmentsPage() {
       <ConsumerHeader active="investments" />
       <div className="border-b border-gray-200 bg-gray-950 text-white" data-track="investments_market_ticker">
         <div className="mx-auto flex max-w-7xl gap-6 overflow-x-auto px-6 py-3 font-mono text-xs lg:px-8">
-          {marketStats.map(([label, value]) => (
+          <div className="flex items-center gap-2 pr-4 border-r border-gray-800 text-fidelity-green">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-fidelity-green opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-fidelity-green"></span>
+            </span>
+            LIVE MARKETS
+          </div>
+          {marketData.map(([label, value, change]) => (
             <span key={label} className="flex min-w-fit items-center gap-2">
               <span className="text-white/55">{label}</span>
-              <span className="text-fidelity-green">{value}</span>
+              <span className="text-white font-bold">{value}</span>
+              {change && (
+                <span className={change.startsWith("-") ? "text-red-400" : "text-fidelity-green"}>
+                  {change}
+                </span>
+              )}
             </span>
           ))}
         </div>
@@ -186,7 +214,7 @@ export default function InvestmentsPage() {
                   <h2 className="text-lg font-bold text-gray-950">SIP performance vs. broad market index</h2>
                 </div>
                 <p className="mt-2 text-sm text-gray-600">
-                  Simulated $100,000 indexed starting value with monthly contribution compounding.
+                  Simulated ₹10,00,000 indexed starting value with monthly contribution compounding.
                 </p>
               </div>
               <div data-track="chart_disclaimer_historical_returns" className="rounded-md bg-gray-50 px-3 py-2 text-xs text-gray-500">
@@ -204,10 +232,10 @@ export default function InvestmentsPage() {
                       tickLine={false}
                       axisLine={false}
                       tick={{ fontSize: 12 }}
-                      tickFormatter={(value) => `$${Math.round(value / 1000)}k`}
+                      tickFormatter={(value) => `₹${Math.round(value / 100000)}L`}
                     />
                     <Tooltip
-                      formatter={(value) => [`$${Number(value).toLocaleString()}`, ""]}
+                      formatter={(value) => [`₹${Number(value).toLocaleString("en-IN")}`, ""]}
                       labelClassName="font-bold"
                       contentStyle={{ borderRadius: 8, borderColor: "#E5E7EB" }}
                     />
@@ -234,8 +262,8 @@ export default function InvestmentsPage() {
                 </ResponsiveContainer>
               </div>
               <div className="space-y-3">
-                <ChartBrief label="Model terminal value" value="$304,600" tone="green" track="chart_terminal_value" />
-                <ChartBrief label="Index terminal value" value="$241,200" tone="gray" track="chart_index_value" />
+                <ChartBrief label="Model terminal value" value="₹30.46 L" tone="green" track="chart_terminal_value" />
+                <ChartBrief label="Index terminal value" value="₹24.12 L" tone="gray" track="chart_index_value" />
                 <ChartBrief label="Outperformance" value="+26.3%" tone="blue" track="chart_outperformance_value" />
                 <div data-track="chart_risk_note" className="rounded-md border border-intent-hesitate/30 bg-intent-hesitate/10 p-4 text-sm leading-6 text-gray-700">
                   Volatility, exit loads, taxation, and NAV timing can change actual realized outcomes.
@@ -285,15 +313,44 @@ export default function InvestmentsPage() {
                   </p>
                 </div>
 
-                <button
-                  type="button"
-                  data-track={fund.track}
-                  onClick={() => handleKnowMore(fund)}
-                  className="mt-5 flex w-full items-center justify-center gap-2 rounded-md border border-fidelity-green px-4 py-3 text-sm font-bold text-fidelity-green transition-colors hover:bg-fidelity-light"
-                >
-                  Know More
-                  <ChevronDown size={16} />
-                </button>
+                <div className="mt-5 grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    data-track={fund.track}
+                    onClick={() => handleKnowMore(fund)}
+                    className="flex w-full items-center justify-center gap-2 rounded-md border border-fidelity-green px-4 py-3 text-sm font-bold text-fidelity-green transition-colors hover:bg-fidelity-light"
+                  >
+                    {expandedFund === fund.name ? "Close" : "Know More"}
+                    <ChevronDown size={16} className={cn("transition-transform", expandedFund === fund.name ? "rotate-180" : "")} />
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={() => handleInvestNow(fund)}
+                    data-track={`btn_invest_now_${fund.track}`}
+                    className="flex w-full items-center justify-center gap-2 rounded-md bg-gray-950 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-fidelity-green"
+                  >
+                    Invest Now <ArrowRight size={14} />
+                  </button>
+                </div>
+
+                {/* Expanded Details Section */}
+                {expandedFund === fund.name && (
+                  <div className="mt-4 animate-in fade-in slide-in-from-top-2 rounded-md bg-gray-50 p-4 text-sm text-gray-700">
+                    <p className="font-semibold text-gray-900 mb-2">Asset Allocation Strategy</p>
+                    <p className="mb-4 text-gray-600">
+                      The fund manager maintains a dynamic approach, identifying deep-value 
+                      opportunities while keeping a tight leash on downside volatility. 
+                      Top holdings include financials, IT, and cyclical consumables.
+                    </p>
+                    <div className="grid grid-cols-2 gap-y-2 border-t border-gray-200 pt-3 text-xs">
+                      <div><span className="font-semibold">Fund Manager:</span> S. Mehta</div>
+                      <div><span className="font-semibold">AUM:</span> ₹12,450 Cr</div>
+                      <div><span className="font-semibold">Benchmark:</span> NIFTY 500</div>
+                      <div><span className="font-semibold">Inception:</span> Aug 2012</div>
+                    </div>
+                  </div>
+                )}
               </article>
             ))}
           </div>

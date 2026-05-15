@@ -6,28 +6,46 @@ and generate personalized re-engagement emails.
 
 import json
 import logging
-from typing import Optional
+import random
+from typing import Optional, List
 
 from openai import AsyncOpenAI
+import google.generativeai as genai
+from groq import AsyncGroq
 
 from config import get_settings
 
 logger = logging.getLogger("fidelity.engine")
 settings = get_settings()
 
-# ─── Initialize Async Client ───
-client: Optional[AsyncOpenAI] = None
+# ─── Initialize Clients ───
+openai_client: Optional[AsyncOpenAI] = None
+groq_client: Optional[AsyncGroq] = None
+
+# Round-robin state
+_current_provider_idx = 0
+PROVIDERS = ["openai", "gemini", "groq"]
 
 
 def get_openai_client() -> AsyncOpenAI:
-    """Lazy-initialize the OpenAI client."""
-    global client
-    if client is None:
-        if not settings.OPENAI_API_KEY:
-            raise RuntimeError("[ENGINE] OPENAI_API_KEY is not configured.")
-        client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
-        logger.info("[ENGINE] OpenAI client initialized.")
-    return client
+    global openai_client
+    if openai_client is None:
+        if not settings.OPENAI_API_KEY: return None
+        openai_client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+    return openai_client
+
+
+def get_groq_client() -> AsyncGroq:
+    global groq_client
+    if groq_client is None:
+        if not settings.GROQ_API_KEY: return None
+        groq_client = AsyncGroq(api_key=settings.GROQ_API_KEY)
+    return groq_client
+
+
+def init_gemini():
+    if settings.GEMINI_API_KEY:
+        genai.configure(api_key=settings.GEMINI_API_KEY)
 
 
 # ─── System Prompt ───
@@ -72,17 +90,21 @@ Respond in valid JSON with this exact structure:
 
 async def analyze_session(telemetry_data: dict) -> dict:
     """
-    Send raw telemetry to GPT-4o and extract structured intent analysis.
-
-    Args:
-        telemetry_data: Dict containing session behavioral data.
-
-    Returns:
-        Dict with keys: intent, confidence, profile, email_subject, email_body
+    Analyzes session using a resilient multi-provider strategy:
+    1. Load balancing (Round-robin)
+    2. Fallback (Retries other providers on failure)
     """
-    openai_client = get_openai_client()
-
-    # Build the user message with the telemetry payload
+    global _current_provider_idx
+    
+    # Sequence of providers to try, starting from the next in round-robin
+    providers_to_try = []
+    for i in range(len(PROVIDERS)):
+        idx = (_current_provider_idx + i) % len(PROVIDERS)
+        providers_to_try.append(PROVIDERS[idx])
+    
+    # Increment round-robin index for the next call
+    _current_provider_idx = (_current_provider_idx + 1) % len(PROVIDERS)
+    
     user_message = f"""Analyze this user's behavioral telemetry and determine why they abandoned:
 
 ```json
@@ -91,45 +113,82 @@ async def analyze_session(telemetry_data: dict) -> dict:
 
 Respond ONLY with valid JSON matching the required structure."""
 
-    try:
-        logger.info(f"[ENGINE] Sending telemetry to GPT-4o for session: {telemetry_data.get('session_id', 'unknown')}")
+    for provider in providers_to_try:
+        try:
+            logger.info(f"[ENGINE] Attempting analysis with provider: {provider.upper()}")
+            
+            if provider == "openai":
+                result = await _call_openai(user_message)
+            elif provider == "gemini":
+                result = await _call_gemini(user_message)
+            elif provider == "groq":
+                result = await _call_groq(user_message)
+            else:
+                continue
+                
+            if result:
+                logger.info(f"[ENGINE] ✓ Success with {provider.upper()} — Intent: {result['intent']}")
+                return result
+                
+        except Exception as e:
+            logger.warning(f"[ENGINE] ✗ Provider {provider.upper()} failed: {e}")
+            continue
 
-        response = await openai_client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_message},
-            ],
-            temperature=0.4,  # Low temperature for consistent classification
-            max_tokens=512,
-            response_format={"type": "json_object"},
+    logger.error("[ENGINE] All LLM providers failed. Dropping to heuristic fallback.")
+    return _fallback_analysis(telemetry_data)
+
+
+async def _call_openai(prompt: str) -> Optional[dict]:
+    client = get_openai_client()
+    if not client: return None
+    
+    response = await client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": prompt},
+        ],
+        temperature=0.4,
+        max_tokens=512,
+        response_format={"type": "json_object"},
+    )
+    return json.loads(response.choices[0].message.content)
+
+
+async def _call_gemini(prompt: str) -> Optional[dict]:
+    if not settings.GEMINI_API_KEY: return None
+    init_gemini()
+    
+    model = genai.GenerativeModel('gemini-1.5-flash')
+    # Combine system prompt and user prompt for Gemini
+    full_prompt = f"{SYSTEM_PROMPT}\n\nUSER DATA:\n{prompt}"
+    
+    response = model.generate_content(
+        full_prompt,
+        generation_config=genai.types.GenerationConfig(
+            temperature=0.4,
+            max_output_tokens=512,
+            response_mime_type="application/json",
         )
+    )
+    return json.loads(response.text)
 
-        raw_content = response.choices[0].message.content
-        result = json.loads(raw_content)
 
-        # Validate required keys exist
-        required_keys = {"intent", "confidence", "profile", "email_subject", "email_body"}
-        if not required_keys.issubset(result.keys()):
-            missing = required_keys - set(result.keys())
-            logger.warning(f"[ENGINE] LLM response missing keys: {missing}")
-            raise ValueError(f"Missing required fields: {missing}")
-
-        # Clamp confidence to valid range
-        result["confidence"] = max(0.0, min(1.0, float(result["confidence"])))
-
-        logger.info(
-            f"[ENGINE] Analysis complete — Intent: {result['intent']} "
-            f"(confidence: {result['confidence']:.0%})"
-        )
-        return result
-
-    except json.JSONDecodeError as e:
-        logger.error(f"[ENGINE] Failed to parse LLM JSON response: {e}")
-        return _fallback_analysis(telemetry_data)
-    except Exception as e:
-        logger.error(f"[ENGINE] OpenAI API error: {e}")
-        return _fallback_analysis(telemetry_data)
+async def _call_groq(prompt: str) -> Optional[dict]:
+    client = get_groq_client()
+    if not client: return None
+    
+    response = await client.chat.completions.create(
+        model="llama3-70b-8192",
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": prompt},
+        ],
+        temperature=0.4,
+        max_tokens=512,
+        response_format={"type": "json_object"},
+    )
+    return json.loads(response.choices[0].message.content)
 
 
 def _fallback_analysis(telemetry_data: dict) -> dict:

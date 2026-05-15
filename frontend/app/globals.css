@@ -105,17 +105,14 @@
   .gap-grid-4 { gap: 32px; }
   .gap-grid-5 { gap: 40px; }
 
-  /* Cardiac pulse — systolic spike + diastolic recovery */
+  /* Glow pulse — smooth luminous on/off, no physical movement */
   @keyframes telemetry-pulse {
-    0%   { opacity: 0.4; transform: scale(1); }
-    12%  { opacity: 0.9; transform: scale(1.25); }   /* systolic spike */
-    22%  { opacity: 0.3; transform: scale(0.92); }   /* diastolic dip */
-    34%  { opacity: 0.6; transform: scale(1.08); }   /* secondary bump */
-    50%  { opacity: 0.35; transform: scale(1); }     /* settle */
-    100% { opacity: 0.4; transform: scale(1); }      /* rest phase */
+    0%   { opacity: 0.35; filter: drop-shadow(0 0 0px currentColor); }
+    50%  { opacity: 1;    filter: drop-shadow(0 0 8px currentColor); }  /* glow ON */
+    100% { opacity: 0.35; filter: drop-shadow(0 0 0px currentColor); }  /* glow OFF */
   }
   .animate-telemetry-pulse {
-    animation: telemetry-pulse 3s infinite ease-in-out;
+    animation: telemetry-pulse 2.8s infinite ease-in-out;
   }
   /* Staggered delay variants for de-synced constellation dots */
   .pulse-delay-1 { animation-delay: 0.0s; }
@@ -126,15 +123,14 @@
   .pulse-delay-6 { animation-delay: 2.0s; }
   .pulse-delay-7 { animation-delay: 2.4s; }
 
-  /* Subtle body breathe — makes every dot feel alive */
+  /* Subtle body breathe — soft ambient glow */
   @keyframes constellation-breathe {
-    0%   { opacity: 0.85; }
-    40%  { opacity: 0.95; }
-    60%  { opacity: 0.78; }
-    100% { opacity: 0.85; }
+    0%   { opacity: 0.82; filter: drop-shadow(0 0 1px currentColor); }
+    50%  { opacity: 1;    filter: drop-shadow(0 0 4px currentColor); }
+    100% { opacity: 0.82; filter: drop-shadow(0 0 1px currentColor); }
   }
   .animate-constellation-breathe {
-    animation: constellation-breathe 4s infinite ease-in-out;
+    animation: constellation-breathe 5s infinite ease-in-out;
   }
 
   @keyframes scan-line {
