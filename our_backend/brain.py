@@ -96,6 +96,7 @@ def generate_intervention(user_context: dict) -> BrainResponse:
     {SYSTEM_PROMPT}
     
     User Context (Anonymized):
+    - Current Page Stage: {clean_context.get('current_page_stage', 'Unknown')}
     - Confusion Score: {clean_context.get('confusion_score', 0)}/100
     - Friction Score: {clean_context.get('friction_score', 0)}/100
     - Recent Actions: {', '.join(clean_context.get('recent_actions', []))}
@@ -108,7 +109,7 @@ def generate_intervention(user_context: dict) -> BrainResponse:
     # 1. Try Gemini
     if GEMINI_API_KEY and client:
         try:
-            logger.info("Attempting to generate intervention with Gemini...")
+            logger.info("Attempting to generate intervention with Gemini 2.0...")
             response = client.models.generate_content(
                 model="gemini-2.0-flash",
                 contents=prompt,
@@ -117,7 +118,7 @@ def generate_intervention(user_context: dict) -> BrainResponse:
             data = json.loads(response.text)
             return BrainResponse(**data)
         except Exception as e:
-            logger.error(f"Gemini API failed: {e}. Falling back to Groq.")
+            logger.error(f"Gemini API failed: {e}. Falling back to Groq/Mock.")
             
     # 2. Try Groq
     if GROQ_API_KEY and groq_client:

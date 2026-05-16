@@ -4,10 +4,11 @@ from fastapi.middleware.cors import CORSMiddleware
 import socketio
 
 # --- THE IMPORTS (Connecting the Team) ---
-from database import save_telemetry_event, get_user_history      # Person 3
+from database import save_telemetry_event, get_user_history, update_event_intelligence # Person 3/4
 from processor import should_we_nudge                            # Person 2
 from brain import generate_intervention                          # Person 4
 from notifications import trigger_priority_cascade               # Person 4
+from semantic_mapper import classify_page_structure              # Person 4
 from auth import router as auth_router                           # JWT Auth
 
 # Bridge function: adapts our telemetry data to Manaswini's brain.py format
@@ -16,12 +17,20 @@ async def generate_gemini_nudge(data: dict, history: dict) -> dict:
     friction = telemetry.get('friction_signals', {})
     hesitation_zones = [h['element_id'] for h in telemetry.get('hesitation_zones', [])]
     
+    # NEW: Get the classified stage from the most recent event in history
+    current_stage = "Unknown"
+    if history.get('past_events'):
+        # Sort by id or just take the last one added
+        latest_event = history['past_events'][-1]
+        current_stage = latest_event.get('universal_stage', 'Exploration')
+
     context = {
         "friction_score": (friction.get('rage_clicks', 0) * 10) + (telemetry.get('total_time_seconds', 0) / 2),
         "confusion_score": friction.get('scroll_thrash_count', 0) * 25,
         "recent_actions": hesitation_zones,
         "last_rage_element": telemetry.get('last_rage_element', 'None'),
-        "history": f"User has {history.get('total_events', 0)} past visits."
+        "history": f"User has {history.get('total_events', 0)} past visits.",
+        "current_page_stage": current_stage
     }
     result = generate_intervention(context)
     return {"message": result.message, "reason": result.xai_explanation}
@@ -108,6 +117,35 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
         background_tasks.add_task(trigger_priority_cascade, session_id, nudge_package["message"], contact_info)
         
     return {"status": "success", "session_id": session_id}
+
+@app.post("/api/analyze-page")
+async def analyze_page(request: Request, background_tasks: BackgroundTasks):
+    """
+    Person 4 - Step 2: Semantic Mapper Endpoint
+    Receives DOM summary, classifies page stage, and updates DB.
+    """
+    try:
+        data = await request.json()
+        session_id = data.get("session_id", "unknown")
+        dom_summary = data.get("dom_summary", {})
+        
+        # 1. Classify the page using Gemini
+        analysis = await classify_page_structure(dom_summary)
+        
+        # 2. Update the database in the background
+        intelligence = {
+            "universal_stage": analysis.get("stage"),
+            "ai_reasoning": analysis.get("reasoning"),
+            "confidence_score": analysis.get("confidence")
+        }
+        background_tasks.add_task(update_event_intelligence, session_id, intelligence)
+        
+        logger.info(f"[SEMANTIC] Session {session_id} mapped to stage: {analysis.get('stage')}")
+        return {"status": "success", "stage": analysis.get("stage"), "reasoning": analysis.get("reasoning")}
+        
+    except Exception as e:
+        logger.error(f"[SEMANTIC] Error in analyze_page: {e}")
+        return {"status": "error", "message": str(e)}
 
 if __name__ == "__main__":
     import uvicorn

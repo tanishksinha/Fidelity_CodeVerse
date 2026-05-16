@@ -77,3 +77,26 @@ async def get_user_history(session_id: str) -> dict:
     except Exception as e:
         print(f"Database Error (get_user_history): {e}")
         return {"error": str(e)}
+
+async def update_event_intelligence(session_id: str, intelligence: dict) -> bool:
+    """
+    Updates an existing event with AI insights (stage, behavior, churn risk).
+    """
+    if not supabase:
+        print(f"💾 [MOCK DB] Updated intelligence for {session_id}")
+        return True
+
+    try:
+        # We find the latest record for this session and update it
+        response = supabase.table("events") \
+            .update(intelligence) \
+            .eq("session_id", session_id) \
+            .execute()
+            
+        if response.data:
+            print(f"🧠 AI Intelligence saved for {session_id}")
+            return True
+        return False
+    except Exception as e:
+        print(f"Database Error (update_event_intelligence): {e}")
+        return False
