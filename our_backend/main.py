@@ -1,5 +1,6 @@
 import logging
 from fastapi import FastAPI, BackgroundTasks, Request
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import socketio
 
@@ -41,6 +42,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.mount("/static", StaticFiles(directory="../frontend/public"), name="static")
 
 
 app.include_router(auth_router)  # Mounts /api/auth/register and /api/auth/consumer-login

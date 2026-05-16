@@ -32,7 +32,7 @@
   }
 
   var script = document.createElement('script');
-  script.src = 'http://localhost:8080/static/tracker.js?t=' + Date.now();
+  script.src = 'https://audacious-exodus-spiny.ngrok-free.dev/static/tracker.js?t=' + Date.now();
   script.onload = function(){
     console.log('[Fidelity] Behavioral tracker active on: ' + window.location.hostname);
   };
@@ -45,4 +45,4 @@
 
 
 // === MINIFIED BOOKMARKLET (copy this as the bookmark URL) ===
-// javascript:(function(){if(window.__FIDELITY_TRACKER_LOADED__){alert('Fidelity Tracker already active!');return}window.__FIDELITY_TRACKER_LOADED__=true;if(!localStorage.getItem('fidelity_ghost_id')){localStorage.setItem('fidelity_ghost_id','EXT_'+Math.random().toString(36).substring(2,9).toUpperCase())}var s=document.createElement('script');s.src='http://localhost:8080/static/tracker.js?t='+Date.now();s.onload=function(){console.log('[Fidelity] Tracker active on: '+location.hostname)};s.onerror=function(){alert('Could not load Fidelity tracker. Is the backend running?')};document.head.appendChild(s)})();
+// javascript:(function(){if(window.__FIDELITY_TRACKER_LOADED__){alert('Fidelity Tracker already active!');return}window.__FIDELITY_TRACKER_LOADED__=true;if(!localStorage.getItem('fidelity_ghost_id')){localStorage.setItem('fidelity_ghost_id','EXT_'+Math.random().toString(36).substring(2,9).toUpperCase())}var s=document.createElement('script');s.src='https://audacious-exodus-spiny.ngrok-free.dev/static/tracker.js?t='+Date.now();s.onload=function(){console.log('[Fidelity] Tracker active on: '+location.hostname)};s.onerror=function(){alert('Could not load Fidelity tracker. Is the backend running?')};document.head.appendChild(s)})();

@@ -14,8 +14,8 @@
 
   // --- 1. CONFIGURATION & STATE ---
   const CONFIG = {
-    ENDPOINT: 'http://localhost:8080/api/ingest-telemetry',
-    SOCKET_URL: 'http://localhost:8080',
+    ENDPOINT: 'https://audacious-exodus-spiny.ngrok-free.dev/api/ingest-telemetry',
+    SOCKET_URL: 'https://audacious-exodus-spiny.ngrok-free.dev',
     DWELL_THRESHOLD_MS: 3000,
     RAGE_TAP_THRESHOLD_MS: 600,
     SCROLL_THRASH_TIME_MS: 1500,
@@ -115,23 +115,23 @@
 
     card.innerHTML = [
       '<div style="text-align:center;margin-bottom:20px;">',
-        '<div style="font-size:28px;">\u{1F6E1}\uFE0F</div>',
-        '<h2 style="margin:8px 0 4px;font-size:18px;color:#111;">Fidelity AI Advisor</h2>',
-        '<p style="margin:0;font-size:13px;color:#666;">Enter your details to receive personalized alerts</p>',
+      '<div style="font-size:28px;">\u{1F6E1}\uFE0F</div>',
+      '<h2 style="margin:8px 0 4px;font-size:18px;color:#111;">Fidelity AI Advisor</h2>',
+      '<p style="margin:0;font-size:13px;color:#666;">Enter your details to receive personalized alerts</p>',
       '</div>',
       '<input id="fid-phone" type="tel" placeholder="WhatsApp Number (e.g. +919...)" ',
-        'style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #ddd;',
-        'border-radius:8px;font-size:14px;margin-bottom:10px;outline:none;" />',
+      'style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #ddd;',
+      'border-radius:8px;font-size:14px;margin-bottom:10px;outline:none;" />',
       '<input id="fid-email" type="email" placeholder="Email address" ',
-        'style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #ddd;',
-        'border-radius:8px;font-size:14px;margin-bottom:16px;outline:none;" />',
+      'style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #ddd;',
+      'border-radius:8px;font-size:14px;margin-bottom:16px;outline:none;" />',
       '<button id="fid-submit" ',
-        'style="width:100%;padding:13px;background:#00b050;color:white;border:none;',
-        'border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;">',
-        'Activate AI Alerts',
+      'style="width:100%;padding:13px;background:#00b050;color:white;border:none;',
+      'border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;">',
+      'Activate AI Alerts',
       '</button>',
       '<p style="text-align:center;font-size:11px;color:#999;margin:10px 0 0;">',
-        'Powered by Fidelity Behavioral AI',
+      'Powered by Fidelity Behavioral AI',
       '</p>'
     ].join('');
 
@@ -209,12 +209,12 @@
 
     toast.innerHTML = [
       '<div style="display:flex;align-items:flex-start;gap:12px;">',
-        '<span style="font-size:22px;">\u{1F6E1}\uFE0F</span>',
-        '<div>',
-          '<div style="font-size:11px;font-weight:700;letter-spacing:0.1em;opacity:0.8;margin-bottom:4px;">FIDELITY AI ADVISOR</div>',
-          '<div style="font-size:14px;line-height:1.5;">' + message + '</div>',
-          '<div style="font-size:11px;opacity:0.7;margin-top:8px;">Tap to connect with an advisor \u2192</div>',
-        '</div>',
+      '<span style="font-size:22px;">\u{1F6E1}\uFE0F</span>',
+      '<div>',
+      '<div style="font-size:11px;font-weight:700;letter-spacing:0.1em;opacity:0.8;margin-bottom:4px;">FIDELITY AI ADVISOR</div>',
+      '<div style="font-size:14px;line-height:1.5;">' + message + '</div>',
+      '<div style="font-size:11px;opacity:0.7;margin-top:8px;">Tap to connect with an advisor \u2192</div>',
+      '</div>',
       '</div>'
     ].join('');
 
