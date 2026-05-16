@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import socketio
 
 # --- THE IMPORTS (Connecting the Team) ---
-from database import save_telemetry_event, get_user_history, update_event_intelligence # Person 3/4
+from database import save_telemetry_event, get_user_history, update_event_intelligence, save_user_identity # Person 3/4
 from processor import should_we_nudge                            # Person 2
 from brain import generate_intervention                          # Person 4
 from notifications import trigger_priority_cascade               # Person 4
@@ -80,7 +80,8 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
     except Exception:
         return {"status": "error", "message": "Invalid JSON payload"}
         
-    session_id = data.get("session_id", "unknown_user")
+    # IDENTITY SYNC: Prioritize the Ghost ID from Person 2's SDK
+    session_id = data.get("fidelity_ghost_id") or data.get("session_id", "unknown_user")
     logger.info(f"📥 Received telemetry from {session_id}")
     
     # 1. DATABASE (Person 3): Save raw event instantly in the background
@@ -117,6 +118,29 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
         background_tasks.add_task(trigger_priority_cascade, session_id, nudge_package["message"], contact_info)
         
     return {"status": "success", "session_id": session_id}
+
+@app.post("/api/register-identity")
+async def register_identity(request: Request, background_tasks: BackgroundTasks):
+    """
+    Person 2/4 - Identity Sync:
+    Captures user details from the 'Unstoppable SDK' popup.
+    """
+    try:
+        data = await request.json()
+        ghost_id = data.get("fidelity_ghost_id")
+        
+        if not ghost_id:
+            return {"status": "error", "message": "Missing fidelity_ghost_id"}
+            
+        logger.info(f"👤 Identity Sync request for {ghost_id}")
+        
+        # Save to Supabase in the background
+        background_tasks.add_task(save_user_identity, data)
+        
+        return {"status": "success", "message": "Identity synced"}
+    except Exception as e:
+        logger.error(f"Error in register_identity: {e}")
+        return {"status": "error", "message": str(e)}
 
 @app.post("/api/analyze-page")
 async def analyze_page(request: Request, background_tasks: BackgroundTasks):

@@ -39,7 +39,8 @@ async def save_telemetry_event(telemetry_data: dict) -> bool:
 
         flat_record = {
             "session_id": telemetry_data.get("session_id"),
-            "user_id": telemetry_data.get("session_id"),  # Using session_id as user_id for tracking
+            "fidelity_ghost_id": telemetry_data.get("fidelity_ghost_id"), # Added for Person 2
+            "user_id": telemetry_data.get("session_id"),  
             "event_type": "churn_signal",
             "page_url": telemetry_data.get("page_url", "/"),
             "element_name": hesitation[0]["element_id"] if hesitation else None,
@@ -99,4 +100,32 @@ async def update_event_intelligence(session_id: str, intelligence: dict) -> bool
         return False
     except Exception as e:
         print(f"Database Error (update_event_intelligence): {e}")
+        return False
+
+async def save_user_identity(identity_data: dict) -> bool:
+    """
+    Saves or updates a user's contact info linked to their Ghost ID.
+    Enables the tiered priority cascade (Email/WhatsApp).
+    """
+    if not supabase:
+        print(f"💾 [MOCK DB] Saved Identity for {identity_data.get('fidelity_ghost_id')}")
+        return True
+    
+    try:
+        # This upserts the user based on their Ghost ID
+        # Maps SDK keys to DB columns
+        payload = {
+            "fidelity_ghost_id": identity_data.get("fidelity_ghost_id"),
+            "email": identity_data.get("user_email"),
+            "phone": identity_data.get("user_phone"),
+            "name": identity_data.get("user_name", "")
+        }
+        response = supabase.table("users").upsert(payload).execute()
+        
+        if response.data:
+            print(f"👤 Identity Synced for Ghost ID: {payload['fidelity_ghost_id']}")
+            return True
+        return False
+    except Exception as e:
+        print(f"Database Error (save_user_identity): {e}")
         return False
