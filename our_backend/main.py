@@ -5,7 +5,7 @@ import socketio
 
 # --- THE IMPORTS (Connecting the Team) ---
 from database import save_telemetry_event, get_user_history      # Person 3
-from processor import analyze_session                                # ML + Behavior (single call)
+from processor import analyze_session, decide_intervention         # ML + Behavior + Decision Engine
 from brain import generate_intervention                          # Person 4
 from notifications import trigger_priority_cascade               # Person 4
 from auth import router as auth_router                           # JWT Auth
@@ -97,42 +97,63 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
         unique_pages=user_history.get('unique_pages', 1)
     )
 
-    if session_analysis["should_nudge"]:
+    # 4. DECISION ENGINE: behavior × churn × stage → strategy + notification flags
+    intervention = decide_intervention(
+        behavior_type=session_analysis['behavior_type'],
+        churn_probability=session_analysis['churn_probability'],
+        stage=session_analysis['stage'],
+        telemetry_data=data,
+    )
+    session_analysis['intervention'] = intervention
+
+    if intervention['show_popup'] or intervention['send_email'] or intervention['send_whatsapp']:
         logger.info(
             f"[TRIGGER] Intervening for {session_id} | "
+            f"Strategy={intervention['strategy']} | "
             f"Churn={session_analysis['churn_probability']:.2%} | "
             f"Profile={session_analysis['behavior_type']} | "
-            f"Urgency={session_analysis['urgency']}"
+            f"Issue={intervention['behavior_interpretation']}"
         )
 
-        # 4. AI: Generate personalized message
+        # 5. AI: Generate personalized message
         nudge_package = await generate_gemini_nudge(data, user_history, session_analysis)
         logger.info(f"[GEMINI] Message: {nudge_package['message']}")
 
-        # 5. WEBSOCKET: Fire toast instantly
-        toast_data = {
-            "message": nudge_package["message"],
-            "type": session_analysis["urgency"].lower(),
-            "offerLabel": f"AI Insight — {session_analysis['behavior_type'].title()}"
-        }
-        await sio.emit('receive_nudge', toast_data, room=session_id)
+        # 6. WEBSOCKET: Fire toast (only if show_popup=True)
+        if intervention['show_popup']:
+            toast_data = {
+                "message":      nudge_package["message"],
+                "type":         intervention["popup_intensity"],    # gentle / standard / urgent
+                "offerLabel":   f"AI Insight — {session_analysis['behavior_type'].title()}",
+                "offerAdvisor": intervention["offer_advisor"],       # show "Talk to advisor" button
+                "delayMs":      intervention["popup_delay_ms"],      # frontend delays the popup
+            }
+            await sio.emit('receive_nudge', toast_data, room=session_id)
 
-        # 6. NOTIFICATIONS: Full cascade for identified users
+        # 7. NOTIFICATIONS: Cascade using exact flags from decision engine
         contact_info = None
         if data.get("user_phone"):
             contact_info = {
-                "phone":    data.get("user_phone"),
-                "email":    data.get("user_email"),
-                "name":     data.get("user_name", ""),
-                "urgency":  session_analysis["urgency"],
+                "phone":              data.get("user_phone"),
+                "email":              data.get("user_email"),
+                "name":               data.get("user_name", ""),
+                "send_email":         intervention["send_email"],
+                "send_whatsapp":      intervention["send_whatsapp"],
+                "email_delay_seconds":intervention["email_delay_seconds"],
+                "behavior_type":      session_analysis["behavior_type"],
+                "strategy":           intervention["strategy"],
             }
-            logger.info(f"[IDENTIFIED] Full cascade enabled for {data.get('user_email')}")
+            logger.info(
+                f"[CASCADE] Strategy={intervention['strategy']} | "
+                f"email={intervention['send_email']} | "
+                f"whatsapp={intervention['send_whatsapp']} | "
+                f"email_delay={intervention['email_delay_seconds']}s"
+            )
         background_tasks.add_task(trigger_priority_cascade, session_id, nudge_package["message"], contact_info)
 
     return {"status": "success", "session_id": session_id}
 
 if __name__ == "__main__":
     import uvicorn
-    logger.info("🚀 Starting Fidelity Smart-Engine on port 8080...")
-    # Notice we run 'main:socket_app' so WebSockets and FastAPI run together
+    logger.info("Starting Fidelity Smart-Engine on port 8080...")
     uvicorn.run("main:socket_app", host="0.0.0.0", port=8080, reload=True)

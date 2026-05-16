@@ -390,3 +390,321 @@ def get_behavior_profile(telemetry_data: dict, past_events: int = 0, unique_page
 
     logger.info(f"[BEHAVIOR] Profile: {winner} (score={best_score}) | Scores: {scores}")
     return winner
+
+
+# ============================================================
+# PARTIAL FIX 2: Progress Estimation
+# Approximates user progress from stage depth + DOM signals
+# True fix requires frontend to send form_completion_percent
+# ============================================================
+def _estimate_progress(stage: str, form_count: int = 0, input_count: int = 0) -> str:
+    """
+    Returns "HIGH" / "MEDIUM" / "LOW"
+    HIGH  = KYC/Transaction stage with form interaction (near completion)
+    MEDIUM = Application stage or some form engagement
+    LOW   = Exploration or minimal engagement
+    """
+    stage_depth = {"Transaction": 3, "KYC": 2, "Application": 1, "Exploration": 0}
+    depth = stage_depth.get(stage, 0)
+    engagement = form_count + (input_count / 5.0)
+
+    if depth >= 2 and engagement >= 2:
+        return "HIGH"
+    elif depth >= 1 or engagement >= 1:
+        return "MEDIUM"
+    else:
+        return "LOW"
+
+
+# ============================================================
+# PARTIAL FIX 6: Stage-Aware Behavior Interpretation
+# Same behavior = different meaning depending on where user is
+# This semantic label is passed to Gemini for precise messaging
+# ============================================================
+def _interpret_stage_behavior(behavior_type: str, stage: str) -> str:
+    """
+    Maps (behavior, stage) → the underlying reason for the friction.
+    Tells the AI not just WHAT is happening but WHY, so it can
+    write a contextually accurate message.
+    """
+    interpretations = {
+        ("HESITANT",    "KYC"):          "trust_and_data_privacy",
+        ("HESITANT",    "Transaction"):  "payment_commitment_fear",
+        ("HESITANT",    "Application"):  "product_decision_overwhelm",
+        ("HESITANT",    "Exploration"):  "passive_evaluation",
+        ("CONFUSED",    "KYC"):          "process_steps_unclear",
+        ("CONFUSED",    "Transaction"):  "payment_form_complexity",
+        ("CONFUSED",    "Application"):  "feature_overload",
+        ("CONFUSED",    "Exploration"):  "navigation_lost",
+        ("BLOCKED",     "KYC"):          "document_upload_failure",
+        ("BLOCKED",     "Transaction"):  "payment_gateway_failure",
+        ("BLOCKED",     "Application"):  "feature_inaccessible",
+        ("BLOCKED",     "Exploration"):  "ui_element_unresponsive",
+        ("STRUGGLING",  "KYC"):          "document_format_issue",
+        ("STRUGGLING",  "Transaction"):  "checkout_flow_friction",
+        ("STRUGGLING",  "Application"):  "form_validation_error",
+        ("STRUGGLING",  "Exploration"):  "navigation_friction",
+        ("DISENGAGING", "KYC"):          "process_fatigue",
+        ("DISENGAGING", "Transaction"):  "commitment_cold_feet",
+        ("DISENGAGING", "Application"):  "losing_interest",
+        ("DISENGAGING", "Exploration"):  "browsing_fatigue",
+        ("HIGH_INTENT", "Transaction"):  "ready_to_complete",
+        ("HIGH_INTENT", "KYC"):          "near_completion",
+        ("HIGH_INTENT", "Application"):  "close_to_deciding",
+        ("EXPLORING",   "Application"):  "product_comparison",
+        ("EXPLORING",   "Exploration"):  "initial_discovery",
+    }
+    return interpretations.get((behavior_type, stage), "general_friction")
+
+
+# ============================================================
+# PARTIAL FIX 8: Element-Level Friction Detection
+# Uses click_frequency_map from tracker if available,
+# falls back to rage+hesitation cross-reference
+# ============================================================
+def _get_friction_element(
+    click_frequency_map: dict,
+    last_rage_element: str,
+    hesitation_zones: list
+) -> dict:
+    """
+    Pinpoints the exact UI element causing friction.
+    Returns: { element, click_count, confidence, source }
+    """
+    # Future: tracker sends click_frequency_map
+    if click_frequency_map:
+        max_clicks = max(click_frequency_map.values(), default=0)
+        if max_clicks >= 3:
+            dominant = max(click_frequency_map, key=click_frequency_map.get)
+            return {
+                "element":     dominant,
+                "click_count": max_clicks,
+                "confidence":  "HIGH",
+                "source":      "click_frequency_map"
+            }
+
+    # Fallback: cross-reference rage element with hesitation zones
+    if last_rage_element:
+        raged_and_hovered = any(
+            last_rage_element.lower() in str(z.get("element_id", "")).lower()
+            for z in hesitation_zones
+        )
+        return {
+            "element":     last_rage_element,
+            "click_count": None,
+            "confidence":  "HIGH" if raged_and_hovered else "MEDIUM",
+            "source":      "rage_hesitation_crossref"
+        }
+
+    return {"element": None, "click_count": None, "confidence": "LOW", "source": "none"}
+
+
+# ============================================================
+# THE DECISION ENGINE
+# behavior × churn × stage → intervention strategy
+# ============================================================
+
+# --- Decision Matrix ---
+# Key: (behavior_type, churn_level, is_critical_stage)
+# churn_level: "low" (<0.50) | "medium" (0.50-0.74) | "high" (>=0.75)
+# is_critical_stage: True for KYC and Transaction
+_DECISION_MATRIX = {
+    # BLOCKED — always intervene, severity scales with churn + stage
+    ("BLOCKED",     "low",    False): "STANDARD",
+    ("BLOCKED",     "low",    True):  "STRONG",
+    ("BLOCKED",     "medium", False): "STRONG",
+    ("BLOCKED",     "medium", True):  "ESCALATE",
+    ("BLOCKED",     "high",   False): "ESCALATE",
+    ("BLOCKED",     "high",   True):  "ESCALATE",
+
+    # STRUGGLING — goal-oriented friction, escalate based on risk
+    ("STRUGGLING",  "low",    False): "SUBTLE",
+    ("STRUGGLING",  "low",    True):  "STANDARD",
+    ("STRUGGLING",  "medium", False): "STANDARD",
+    ("STRUGGLING",  "medium", True):  "STRONG",
+    ("STRUGGLING",  "high",   False): "STRONG",
+    ("STRUGGLING",  "high",   True):  "ESCALATE",
+
+    # DISENGAGING — catch before they leave, re-engage gently
+    ("DISENGAGING", "low",    False): "NONE",
+    ("DISENGAGING", "low",    True):  "NONE",
+    ("DISENGAGING", "medium", False): "SUBTLE",
+    ("DISENGAGING", "medium", True):  "STANDARD",
+    ("DISENGAGING", "high",   False): "STANDARD",
+    ("DISENGAGING", "high",   True):  "STRONG",
+
+    # CONFUSED — clarity over pressure, never ESCALATE
+    ("CONFUSED",    "low",    False): "SUBTLE",
+    ("CONFUSED",    "low",    True):  "SUBTLE",
+    ("CONFUSED",    "medium", False): "STANDARD",
+    ("CONFUSED",    "medium", True):  "STANDARD",
+    ("CONFUSED",    "high",   False): "STANDARD",
+    ("CONFUSED",    "high",   True):  "STRONG",
+
+    # HESITANT — trust over urgency, patience is key
+    ("HESITANT",    "low",    False): "NONE",
+    ("HESITANT",    "low",    True):  "SUBTLE",
+    ("HESITANT",    "medium", False): "SUBTLE",
+    ("HESITANT",    "medium", True):  "STANDARD",
+    ("HESITANT",    "high",   False): "STANDARD",
+    ("HESITANT",    "high",   True):  "STRONG",
+
+    # EXPLORING — almost never interrupt
+    ("EXPLORING",   "low",    False): "NONE",
+    ("EXPLORING",   "low",    True):  "NONE",
+    ("EXPLORING",   "medium", False): "NONE",
+    ("EXPLORING",   "medium", True):  "NONE",
+    ("EXPLORING",   "high",   False): "SUBTLE",
+    ("EXPLORING",   "high",   True):  "SUBTLE",
+
+    # HIGH_INTENT — stay out of their way
+    ("HIGH_INTENT", "low",    False): "NONE",
+    ("HIGH_INTENT", "low",    True):  "NONE",
+    ("HIGH_INTENT", "medium", False): "NONE",
+    ("HIGH_INTENT", "medium", True):  "NONE",
+    ("HIGH_INTENT", "high",   False): "SUBTLE",
+    ("HIGH_INTENT", "high",   True):  "SUBTLE",
+}
+
+# --- Strategy → Notification Actions ---
+_STRATEGY_ACTIONS = {
+    "NONE": {
+        "show_popup":          False,
+        "popup_delay_ms":      0,
+        "popup_intensity":     "none",
+        "send_email":          False,
+        "email_delay_seconds": 0,
+        "send_whatsapp":       False,
+        "offer_advisor":       False,
+    },
+    "SUBTLE": {
+        "show_popup":          True,
+        "popup_delay_ms":      4000,    # wait 4s — non-intrusive
+        "popup_intensity":     "gentle",
+        "send_email":          False,
+        "email_delay_seconds": 0,
+        "send_whatsapp":       False,
+        "offer_advisor":       False,
+    },
+    "STANDARD": {
+        "show_popup":          True,
+        "popup_delay_ms":      1000,
+        "popup_intensity":     "standard",
+        "send_email":          True,
+        "email_delay_seconds": 30,       # email only if no behavior change in 30s
+        "send_whatsapp":       False,
+        "offer_advisor":       False,
+    },
+    "STRONG": {
+        "show_popup":          True,
+        "popup_delay_ms":      0,        # immediate
+        "popup_intensity":     "urgent",
+        "send_email":          True,
+        "email_delay_seconds": 0,        # email immediately
+        "send_whatsapp":       False,
+        "offer_advisor":       False,
+    },
+    "ESCALATE": {
+        "show_popup":          True,
+        "popup_delay_ms":      0,
+        "popup_intensity":     "urgent",
+        "send_email":          True,
+        "email_delay_seconds": 0,
+        "send_whatsapp":       True,     # WhatsApp immediately
+        "offer_advisor":       True,     # show "Talk to advisor" in popup
+    },
+}
+
+# --- Post-session follow-up timing ---
+_FOLLOW_UP_CONFIG = {
+    "BLOCKED":     {"follow_up_minutes": 20,   "long_term_days": None},
+    "STRUGGLING":  {"follow_up_minutes": 45,   "long_term_days": 10},
+    "DISENGAGING": {"follow_up_minutes": 180,  "long_term_days": None},
+    "CONFUSED":    {"follow_up_minutes": 240,  "long_term_days": None},
+    "HESITANT":    {"follow_up_minutes": 2160, "long_term_days": 10},  # 1.5 days
+    "HIGH_INTENT": {"follow_up_minutes": 180,  "long_term_days": 10},
+    "EXPLORING":   {"follow_up_minutes": 5760, "long_term_days": 5},   # 4 days
+    "UNKNOWN":     {"follow_up_minutes": 60,   "long_term_days": None},
+}
+
+
+def decide_intervention(
+    behavior_type: str,
+    churn_probability: float,
+    stage: str,
+    telemetry_data: dict = None,
+) -> dict:
+    """
+    The core decision engine.
+    Combines behavior × churn probability × stage → full intervention package.
+
+    Returns a dict with:
+      strategy, show_popup, popup_intensity, popup_delay_ms,
+      send_email, email_delay_seconds, send_whatsapp, offer_advisor,
+      follow_up_minutes, long_term_days,
+      behavior_interpretation, friction_element, progress,
+      intervention_reason
+    """
+    # --- Classify churn level ---
+    if churn_probability >= 0.75:
+        churn_level = "high"
+    elif churn_probability >= 0.50:
+        churn_level = "medium"
+    else:
+        churn_level = "low"
+
+    # --- Stage criticality ---
+    is_critical = stage in ("KYC", "Transaction")
+
+    # --- Look up strategy ---
+    key = (behavior_type, churn_level, is_critical)
+    strategy = _DECISION_MATRIX.get(key, "SUBTLE")
+
+    # --- Get notification actions ---
+    actions = dict(_STRATEGY_ACTIONS.get(strategy, _STRATEGY_ACTIONS["SUBTLE"]))
+
+    # --- Get follow-up timing ---
+    follow_up = dict(_FOLLOW_UP_CONFIG.get(behavior_type, _FOLLOW_UP_CONFIG["UNKNOWN"]))
+
+    # CONFUSED: only follow-up if high churn
+    if behavior_type == "CONFUSED" and churn_level != "high":
+        follow_up = {"follow_up_minutes": None, "long_term_days": None}
+
+    # --- Stage-aware interpretation (Partial Fix 6) ---
+    interpretation = _interpret_stage_behavior(behavior_type, stage)
+
+    # --- Element-level friction detection (Partial Fix 8) ---
+    friction_element = {"element": None, "confidence": "LOW", "source": "none"}
+    progress = "LOW"
+    if telemetry_data:
+        telemetry  = telemetry_data.get("behavioral_telemetry", {})
+        click_map  = telemetry_data.get("click_frequency_map", {})
+        last_rage  = telemetry.get("last_rage_element", "")
+        hz_zones   = telemetry.get("hesitation_zones", [])
+        dom        = telemetry_data.get("dom_context", {})
+
+        friction_element = _get_friction_element(click_map, last_rage, hz_zones)
+        progress = _estimate_progress(stage, dom.get("form_count", 0), dom.get("input_count", 0))
+
+    # --- Build human-readable reason (for admin + Gemini) ---
+    reason = (
+        f"{behavior_type} | Stage={stage} ({'critical' if is_critical else 'standard'}) | "
+        f"Churn={churn_probability:.0%} ({churn_level}) | "
+        f"Issue={interpretation} | Progress={progress}"
+    )
+    if friction_element["element"]:
+        reason += f" | Friction='{friction_element['element']}'"
+
+    logger.info(f"[DECISION] {reason} → Strategy: {strategy}")
+
+    return {
+        "strategy":                strategy,
+        "churn_level":             churn_level,
+        "is_critical_stage":       is_critical,
+        "behavior_interpretation": interpretation,
+        "friction_element":        friction_element,
+        "progress":                progress,
+        "intervention_reason":     reason,
+        **actions,
+        **follow_up,
+    }
