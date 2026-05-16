@@ -22,3 +22,6 @@ ENV/
 # OS
 .DS_Store
 Thumbs.db
+
+# Member 2 Guide
+person_2sdk_guide.md
