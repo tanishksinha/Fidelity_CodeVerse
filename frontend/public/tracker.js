@@ -13,12 +13,13 @@
     DWELL_THRESHOLD_MS: 3000,     
     RAGE_TAP_THRESHOLD_MS: 600,   
     SCROLL_THRASH_TIME_MS: 1500,  
-    DEBUG: true                   
+    DEBUG: true,
+    REALTIME_FRICTION: true       
   };
 
   const sessionData = {
     session_id: 'usr_' + Math.random().toString(36).substring(2, 11),
-    user_id: localStorage.getItem('fidelity_user_email') || null,
+    user_id: localStorage.getItem('fidelity_ghost_id') || localStorage.getItem('fidelity_user_email') || null,
     timestamp: new Date().toISOString(),
     page_url: window.location.pathname,
     behavioral_telemetry: {
@@ -125,6 +126,7 @@
       if (scrollDirections.length >= 4) {
         sessionData.behavioral_telemetry.friction_signals.scroll_thrash_count += 1;
         if (CONFIG.DEBUG) console.log("🌀 Scroll Thrashing Detected!");
+        if (CONFIG.REALTIME_FRICTION) fireBeacon('realtime_thrash');
         scrollDirections = []; // reset after detection
       }
     }
@@ -153,6 +155,7 @@
     if (tapHistory[elementKey].length >= 3) {
       sessionData.behavioral_telemetry.friction_signals.rage_clicks += 1;
       if (CONFIG.DEBUG) console.log(`💢 Rage Tap Detected on: ${elementKey}`);
+      if (CONFIG.REALTIME_FRICTION) fireBeacon('realtime_rage');
       tapHistory[elementKey] = []; // reset
     }
   }, { passive: true });
@@ -231,6 +234,18 @@
     if (document.visibilityState === 'hidden') {
       fireBeacon('tab_hidden');
     }
+  });
+
+  // --- 9. CUSTOM INTENT LISTENER (Bridge for useTracker hook) ---
+  window.addEventListener('fidelity_intent', (e) => {
+    const { eventName, metadata } = e.detail;
+    sessionData.behavioral_telemetry.click_events.push({
+      element_id: eventName,
+      page_url: window.location.pathname,
+      timestamp: new Date().toISOString(),
+      metadata: metadata
+    });
+    if (CONFIG.DEBUG) console.log(`🎯 Custom Intent Captured: ${eventName}`);
   });
 
 })();

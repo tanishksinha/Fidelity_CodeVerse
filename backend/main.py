@@ -298,8 +298,18 @@ async def _persist_telemetry(payload: TelemetryPayload):
 
             if is_churning:
                 risk_amount = random.choice([5000, 10000, 15000, 25000])
+                # 1. Alert the Admin (War Room)
                 await sio.emit('revenue_at_risk', {"amount": risk_amount, "session_id": payload.session_id})
-                logger.info(f"[ML] ⚠ Revenue at risk: ₹{risk_amount} for {payload.session_id}")
+                
+                # 2. Alert the Consumer (In-App Nudge)
+                nudge_data = {
+                    "type": "automated",
+                    "message": "We noticed you might have some questions about this section. Would you like a brief priority walkthrough with an advisor?",
+                    "offerLabel": "Priority Assistance"
+                }
+                await sio.emit('receive_nudge', nudge_data, room=payload.user_id)
+                
+                logger.info(f"[ML] ⚠ Automated nudge dispatched to {payload.user_id} (Risk: ₹{risk_amount})")
         except Exception as ml_err:
             logger.warning(f"[ML] Predictor unavailable: {ml_err}")
 
