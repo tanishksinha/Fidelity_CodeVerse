@@ -35,6 +35,7 @@ export default function LoginPage() {
       localStorage.setItem("fidelity_consumer_token", data.access_token);
       localStorage.setItem("fidelity_user_email", data.email);
       localStorage.setItem("fidelity_user_name", data.name);
+      localStorage.setItem("fidelity_user_phone", data.phone || "");  // For WhatsApp cascade
       localStorage.setItem("fidelity_ghost_id", `USR_${data.email.split("@")[0].toUpperCase()}`);
 
       router.push("/");

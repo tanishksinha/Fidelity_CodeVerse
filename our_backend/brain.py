@@ -46,6 +46,8 @@ Your goal is to gently guide users who are experiencing confusion or friction on
 When provided with a user's context, confusion score, friction score, and recent actions, 
 you must generate a brief, personalized message to assist them.
 
+CRITICAL INSTRUCTION: If the User Context includes a "Last Rage Clicked Element", you MUST explicitly mention the name of that exact button/feature and offer specific help for it (e.g., "Are you having trouble submitting your KYC form? I can help!"). Do NOT give generic investment advice if they are struggling with a specific form or button.
+
 You MUST respond strictly in the following JSON format:
 {
   "message": "The personalized message to the user (max 2 sentences)",
@@ -97,6 +99,7 @@ def generate_intervention(user_context: dict) -> BrainResponse:
     - Confusion Score: {clean_context.get('confusion_score', 0)}/100
     - Friction Score: {clean_context.get('friction_score', 0)}/100
     - Recent Actions: {', '.join(clean_context.get('recent_actions', []))}
+    - Last Rage Clicked Element: {clean_context.get('last_rage_element', 'None')}
     - Previous History: {clean_context.get('history', 'New user')}
     
     Generate the intervention JSON.

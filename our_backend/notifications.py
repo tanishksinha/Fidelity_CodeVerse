@@ -65,9 +65,9 @@ def send_whatsapp(to_number: str, content: str) -> bool:
 
 async def trigger_priority_cascade(user_id: str, ai_message: str, contact_info: dict = None):
     '''
-    Implements the Priority Cascade logic.
-    If contact_info is not provided, it attempts to fetch it from the database
-    using the user_id.
+    Tiered Priority Cascade:
+    - Anonymous users (no phone/email in DB): popup only
+    - Logged-in users: popup → wait → Email → wait → WhatsApp
     '''
     logger.info(f"Starting Priority Cascade for user {user_id}")
     
@@ -76,9 +76,13 @@ async def trigger_priority_cascade(user_id: str, ai_message: str, contact_info: 
         logger.info(f"Fetching contact details for user {user_id} from database...")
         contact_info = await get_user_contact_from_db(user_id)
     
-    if not contact_info or not contact_info.get("email"):
-        logger.error(f"No contact info found for user {user_id}. Cascade aborted.")
+    # --- TIER CHECK ---
+    # If no phone found, user is anonymous → popup already fired, stop here
+    if not contact_info or not contact_info.get("phone"):
+        logger.info(f"[ANONYMOUS USER] {user_id} — Popup shown. No phone on record. Cascade halted.")
         return
+    
+    logger.info(f"[IDENTIFIED USER] {user_id} — Full cascade starting (email + WhatsApp).")
 
     # Step 1: Toast is triggered externally when the API returns the ai_message.
     logger.info(f"Step 1: Toast sent to frontend (handled by Socket.io): '{ai_message}'")
@@ -116,18 +120,34 @@ async def trigger_priority_cascade(user_id: str, ai_message: str, contact_info: 
 
 async def get_user_contact_from_db(user_id: str) -> dict:
     '''
-    MOCK DATABASE HELPER:
-    Once Role 3 completes the Database, this function will query 
-    the 'users' table to find the email and phone for the given user_id.
+    Queries the Supabase `users` table to find the email and phone
+    for the given consumer_id (which is derived from email at login).
+    Falls back to mock data if user is not found (for demo anonymous users).
     '''
-    # This is where you'd do: session.execute(select(User).where(User.id == user_id))
-    # For now, we return your contact info so you can see the demo!
-    mock_db = {
-        "user_123": {"email": "tsmanaswini07@gmail.com", "phone": "+916305393086"},
-        "USR_67HTHQ1I7": {"email": "chakrika566@gmail.com", "phone": "+916305393086"},
-    }
-    # Fallback to your info for ANY generated ID during the demo
-    return mock_db.get(user_id, {"email": "chakrika566@gmail.com", "phone": "+916305393086"})
+    from database import supabase as sb
+    
+    if sb:
+        try:
+            # consumer_id format is USR_<EMAIL_PREFIX>, so we search by it
+            # First try: look for exact match on a stored consumer_id style
+            # We store phone+email at login time by matching email prefix
+            result = sb.table("users").select("email, phone, name").eq("email", user_id).execute()
+            
+            if not result.data:
+                # Try matching by email prefix pattern (USR_ARJUN → arjun)
+                email_prefix = user_id.replace("USR_", "").lower()
+                result = sb.table("users").select("email, phone, name").ilike("email", f"{email_prefix}%").execute()
+            
+            if result.data:
+                user = result.data[0]
+                logger.info(f"[DB] Found contact for {user_id}: email={user.get('email')}, has_phone={'Yes' if user.get('phone') else 'No'}")
+                return {"email": user.get("email"), "phone": user.get("phone"), "name": user.get("name")}
+        except Exception as e:
+            logger.error(f"[DB] Supabase lookup failed for {user_id}: {e}")
+    
+    # Fallback: return empty so anonymous tiering kicks in
+    logger.info(f"[DB] No record found for {user_id} — treating as anonymous.")
+    return {}
 
 def check_mock_db_if_user_returned(user_id: str) -> bool:
     '''

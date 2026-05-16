@@ -10,6 +10,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:808
 export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -25,7 +26,7 @@ export default function RegisterPage() {
       const res = await fetch(`${BACKEND_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, phone }),
       });
 
       if (!res.ok) {
@@ -110,6 +111,22 @@ export default function RegisterPage() {
                   className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-4 text-sm outline-none transition focus:border-fidelity-green focus:ring-2 focus:ring-fidelity-green/15"
                 />
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700">WhatsApp Phone Number</label>
+              <div className="relative mt-2">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">+91</span>
+                <input
+                  type="tel"
+                  required
+                  value={phone.replace("+91", "")}
+                  onChange={(e) => setPhone("+91" + e.target.value.replace(/\D/g, ""))}
+                  placeholder="9XXXXXXXXX"
+                  className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-12 pr-4 text-sm outline-none transition focus:border-fidelity-green focus:ring-2 focus:ring-fidelity-green/15"
+                />
+              </div>
+              <p className="mt-1 text-xs text-gray-400">Used for AI-powered WhatsApp alerts when you need help</p>
             </div>
 
             <div>

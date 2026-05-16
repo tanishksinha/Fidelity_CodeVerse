@@ -8,6 +8,7 @@ from database import save_telemetry_event, get_user_history      # Person 3
 from processor import should_we_nudge                            # Person 2
 from brain import generate_intervention                          # Person 4
 from notifications import trigger_priority_cascade               # Person 4
+from auth import router as auth_router                           # JWT Auth
 
 # Bridge function: adapts our telemetry data to Manaswini's brain.py format
 async def generate_gemini_nudge(data: dict, history: dict) -> dict:
@@ -19,6 +20,7 @@ async def generate_gemini_nudge(data: dict, history: dict) -> dict:
         "friction_score": (friction.get('rage_clicks', 0) * 10) + (telemetry.get('total_time_seconds', 0) / 2),
         "confusion_score": friction.get('scroll_thrash_count', 0) * 25,
         "recent_actions": hesitation_zones,
+        "last_rage_element": telemetry.get('last_rage_element', 'None'),
         "history": f"User has {history.get('total_events', 0)} past visits."
     }
     result = generate_intervention(context)
@@ -39,6 +41,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+app.include_router(auth_router)  # Mounts /api/auth/register and /api/auth/consumer-login
 
 # --- 2. Initialize WebSockets (The "Live Wire") ---
 sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")
@@ -91,8 +96,16 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
         }
         await sio.emit('receive_nudge', toast_data, room=session_id)
         
-        # 6. NOTIFICATIONS (Person 4): Start the priority cascade (email/whatsapp if they don't come back)
-        background_tasks.add_task(trigger_priority_cascade, session_id, nudge_package["message"])
+        # 6. NOTIFICATIONS (Person 4): Pass contact info directly from beacon (no DB lookup needed)
+        contact_info = None
+        if data.get("user_phone"):
+            contact_info = {
+                "phone": data.get("user_phone"),
+                "email": data.get("user_email"),
+                "name": data.get("user_name", "")
+            }
+            logger.info(f"[IDENTIFIED] User has phone on file: {data.get('user_email')} — full cascade enabled")
+        background_tasks.add_task(trigger_priority_cascade, session_id, nudge_package["message"], contact_info)
         
     return {"status": "success", "session_id": session_id}
 

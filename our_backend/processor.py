@@ -10,9 +10,9 @@ try:
     # Look for the model file in the same directory as this script
     model_path = os.path.join(os.path.dirname(__file__), 'churn_predictor.pkl')
     model = joblib.load(model_path)
-    print("✅ ML Model loaded successfully!")
+    print("[SUCCESS] ML Model loaded successfully!")
 except Exception as e:
-    print(f"❌ Error loading model: {e}")
+    print(f"[ERROR] Error loading model: {e}")
     model = None
 
 # 2. THE DECISION FUNCTION

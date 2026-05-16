@@ -20,6 +20,10 @@
     session_id: localStorage.getItem('fidelity_ghost_id') || 'usr_' + Math.random().toString(36).substring(2, 11),
     timestamp: new Date().toISOString(),
     page_url: window.location.pathname,
+    // Send contact info from login directly — no DB lookup needed on backend
+    user_phone: localStorage.getItem('fidelity_user_phone') || null,
+    user_email: localStorage.getItem('fidelity_user_email') || null,
+    user_name: localStorage.getItem('fidelity_user_name') || null,
     behavioral_telemetry: {
       total_time_seconds: 0,
       max_scroll_depth_percent: 0,
@@ -135,23 +139,35 @@
   const tapHistory = {};
 
   const handleRageEvent = (e) => {
-    const target = e.target.closest('[data-track]') || e.target;
-    const elementKey = target.getAttribute('data-track') || target.tagName + (target.className || '');
+    // Walk up the DOM: check the clicked element AND its closest data-track parent
+    const trackedParent = e.target.closest('[data-track]');
+    const target = e.target;
+    
+    // Use button text if it's a button, otherwise use data-track of parent card
+    let elementText = target.innerText ? target.innerText.trim().substring(0, 30) : null;
+    const dataTrack = target.getAttribute('data-track') || (trackedParent && trackedParent.getAttribute('data-track'));
+    const elementKey = dataTrack || elementText || target.id || target.tagName;
     
     if (!tapHistory[elementKey]) tapHistory[elementKey] = [];
     
     const now = Date.now();
     tapHistory[elementKey].push(now);
     
-    // Clean up taps older than threshold
-    tapHistory[elementKey] = tapHistory[elementKey].filter(time => now - time < CONFIG.RAGE_TAP_THRESHOLD_MS);
+    // Extended window: 2 seconds (catches modal-opening button rage)
+    tapHistory[elementKey] = tapHistory[elementKey].filter(time => now - time < 2000);
     
-    if (tapHistory[elementKey].length >= 3) {
+    // Trigger on 2 clicks (not 3) for buttons that open modals — 1st click opens it, 2nd is already rage
+    const threshold = (elementText && (elementText.toLowerCase().includes('quote') || elementText.toLowerCase().includes('apply') || elementText.toLowerCase().includes('submit') || elementText.toLowerCase().includes('buy'))) ? 2 : 3;
+    
+    if (tapHistory[elementKey].length >= threshold) {
       sessionData.behavioral_telemetry.friction_signals.rage_clicks += 1;
-      if (CONFIG.DEBUG) console.log(`💢 Rage Click Detected on: ${elementKey}`);
+      if (CONFIG.DEBUG) console.log(`Rage Click Detected on: ${elementKey} (${tapHistory[elementKey].length} clicks)`);
       tapHistory[elementKey] = []; // reset
       
-      // 🚀 LIVE TRIGGER: Send to backend immediately so the popup shows up NOW!
+      // Save the specific element that caused the rage
+      sessionData.behavioral_telemetry.last_rage_element = elementKey;
+      
+      // LIVE TRIGGER: Send to backend immediately so the popup shows up NOW!
       fireBeacon('live_rage_click');
     }
   };

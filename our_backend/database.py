@@ -16,12 +16,12 @@ supabase: Client = None
 if url and key and url.startswith("http"):
     try:
         supabase = create_client(url, key)
-        print("✅ Supabase connected successfully!")
+        print("[SUCCESS] Supabase connected successfully!")
     except Exception as e:
-        print(f"⚠️ Supabase connection failed: {e}. Running in MOCK mode.")
+        print(f"[WARNING] Supabase connection failed: {e}. Running in MOCK mode.")
         supabase = None
 else:
-    print("⚠️ Supabase credentials not found in .env. Using MOCK database.")
+    print("[WARNING] Supabase credentials not found in .env. Using MOCK database.")
 
 async def save_telemetry_event(telemetry_data: dict) -> bool:
     """
