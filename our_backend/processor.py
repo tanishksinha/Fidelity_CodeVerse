@@ -21,11 +21,33 @@ except Exception as e:
 # 2. HELPER: Page URL -> Stage Classification
 # Maps page URL to funnel stage for context-aware scoring
 # ============================================================
-def _classify_stage(page_url: str) -> dict:
+def _classify_stage(page_url: str, dom_stage: str = None) -> dict:
     """
     Returns stage flags matching the model's training features.
     Also returns a stage name and time baseline for adaptive thresholds.
+
+    dom_stage: Optional override from semantic_mapper (used for foreign sites
+               where the URL path alone is not enough to infer the stage).
     """
+    # --- Semantic mapper override (foreign sites) ---
+    if dom_stage:
+        _DOM_STAGE_MAP = {
+            "Transaction": {"is_kyc": 0, "is_application": 0, "is_transaction": 1,
+                            "stage_name": "Transaction", "time_baseline": 90},
+            "KYC":         {"is_kyc": 1, "is_application": 0, "is_transaction": 0,
+                            "stage_name": "KYC", "time_baseline": 80},
+            "Application": {"is_kyc": 0, "is_application": 1, "is_transaction": 0,
+                            "stage_name": "Application", "time_baseline": 45},
+            "Planning":    {"is_kyc": 0, "is_application": 1, "is_transaction": 0,
+                            "stage_name": "Planning", "time_baseline": 60},
+            "Exploration": {"is_kyc": 0, "is_application": 0, "is_transaction": 0,
+                            "stage_name": "Exploration", "time_baseline": 20},
+        }
+        if dom_stage in _DOM_STAGE_MAP:
+            logger.info(f"[STAGE] Using semantic mapper override: {dom_stage}")
+            return _DOM_STAGE_MAP[dom_stage]
+
+    # --- URL-based classification (own site / known paths) ---
     url = str(page_url).lower()
 
     if any(k in url for k in ["checkout", "payment", "confirm", "transaction"]):
@@ -169,7 +191,8 @@ def should_we_nudge(telemetry_data: dict) -> bool:
 # 5a. FULL SESSION ANALYSIS (preferred — runs model only once)
 # Returns everything main.py needs in a single call
 # ============================================================
-def analyze_session(telemetry_data: dict, past_events: int = 0, unique_pages: int = 1) -> dict:
+def analyze_session(telemetry_data: dict, past_events: int = 0, unique_pages: int = 1,
+                    dom_stage: str = None) -> dict:
     """
     Single entry point for all ML + behavior logic.
     Runs the model ONCE and returns:
@@ -178,6 +201,9 @@ def analyze_session(telemetry_data: dict, past_events: int = 0, unique_pages: in
       - behavior_type:     str    — one of 7 profiles (BLOCKED, CONFUSED, etc.)
       - stage:             str    — KYC / Application / Transaction / Exploration
       - urgency:           str    — HIGH / MEDIUM / LOW
+
+    dom_stage: Optional — result from semantic_mapper for foreign site classification.
+               Overrides URL-based stage detection when provided.
     """
     telemetry = telemetry_data.get('behavioral_telemetry', {})
     friction   = telemetry.get('friction_signals', {})
@@ -193,7 +219,7 @@ def analyze_session(telemetry_data: dict, past_events: int = 0, unique_pages: in
     form_count               = dom_context.get('form_count', 0)
     input_count              = dom_context.get('input_count', 0)
 
-    stage    = _classify_stage(page_url)
+    stage    = _classify_stage(page_url, dom_stage=dom_stage)
     hesitate = _analyze_hesitation(hesitation_zones)
 
     should_nudge    = False

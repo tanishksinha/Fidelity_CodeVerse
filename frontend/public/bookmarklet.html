@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fidelity AI — Bookmarklet Setup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0f0d;
+      --surface: #111a15;
+      --surface2: #162019;
+      --border: #1e3028;
+      --green: #00c853;
+      --green-dim: #00b050;
+      --green-glow: rgba(0,200,83,0.15);
+      --text: #e8f5e9;
+      --muted: #6b8f72;
+      --accent: #69f0ae;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 48px 20px 80px;
+    }
+
+    /* Ambient glow */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px; left: 50%;
+      transform: translateX(-50%);
+      width: 700px; height: 400px;
+      background: radial-gradient(ellipse, rgba(0,200,83,0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 640px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--green-glow);
+      border: 1px solid rgba(0,200,83,0.25);
+      border-radius: 999px;
+      padding: 4px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: var(--green);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .badge-dot {
+      width: 6px; height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+    h1 {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #e8f5e9 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle {
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* Steps */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: rgba(0,200,83,0.2); }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .step-num {
+      width: 28px; height: 28px;
+      background: var(--green-glow);
+      border: 1px solid rgba(0,200,83,0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--green);
+      flex-shrink: 0;
+    }
+    .step-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .step-desc {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* Code block */
+    .code-block {
+      background: #0d1610;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 4px;
+    }
+    .code-block span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .copy-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 10px;
+      color: var(--muted);
+      font-size: 11px;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .copy-btn:hover { border-color: var(--green); color: var(--green); }
+    .copy-btn.copied { border-color: var(--green); color: var(--green); }
+
+    /* URL input */
+    .input-group { display: flex; flex-direction: column; gap: 8px; }
+    label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    input[type="text"] {
+      width: 100%;
+      background: #0d1610;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input[type="text"]:focus {
+      border-color: var(--green-dim);
+      box-shadow: 0 0 0 3px var(--green-glow);
+    }
+    input[type="text"]::placeholder { color: #2e4a36; }
+
+    /* Status indicator */
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      margin-top: 8px;
+      min-height: 18px;
+      transition: all 0.3s;
+    }
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #2e4a36;
+      transition: background 0.3s;
+    }
+    .status.valid .status-dot { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .status.invalid .status-dot { background: #ff5252; }
+    .status-text { color: var(--muted); }
+    .status.valid .status-text { color: var(--green); }
+    .status.invalid .status-text { color: #ff5252; }
+
+    /* Bookmarklet drag button */
+    .bookmarklet-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 32px 24px;
+    }
+    .drag-hint {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+    .drag-hint span { color: var(--text); font-weight: 500; }
+
+    #bookmarklet-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      background: linear-gradient(135deg, #004d25, #007a3d);
+      border: 1px solid rgba(0,200,83,0.4);
+      border-radius: 12px;
+      color: white;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: grab;
+      text-decoration: none;
+      box-shadow: 0 4px 24px rgba(0,120,50,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+      transition: transform 0.15s, box-shadow 0.15s;
+      user-select: none;
+    }
+    #bookmarklet-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0,160,70,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    #bookmarklet-btn:active { cursor: grabbing; transform: scale(0.98); }
+    #bookmarklet-btn.disabled {
+      opacity: 0.3;
+      pointer-events: none;
+      cursor: not-allowed;
+    }
+
+    .arrow-animation {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .arrow {
+      animation: bounce-up 1.2s ease-in-out infinite;
+      font-size: 18px;
+    }
+    @keyframes bounce-up {
+      0%, 100% { transform: translateY(0); opacity: 0.5; }
+      50% { transform: translateY(-5px); opacity: 1; }
+    }
+
+    /* How to use */
+    .how-to { display: flex; flex-direction: column; gap: 10px; }
+    .how-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .how-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .how-item strong { color: var(--text); }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 4px 0;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 48px;
+      font-size: 12px;
+      color: #2e4a36;
+    }
+    .footer strong { color: var(--muted); }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="badge"><span class="badge-dot"></span>Fidelity Behavioral AI</div>
+    <h1>Bookmarklet Setup</h1>
+    <p class="subtitle">Install the tracker in your browser once.<br>Click it on any website to start the behavioral AI engine.</p>
+  </div>
+
+  <div class="steps">
+
+    <!-- Step 1: ngrok -->
+    <div class="card">
+      <div class="step-header">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">Start your backend + ngrok</div>
+          <div class="step-desc">Run these in two separate terminals</div>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div class="code-block">
+          <span>python main.py</span>
+          <button class="copy-btn" onclick="copyCode(this, 'python main.py')">Copy</button>
+        </div>
+        <div class="code-block">
+          <span>ngrok http 8080</span>
+          <button class="copy-btn" onclick="copyCode(this, 'ngrok http 8080')">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: paste ngrok URL -->
+    <div class="card">
+      <div class="step-header">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">Paste your ngrok HTTPS URL</div>
+          <div class="step-desc">From the ngrok terminal output — looks like <code style="color:var(--accent);font-size:12px">https://abc123.ngrok-free.app</code></div>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>ngrok URL</label>
+        <input
+          type="text"
+          id="ngrok-url"
+          placeholder="https://abc123.ngrok-free.app"
+          oninput="onUrlInput(this.value)"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <div class="status" id="url-status">
+          <div class="status-dot"></div>
+          <div class="status-text">Enter your ngrok URL above</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: drag button -->
+    <div class="card">
+      <div class="step-header">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">Drag this button to your bookmarks bar</div>
+          <div class="step-desc">Drag the green button below up to your browser's bookmarks bar</div>
+        </div>
+      </div>
+      <div class="bookmarklet-section">
+        <div class="arrow-animation">
+          <div class="arrow">↑</div>
+          <div style="font-size:11px; color:var(--muted);">Drag up to bookmarks bar</div>
+        </div>
+        <a id="bookmarklet-btn" class="disabled" href="#" draggable="true">
+          🛡️ &nbsp;Fidelity AI Tracker
+        </a>
+        <div class="drag-hint">
+          Or right-click → <span>Bookmark this link</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: how to use -->
+    <div class="card">
+      <div class="step-header">
+        <div class="step-num">4</div>
+        <div>
+          <div class="step-title">Use it on any website</div>
+          <div class="step-desc">You're ready. Here's the flow.</div>
+        </div>
+      </div>
+      <div class="how-to">
+        <div class="how-item">
+          <div class="how-icon">🌐</div>
+          <div>Navigate to <strong>any website</strong> — Zerodha, MakeMyTrip, HDFC, anything</div>
+        </div>
+        <div class="divider"></div>
+        <div class="how-item">
+          <div class="how-icon">🖱️</div>
+          <div>Click <strong>🛡️ Fidelity AI Tracker</strong> in your bookmarks bar</div>
+        </div>
+        <div class="divider"></div>
+        <div class="how-item">
+          <div class="how-icon">📋</div>
+          <div>A popup appears asking for your <strong>WhatsApp number + email</strong> (only once per browser)</div>
+        </div>
+        <div class="divider"></div>
+        <div class="how-item">
+          <div class="how-icon">🤖</div>
+          <div>The AI watches your behavior. Rage click, go idle, scroll frantically — a <strong>personalized nudge</strong> appears</div>
+        </div>
+        <div class="divider"></div>
+        <div class="how-item">
+          <div class="how-icon">📲</div>
+          <div>If urgency is high — you also get a <strong>WhatsApp message</strong> on your phone in real time</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    Powered by <strong>Fidelity Behavioral AI</strong> · Decision Engine v1.1 · feature/behavior-logic
+  </div>
+
+</div>
+
+<script>
+  // ── Bookmarklet template ──
+  // The tracker.js is served from /static/tracker.js via the backend
+  function buildBookmarklet(ngrokUrl) {
+    const base = ngrokUrl.replace(/\/$/, '');
+    const src  = base + '/static/tracker.js';
+    return `javascript:(function(){` +
+      `if(window.__FIDELITY_TRACKER_LOADED__){alert('Fidelity Tracker already active on this page!');return;}` +
+      `window.__FIDELITY_TRACKER_LOADED__=true;` +
+      `if(!localStorage.getItem('fidelity_ghost_id')){` +
+        `localStorage.setItem('fidelity_ghost_id','EXT_'+Math.random().toString(36).substring(2,9).toUpperCase());` +
+      `}` +
+      `var s=document.createElement('script');` +
+      `s.src='${src}?ngrok=${encodeURIComponent(base)}&t='+Date.now();` +
+      `s.setAttribute('data-ngrok-url','${base}');` +
+      `s.onload=function(){` +
+        `if(window.__FIDELITY_CONFIG)window.__FIDELITY_CONFIG.ENDPOINT='${base}/api/ingest-telemetry';` +
+        `console.log('[Fidelity] Behavioral tracker active on: '+window.location.hostname);` +
+      `};` +
+      `s.onerror=function(){alert('Could not load Fidelity tracker. Is the backend + ngrok running?');};` +
+      `document.head.appendChild(s);` +
+    `})();`;
+  }
+
+  function isValidHttpsUrl(str) {
+    try {
+      const u = new URL(str);
+      return u.protocol === 'https:' && u.hostname.length > 3;
+    } catch { return false; }
+  }
+
+  function onUrlInput(val) {
+    const btn    = document.getElementById('bookmarklet-btn');
+    const status = document.getElementById('url-status');
+    const dot    = status.querySelector('.status-dot');
+    const txt    = status.querySelector('.status-text');
+
+    const trimmed = val.trim();
+
+    if (!trimmed) {
+      status.className = 'status';
+      txt.textContent = 'Enter your ngrok URL above';
+      btn.className = 'disabled';
+      btn.href = '#';
+      return;
+    }
+
+    if (isValidHttpsUrl(trimmed)) {
+      status.className = 'status valid';
+      txt.textContent = '✓ Valid — drag the button to your bookmarks bar';
+      btn.href = buildBookmarklet(trimmed);
+      btn.className = '';
+    } else {
+      status.className = 'status invalid';
+      txt.textContent = 'Must be an https:// URL (copy from ngrok terminal)';
+      btn.className = 'disabled';
+      btn.href = '#';
+    }
+  }
+
+  // Prevent accidental navigation when clicked instead of dragged
+  document.getElementById('bookmarklet-btn').addEventListener('click', function(e) {
+    if (this.classList.contains('disabled')) { e.preventDefault(); return; }
+    e.preventDefault();
+    // Show helpful message
+    const old = this.innerHTML;
+    this.innerHTML = '⬆️ &nbsp;Drag me to bookmarks bar!';
+    setTimeout(() => { this.innerHTML = old; }, 2000);
+  });
+
+  function copyCode(btn, text) {
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  // Auto-fill if URL stored previously
+  const stored = localStorage.getItem('fidelity_ngrok_url');
+  if (stored) {
+    document.getElementById('ngrok-url').value = stored;
+    onUrlInput(stored);
+  }
+
+  // Save URL to localStorage as they type (convenience)
+  document.getElementById('ngrok-url').addEventListener('input', function() {
+    if (isValidHttpsUrl(this.value.trim())) {
+      localStorage.setItem('fidelity_ngrok_url', this.value.trim());
+    }
+  });
+</script>
+</body>
+</html>

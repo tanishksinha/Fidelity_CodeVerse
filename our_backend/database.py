@@ -77,3 +77,54 @@ async def get_user_history(session_id: str) -> dict:
     except Exception as e:
         print(f"Database Error (get_user_history): {e}")
         return {"error": str(e)}
+
+
+async def update_event_intelligence(session_id: str, intelligence: dict) -> bool:
+    """
+    Updates the latest event for a session with AI-classified stage and reasoning.
+    Called after semantic_mapper classifies the page.
+    """
+    if not supabase:
+        print(f"💾 [MOCK DB] Updated intelligence for {session_id}: {intelligence}")
+        return True
+
+    try:
+        response = supabase.table("events") \
+            .update(intelligence) \
+            .eq("session_id", session_id) \
+            .execute()
+
+        if response.data:
+            print(f"🧠 AI Intelligence saved for {session_id}")
+            return True
+        return False
+    except Exception as e:
+        print(f"Database Error (update_event_intelligence): {e}")
+        return False
+
+
+async def save_user_identity(identity_data: dict) -> bool:
+    """
+    Saves or updates a user's contact info from the identity popup (foreign sites).
+    Enables the full priority cascade (Email + WhatsApp) for bookmarklet sessions.
+    """
+    if not supabase:
+        print(f"💾 [MOCK DB] Saved Identity for {identity_data.get('consumer_id')}")
+        return True
+
+    try:
+        payload = {
+            "fidelity_ghost_id": identity_data.get("consumer_id"),
+            "email":             identity_data.get("user_email"),
+            "phone":             identity_data.get("user_phone"),
+            "name":              identity_data.get("user_name", ""),
+        }
+        response = supabase.table("users").upsert(payload).execute()
+
+        if response.data:
+            print(f"👤 Identity Synced for Ghost ID: {payload['fidelity_ghost_id']}")
+            return True
+        return False
+    except Exception as e:
+        print(f"Database Error (save_user_identity): {e}")
+        return False

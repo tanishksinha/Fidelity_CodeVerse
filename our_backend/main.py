@@ -1,14 +1,17 @@
 import logging
 from fastapi import FastAPI, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 import socketio
 
 # --- THE IMPORTS (Connecting the Team) ---
-from database import save_telemetry_event, get_user_history      # Person 3
-from processor import analyze_session, decide_intervention         # ML + Behavior + Decision Engine
-from brain import generate_intervention                          # Person 4
-from notifications import trigger_priority_cascade               # Person 4
-from auth import router as auth_router                           # JWT Auth
+from database import (save_telemetry_event, get_user_history,       # Person 3
+                      update_event_intelligence, save_user_identity) # Person 3 (new)
+from processor import analyze_session, decide_intervention           # ML + Behavior + Decision Engine
+from brain import generate_intervention                              # Person 4
+from notifications import trigger_priority_cascade                   # Person 4
+from semantic_mapper import classify_page_structure                  # Foreign site stage classifier
+from auth import router as auth_router                               # JWT Auth
 
 # Bridge function: adapts our telemetry data to Manaswini's brain.py format
 async def generate_gemini_nudge(data: dict, history: dict, session_analysis: dict) -> dict:
@@ -55,6 +58,12 @@ app.add_middleware(
 
 app.include_router(auth_router)  # Mounts /api/auth/register and /api/auth/consumer-login
 
+# Serve tracker.js for bookmarklet injection on foreign sites
+try:
+    app.mount("/static", StaticFiles(directory="../frontend/public"), name="static")
+except Exception as e:
+    logger.warning(f"[STATIC] Could not mount /static: {e}")
+
 # --- 2. Initialize WebSockets (The "Live Wire") ---
 sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")
 socket_app = socketio.ASGIApp(sio, other_asgi_app=app)
@@ -90,11 +99,33 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
     # 2. DATABASE: Get user history for context
     user_history = await get_user_history(session_id)
 
-    # 3. ML + BEHAVIOR: Single call — churn probability, behavior type, stage, urgency
+    # 3a. SEMANTIC MAPPER: Classify page stage from DOM for foreign/unknown URLs
+    #     Skipped for known Fidelity URLs where _classify_stage handles it.
+    dom_stage = None
+    dom_context = data.get('dom_context', {})
+    page_url = data.get('page_url', '/')
+    _own_site_keywords = ['localhost', 'fidelity', '/kyc', '/invest', '/checkout', '/payment']
+    is_own_url = any(k in page_url.lower() for k in _own_site_keywords)
+    if dom_context and not is_own_url:
+        try:
+            mapper_result = await classify_page_structure(dom_context)
+            dom_stage = mapper_result.get('stage')  # e.g. 'KYC', 'Transaction'
+            logger.info(f"[SEMANTIC] Foreign site stage → {dom_stage} (conf: {mapper_result.get('confidence', '?')})")
+            # Save stage + reasoning back to DB in background
+            background_tasks.add_task(update_event_intelligence, session_id, {
+                "universal_stage":  dom_stage,
+                "ai_reasoning":     mapper_result.get('reasoning', ''),
+                "confidence_score": mapper_result.get('confidence', 0.0),
+            })
+        except Exception as sm_err:
+            logger.warning(f"[SEMANTIC] Mapper failed, using URL fallback: {sm_err}")
+
+    # 3b. ML + BEHAVIOR: Single call — churn probability, behavior type, stage, urgency
     session_analysis = analyze_session(
         data,
         past_events=user_history.get('total_events', 0),
-        unique_pages=user_history.get('unique_pages', 1)
+        unique_pages=user_history.get('unique_pages', 1),
+        dom_stage=dom_stage,   # None for own site, stage string for foreign
     )
 
     # 4. DECISION ENGINE: behavior × churn × stage → strategy + notification flags
@@ -157,3 +188,23 @@ if __name__ == "__main__":
     import uvicorn
     logger.info("Starting Fidelity Smart-Engine on port 8080...")
     uvicorn.run("main:socket_app", host="0.0.0.0", port=8080, reload=True)
+
+
+# --- 4. IDENTITY REGISTRATION (bookmarklet / foreign sites) ---
+@app.post("/api/register-identity")
+async def register_identity(request: Request, background_tasks: BackgroundTasks):
+    """
+    Called by the identity popup on foreign sites.
+    Saves phone + email so the full WhatsApp/email cascade works on bookmarklet sessions.
+    """
+    try:
+        data = await request.json()
+        consumer_id = data.get("consumer_id")
+        if not consumer_id:
+            return {"status": "error", "message": "Missing consumer_id"}
+        logger.info(f"[IDENTITY] Sync request for {consumer_id}")
+        background_tasks.add_task(save_user_identity, data)
+        return {"status": "success", "message": "Identity synced"}
+    except Exception as e:
+        logger.error(f"[IDENTITY] Error: {e}")
+        return {"status": "error", "message": str(e)}
