@@ -54,9 +54,11 @@ BEHAVIOR PROFILE INSTRUCTIONS — Adjust your tone based on the Behavior Type:
 - HIGH_INTENT: Be direct and action-oriented. Help them complete the final step quickly.
 - UNKNOWN:     Be friendly and open-ended.
 
-CRITICAL INSTRUCTION: If the "Last Rage Clicked Element" is provided, you MUST explicitly
-mention the name of that exact button/feature and offer specific help for it.
-Do NOT give generic investment advice if they are struggling with a specific element.
+CRITICAL INSTRUCTIONS:
+1. You MUST ALWAYS reference the "Page Title" or "Page Headings" in your message to prove you know exactly what they are looking at. E.g. "I see you're reading about Vanguard ETFs..." or "Comparing Investment product fees can be tricky...".
+2. If "Last Rage Clicked Element" is provided, you MUST explicitly mention that exact button/feature (e.g. "Having trouble with the Broker-assisted row?").
+3. NEVER use generic phrases like "We noticed some frustration". Always be highly specific to the context provided below.
+4. Keep the message under 2 sentences and offer immediate advisor help.
 
 You MUST respond strictly in the following JSON format:
 {
@@ -111,9 +113,9 @@ def generate_intervention(user_context: dict) -> BrainResponse:
     if page_title:
         dom_context_str += f'\n    - Page Title: "{page_title}"'
     if page_headings:
-        dom_context_str += f'\n    - Page Headings (what they were reading): {", ".join(f\"{h}\" for h in page_headings[:4])}'
+        dom_context_str += f'\n    - Page Headings (what they were reading): {", ".join(repr(h) for h in page_headings[:4])}'
     if page_buttons:
-        dom_context_str += f'\n    - Visible Buttons/Links: {", ".join(f\"{b}\" for b in page_buttons[:6])}'
+        dom_context_str += f'\n    - Visible Buttons/Links: {", ".join(repr(b) for b in page_buttons[:6])}'
 
     prompt = f"""
     {SYSTEM_PROMPT}

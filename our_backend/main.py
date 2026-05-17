@@ -90,6 +90,38 @@ def disconnect(sid):
     logger.info(f"[SOCKET] Client disconnected: {sid}")
 
 # --- 3. The API Endpoint (The Gateway) ---
+
+@app.post("/api/ingest-telemetry-sync")
+async def handle_telemetry_sync(request: Request, background_tasks: BackgroundTasks):
+    try:
+        data = await request.json()
+    except Exception:
+        return {"status": "error", "message": "Invalid JSON payload"}
+        
+    dom_context = data.get('dom_context', {})
+    dom_stage = None
+    if dom_context:
+        try:
+            mapper_result = await classify_page_structure(dom_context)
+            dom_stage = mapper_result.get('stage')
+        except Exception:
+            pass
+
+    session_analysis = analyze_session(data, past_events=1, unique_pages=1, dom_stage=dom_stage)
+    intervention = decide_intervention(
+        behavior_type=session_analysis['behavior_type'],
+        churn_probability=session_analysis['churn_probability'],
+        stage=session_analysis['stage'],
+        telemetry_data=data,
+    )
+    session_analysis['intervention'] = intervention
+
+    if intervention['show_popup']:
+        nudge_package = await generate_gemini_nudge(data, {}, session_analysis)
+        return {"status": "success", "nudge": nudge_package["message"], "intensity": intervention["popup_intensity"]}
+    
+    return {"status": "ignored"}
+
 @app.post("/api/ingest-telemetry")
 async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
     try:
