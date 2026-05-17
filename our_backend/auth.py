@@ -118,3 +118,33 @@ async def login(req: LoginRequest):
         "phone": user.get("phone", ""),
         "role": user.get("role", "USER")
     }
+
+
+class AdminLoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+@router.post("/login")
+async def admin_login(req: AdminLoginRequest):
+    """
+    Dedicated Admin Login for the War Room.
+    Hardcoded for the Hackathon Demo.
+    """
+    if req.username == "admin" and req.password == "fidelity2024":
+        token = create_token({
+            "sub": "ADM_001",
+            "email": "admin@fidelity.com",
+            "name": "Admin Operator",
+            "role": "ADMIN"
+        })
+        logger.info("[AUTH] Admin access granted.")
+        return {
+            "access_token": token,
+            "token_type": "bearer",
+            "role": "ADMIN"
+        }
+    
+    logger.warning(f"[AUTH] Failed admin login attempt: {req.username}")
+    raise HTTPException(status_code=401, detail="Invalid tactical credentials")
+
