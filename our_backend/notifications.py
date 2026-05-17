@@ -63,18 +63,32 @@ def send_whatsapp(to_number: str, content: str) -> bool:
         logger.error(f"Error sending WhatsApp: {e}")
         return False
 
+# Active/Recent cascades to prevent duplicate notifications (1 minute cooldown per user)
+last_cascade_time = {}
+
 async def trigger_priority_cascade(user_id: str, ai_message: str, contact_info: dict = None):
     '''
     Tiered Priority Cascade:
     - Anonymous users (no phone/email in DB): popup only
     - Logged-in users: popup → wait → Email → wait → WhatsApp
     '''
+    import time
+    now = time.time()
+    if now - last_cascade_time.get(user_id, 0) < 60:
+        logger.info(f"[CASCADE COOLDOWN] Suppressing duplicate cascade for user {user_id}")
+        return
+    last_cascade_time[user_id] = now
+
     logger.info(f"Starting Priority Cascade for user {user_id}")
     
-    # DYNAMIC FETCH: If no contact info passed, fetch from DB
-    if not contact_info:
+    # DYNAMIC FETCH: If no phone in contact info, fetch from DB
+    if not contact_info or not contact_info.get("phone"):
         logger.info(f"Fetching contact details for user {user_id} from database...")
-        contact_info = await get_user_contact_from_db(user_id)
+        db_contact = await get_user_contact_from_db(user_id)
+        if contact_info is not None:
+            contact_info.update(db_contact)
+        else:
+            contact_info = db_contact
     
     # --- TIER CHECK ---
     # If no phone found, user is anonymous → popup already fired, stop here
@@ -99,14 +113,18 @@ async def trigger_priority_cascade(user_id: str, ai_message: str, contact_info: 
         return
 
     # Step 3: Send Email
-    logger.info(f"User {user_id} ignored Toast. Step 3: Sending Email to {contact_info['email']}")
-    email_subject = "Checking in: Can we help you with your Fidelity experience?"
-    email_content = f"Hi there, we noticed you might need some assistance. {ai_message} Log back in to chat with an advisor."
-    send_email(contact_info.get("email"), email_subject, email_content)
+    if contact_info.get("send_email", True):
+        logger.info(f"User {user_id} ignored Toast. Step 3: Sending Email to {contact_info['email']}")
+        email_subject = "Checking in: Can we help you with your Fidelity experience?"
+        email_content = f"Hi there, we noticed you might need some assistance. {ai_message} Log back in to chat with an advisor."
+        send_email(contact_info.get("email"), email_subject, email_content)
+    else:
+        logger.info("Email skipped as per Decision Engine strategy.")
     
     # Step 4: Wait again for critical followup
-    logger.info("Waiting 3 seconds to check if user read the Email...")
-    await asyncio.sleep(3)
+    email_delay = contact_info.get("email_delay_seconds", 3)
+    logger.info(f"Waiting {email_delay} seconds before checking follow-up...")
+    await asyncio.sleep(email_delay)
     
     user_came_back = check_mock_db_if_user_returned(user_id) # Checking again
     if user_came_back:
@@ -114,9 +132,12 @@ async def trigger_priority_cascade(user_id: str, ai_message: str, contact_info: 
         return
         
     # Step 5: Send WhatsApp (Highest Urgency)
-    logger.info(f"User {user_id} still unresponsive. Step 5: Sending WhatsApp to {contact_info['phone']}")
-    wa_content = f"Fidelity Alert: We're here to help you finalize your recent activity. {ai_message}"
-    send_whatsapp(contact_info.get("phone"), wa_content)
+    if contact_info.get("send_whatsapp", False):
+        logger.info(f"User {user_id} still unresponsive. Step 5: Sending WhatsApp to {contact_info['phone']}")
+        wa_content = f"Fidelity Alert: We're here to help you finalize your recent activity. {ai_message}"
+        send_whatsapp(contact_info.get("phone"), wa_content)
+    else:
+        logger.info("WhatsApp skipped as per Decision Engine strategy.")
 
 async def get_user_contact_from_db(user_id: str) -> dict:
     '''

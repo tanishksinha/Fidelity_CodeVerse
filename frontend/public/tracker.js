@@ -18,9 +18,26 @@
   // =====================================================================
   // --- 1. CONFIGURATION & STATE ---
   // =====================================================================
+  // Dynamic backend URL detection (crucial for bookmarklet and ngrok hosting)
+  let backendUrl = 'http://localhost:8080';
+  if (document.currentScript) {
+    const src = document.currentScript.src;
+    if (src && src.startsWith('http')) {
+      try {
+        const url = new URL(src);
+        // If the script is loaded from the Next.js dev server (port 3000), redirect API traffic to backend (port 8080)
+        if (url.origin.includes('localhost:3000') || url.origin.includes('127.0.0.1:3000')) {
+          backendUrl = 'http://localhost:8080';
+        } else {
+          backendUrl = url.origin;
+        }
+      } catch (e) {}
+    }
+  }
+
   const CONFIG = {
-    ENDPOINT:              'http://localhost:8080/api/ingest-telemetry',
-    SOCKET_URL:            'http://localhost:8080',
+    ENDPOINT:              backendUrl + '/api/ingest-telemetry',
+    SOCKET_URL:            backendUrl,
     DWELL_THRESHOLD_MS:    3000,
     RAGE_TAP_THRESHOLD_MS: 600,
     SCROLL_THRASH_TIME_MS: 1500,

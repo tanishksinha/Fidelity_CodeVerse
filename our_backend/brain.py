@@ -108,6 +108,8 @@ def generate_intervention(user_context: dict) -> BrainResponse:
     User Context (Anonymized):
     - Behavior Profile: {clean_context.get('behavior_type', 'UNKNOWN')}
     - Journey Stage: {clean_context.get('stage', 'Unknown')}
+    - Progress Level: {clean_context.get('progress', 'LOW')}
+    - Root Cause Interpretation: {clean_context.get('behavior_interpretation', 'general_friction')}
     - Churn Risk: {clean_context.get('churn_probability', 0.0):.0%} ({clean_context.get('urgency', 'MEDIUM')} urgency)
     - Confusion Score: {clean_context.get('confusion_score', 0)}/100
     - Friction Score: {clean_context.get('friction_score', 0)}/100

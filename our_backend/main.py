@@ -18,6 +18,9 @@ async def generate_gemini_nudge(data: dict, history: dict, session_analysis: dic
     telemetry = data.get('behavioral_telemetry', {})
     friction = telemetry.get('friction_signals', {})
     hesitation_zones = [h['element_id'] for h in telemetry.get('hesitation_zones', [])]
+    intervention = session_analysis.get('intervention', {})
+    friction_element = intervention.get('friction_element', {}).get('element')
+    reported_rage_element = friction_element if friction_element else telemetry.get('last_rage_element', 'None')
 
     context = {
         "behavior_type":     session_analysis.get('behavior_type', 'UNKNOWN'),
@@ -27,8 +30,10 @@ async def generate_gemini_nudge(data: dict, history: dict, session_analysis: dic
         "friction_score":    (friction.get('rage_clicks', 0) * 10) + (telemetry.get('total_time_seconds', 0) / 2),
         "confusion_score":   friction.get('scroll_thrash_count', 0) * 25,
         "recent_actions":    hesitation_zones,
-        "last_rage_element": telemetry.get('last_rage_element', 'None'),
-        "history":           f"User has {history.get('total_events', 0)} past visits."
+        "last_rage_element": reported_rage_element,
+        "history":           f"User has {history.get('total_events', 0)} past visits.",
+        "behavior_interpretation": intervention.get('behavior_interpretation', 'general_friction'),
+        "progress":          intervention.get('progress', 'LOW')
     }
     result = generate_intervention(context)
     logger.info(
@@ -137,7 +142,20 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
     )
     session_analysis['intervention'] = intervention
 
+    # --- COOLDOWN CHECK ---
+    import time
+    if not hasattr(app, "intervention_cooldowns"):
+        app.intervention_cooldowns = {}
+        
+    now = time.time()
+    last_time = app.intervention_cooldowns.get(session_id, 0)
+    
     if intervention['show_popup'] or intervention['send_email'] or intervention['send_whatsapp']:
+        if now - last_time < 30:
+            logger.info(f"[COOLDOWN] Suppressing intervention for {session_id} to prevent spam.")
+            return {"status": "success", "session_id": session_id, "message": "cooldown active"}
+            
+        app.intervention_cooldowns[session_id] = now
         logger.info(
             f"[TRIGGER] Intervening for {session_id} | "
             f"Strategy={intervention['strategy']} | "
@@ -162,27 +180,38 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
             await sio.emit('receive_nudge', toast_data, room=session_id)
 
         # 7. NOTIFICATIONS: Cascade using exact flags from decision engine
-        contact_info = None
+        contact_info = {
+            "send_email":         intervention["send_email"],
+            "send_whatsapp":      intervention["send_whatsapp"],
+            "email_delay_seconds":intervention["email_delay_seconds"],
+            "behavior_type":      session_analysis["behavior_type"],
+            "strategy":           intervention["strategy"],
+        }
         if data.get("user_phone"):
-            contact_info = {
+            contact_info.update({
                 "phone":              data.get("user_phone"),
                 "email":              data.get("user_email"),
-                "name":               data.get("user_name", ""),
-                "send_email":         intervention["send_email"],
-                "send_whatsapp":      intervention["send_whatsapp"],
-                "email_delay_seconds":intervention["email_delay_seconds"],
-                "behavior_type":      session_analysis["behavior_type"],
-                "strategy":           intervention["strategy"],
-            }
-            logger.info(
-                f"[CASCADE] Strategy={intervention['strategy']} | "
-                f"email={intervention['send_email']} | "
-                f"whatsapp={intervention['send_whatsapp']} | "
-                f"email_delay={intervention['email_delay_seconds']}s"
-            )
+                "name":               data.get("user_name", "")
+            })
+            
+        logger.info(
+            f"[CASCADE] Strategy={intervention['strategy']} | "
+            f"email={intervention['send_email']} | "
+            f"whatsapp={intervention['send_whatsapp']} | "
+            f"email_delay={intervention['email_delay_seconds']}s"
+        )
         background_tasks.add_task(trigger_priority_cascade, session_id, nudge_package["message"], contact_info)
 
-    return {"status": "success", "session_id": session_id}
+    res_data = {"status": "success", "session_id": session_id}
+    # If a popup nudge was generated, return it directly in the HTTP response
+    if 'nudge_package' in locals() and nudge_package and intervention.get('show_popup'):
+        res_data.update({
+            "show_popup": True,
+            "nudge_message": nudge_package.get("message", ""),
+            "popup_intensity": intervention.get("popup_intensity", "gentle")
+        })
+
+    return res_data
 
 if __name__ == "__main__":
     import uvicorn
@@ -208,3 +237,21 @@ async def register_identity(request: Request, background_tasks: BackgroundTasks)
     except Exception as e:
         logger.error(f"[IDENTITY] Error: {e}")
         return {"status": "error", "message": str(e)}
+
+
+# --- 5. MARKET DATA TICKER ---
+@app.get("/api/market-data")
+async def get_market_data():
+    """
+    Returns live market index data to populate the marquee ticker on the Investments page.
+    """
+    return {
+        "status": "success",
+        "data": [
+            ["NIFTY 50", "22,453.80", "+0.45%"],
+            ["S&P 500", "5,117.07", "+1.03%"],
+            ["USD/INR", "83.51", "-0.05%"],
+            ["NASDAQ", "16,117.25", "+2.03%"],
+            ["Fidelity Growth", "₹342.10", "+1.85%"]
+        ]
+    }
