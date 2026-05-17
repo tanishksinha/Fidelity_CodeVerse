@@ -102,6 +102,19 @@ def generate_intervention(user_context: dict) -> BrainResponse:
     # SECURITY LAYER: Sanitize data before it leaves our server
     clean_context = sanitize_context(user_context)
     
+    # Build DOM context string for the prompt
+    dom = clean_context.get('dom_context', {})
+    page_title    = dom.get('page_title', '') if dom else ''
+    page_headings = dom.get('headings', [])  if dom else []
+    page_buttons  = dom.get('buttons', [])   if dom else []
+    dom_context_str = ''
+    if page_title:
+        dom_context_str += f'\n    - Page Title: "{page_title}"'
+    if page_headings:
+        dom_context_str += f'\n    - Page Headings (what they were reading): {", ".join(f\"{h}\" for h in page_headings[:4])}'
+    if page_buttons:
+        dom_context_str += f'\n    - Visible Buttons/Links: {", ".join(f\"{b}\" for b in page_buttons[:6])}'
+
     prompt = f"""
     {SYSTEM_PROMPT}
     
@@ -113,9 +126,9 @@ def generate_intervention(user_context: dict) -> BrainResponse:
     - Churn Risk: {clean_context.get('churn_probability', 0.0):.0%} ({clean_context.get('urgency', 'MEDIUM')} urgency)
     - Confusion Score: {clean_context.get('confusion_score', 0)}/100
     - Friction Score: {clean_context.get('friction_score', 0)}/100
-    - Recent Actions: {', '.join(clean_context.get('recent_actions', []))}
+    - Recent Hesitation Zones: {', '.join(clean_context.get('recent_actions', []))}
     - Last Rage Clicked Element: {clean_context.get('last_rage_element', 'None')}
-    - Previous History: {clean_context.get('history', 'New user')}
+    - Previous History: {clean_context.get('history', 'New user')}{dom_context_str}
     
     Generate the intervention JSON.
     """

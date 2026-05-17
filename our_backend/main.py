@@ -33,7 +33,9 @@ async def generate_gemini_nudge(data: dict, history: dict, session_analysis: dic
         "last_rage_element": reported_rage_element,
         "history":           f"User has {history.get('total_events', 0)} past visits.",
         "behavior_interpretation": intervention.get('behavior_interpretation', 'general_friction'),
-        "progress":          intervention.get('progress', 'LOW')
+        "progress":          intervention.get('progress', 'LOW'),
+        # Pass live DOM snapshot so Gemini can reference what the user was actually reading
+        "dom_context":       data.get('dom_context', {}),
     }
     result = generate_intervention(context)
     logger.info(
