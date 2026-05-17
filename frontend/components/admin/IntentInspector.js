@@ -99,7 +99,7 @@ export default function IntentInspector({ session, onClose }) {
         {/* Generated Intervention Email */}
         <section className="rounded-lg border border-warroom-border bg-warroom-bg p-4">
           <h3 className="flex items-center gap-2 text-label text-warroom-text-secondary">
-            <Mail size={14} className="text-fidelity-green" />
+            <Mail size={14} className="text-synaptic-green" />
             Generated Intervention
           </h3>
           {session.status === 'processed' || session.emailSubject ? (

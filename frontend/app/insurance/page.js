@@ -34,7 +34,7 @@ const insuranceProducts = [
       "Return of premium option",
     ],
     tag: "MOST POPULAR",
-    tagColor: "bg-fidelity-green",
+    tagColor: "bg-synaptic-green",
     track: "product_term_life",
   },
   {
@@ -158,7 +158,7 @@ export default function InsurancePage() {
           <div className="max-w-2xl">
             <div
               data-track="insurance_hero_badge"
-              className="inline-flex items-center gap-2 rounded-full border border-fidelity-green/30 bg-fidelity-green/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-fidelity-green"
+              className="inline-flex items-center gap-2 rounded-full border border-synaptic-green/30 bg-synaptic-green/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-synaptic-green"
             >
               <ShieldCheck size={14} /> IRDAI Regulated
             </div>
@@ -185,7 +185,7 @@ export default function InsurancePage() {
               <article
                 key={product.id}
                 data-track={product.track}
-                className="group relative flex flex-col rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-fidelity-green/50 hover:shadow-lg"
+                className="group relative flex flex-col rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-synaptic-green/50 hover:shadow-lg"
               >
                 {/* Tag Badge */}
                 {product.tag && (
@@ -197,7 +197,7 @@ export default function InsurancePage() {
                 )}
 
                 <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-fidelity-green/10 text-fidelity-green">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-synaptic-green/10 text-synaptic-green">
                     <Icon size={24} />
                   </div>
                   <div>
@@ -222,7 +222,7 @@ export default function InsurancePage() {
                     <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
                       Claim Ratio
                     </p>
-                    <p className="mt-1 text-sm font-semibold text-fidelity-green">
+                    <p className="mt-1 text-sm font-semibold text-synaptic-green">
                       {product.claimRatio}
                     </p>
                   </div>
@@ -234,7 +234,7 @@ export default function InsurancePage() {
                     <li key={f} className="flex items-start gap-2 text-xs text-gray-600">
                       <ChevronRight
                         size={12}
-                        className="mt-0.5 shrink-0 text-fidelity-green"
+                        className="mt-0.5 shrink-0 text-synaptic-green"
                       />
                       {f}
                     </li>
@@ -246,7 +246,7 @@ export default function InsurancePage() {
                   type="button"
                   onClick={() => handleOpenQuote(product)}
                   data-track={`btn_get_quote_${product.id}`}
-                  className="mt-6 flex w-full items-center justify-center gap-2 rounded-md bg-gray-950 px-4 py-3 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-fidelity-green"
+                  className="mt-6 flex w-full items-center justify-center gap-2 rounded-md bg-gray-950 px-4 py-3 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-synaptic-green"
                 >
                   Get Quote <ArrowRight size={14} />
                 </button>
@@ -334,12 +334,12 @@ export default function InsurancePage() {
               <form onSubmit={handleCalculate} className="mt-6 space-y-5">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700">Current Age</label>
-                  <input required type="number" min="18" max="75" defaultValue="30" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-fidelity-green focus:outline-none focus:ring-1 focus:ring-fidelity-green" />
+                  <input required type="number" min="18" max="75" defaultValue="30" className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-synaptic-green focus:outline-none focus:ring-1 focus:ring-synaptic-green" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700">Gender</label>
-                    <select className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-fidelity-green focus:outline-none focus:ring-1 focus:ring-fidelity-green">
+                    <select className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-synaptic-green focus:outline-none focus:ring-1 focus:ring-synaptic-green">
                       <option>Male</option>
                       <option>Female</option>
                       <option>Other</option>
@@ -347,7 +347,7 @@ export default function InsurancePage() {
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700">Tobacco User</label>
-                    <select className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-fidelity-green focus:outline-none focus:ring-1 focus:ring-fidelity-green">
+                    <select className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-synaptic-green focus:outline-none focus:ring-1 focus:ring-synaptic-green">
                       <option>No</option>
                       <option>Yes</option>
                     </select>
@@ -355,7 +355,7 @@ export default function InsurancePage() {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700">Desired Coverage</label>
-                  <select className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-fidelity-green focus:outline-none focus:ring-1 focus:ring-fidelity-green">
+                  <select className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-synaptic-green focus:outline-none focus:ring-1 focus:ring-synaptic-green">
                     <option>{selectedProduct.coverage}</option>
                     <option>₹10 Lakh</option>
                     <option>₹50 Lakh</option>
@@ -365,14 +365,14 @@ export default function InsurancePage() {
                 <button
                   type="submit"
                   disabled={calculating}
-                  className="mt-6 flex w-full items-center justify-center rounded-md bg-fidelity-green px-4 py-3 text-sm font-bold text-white transition hover:bg-[#009940] disabled:bg-gray-400"
+                  className="mt-6 flex w-full items-center justify-center rounded-md bg-synaptic-green px-4 py-3 text-sm font-bold text-white transition hover:bg-[#009940] disabled:bg-gray-400"
                 >
                   {calculating ? "Calculating..." : "Calculate Premium"}
                 </button>
               </form>
             ) : (
               <div className="mt-6 text-center animate-in slide-in-from-bottom-4">
-                <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-fidelity-green/10 text-fidelity-green mb-4">
+                <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-synaptic-green/10 text-synaptic-green mb-4">
                   <ShieldCheck size={32} />
                 </div>
                 <h4 className="text-sm font-bold uppercase tracking-wider text-gray-500">Estimated Premium</h4>

@@ -3,7 +3,7 @@
 import { Users, Clock3, ShieldAlert, Mail } from 'lucide-react';
 
 const tones = {
-  green: 'text-fidelity-green',
+  green: 'text-synaptic-green',
   amber: 'text-intent-hesitate',
   red: 'text-intent-bounce',
   blue: 'text-intent-analyzing',

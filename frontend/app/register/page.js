@@ -49,11 +49,11 @@ export default function RegisterPage() {
         {/* Brand */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-fidelity-green text-white shadow-glow-green">
+            <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-synaptic-green text-white shadow-glow-green">
               <ShieldCheck size={22} />
             </span>
             <span>
-              <span className="block text-xl font-bold tracking-tight text-fidelity-dark">FIDELITY</span>
+              <span className="block text-xl font-bold tracking-tight text-synaptic-dark">SYNAPTIC</span>
               <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">
                 Wealth Services
               </span>
@@ -65,7 +65,7 @@ export default function RegisterPage() {
         <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
           <h1 className="text-2xl font-bold tracking-tight text-gray-950">Create your account</h1>
           <p className="mt-2 text-sm text-gray-500">
-            Join Fidelity to start your investment journey.
+            Join Synaptic to start your investment journey.
           </p>
 
           {error && (
@@ -93,7 +93,7 @@ export default function RegisterPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Arjun Mehta"
-                  className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-4 text-sm outline-none transition focus:border-fidelity-green focus:ring-2 focus:ring-fidelity-green/15"
+                  className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-4 text-sm outline-none transition focus:border-synaptic-green focus:ring-2 focus:ring-synaptic-green/15"
                 />
               </div>
             </div>
@@ -108,7 +108,7 @@ export default function RegisterPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-4 text-sm outline-none transition focus:border-fidelity-green focus:ring-2 focus:ring-fidelity-green/15"
+                  className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-4 text-sm outline-none transition focus:border-synaptic-green focus:ring-2 focus:ring-synaptic-green/15"
                 />
               </div>
             </div>
@@ -123,7 +123,7 @@ export default function RegisterPage() {
                   value={phone.replace("+91", "")}
                   onChange={(e) => setPhone("+91" + e.target.value.replace(/\D/g, ""))}
                   placeholder="9XXXXXXXXX"
-                  className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-12 pr-4 text-sm outline-none transition focus:border-fidelity-green focus:ring-2 focus:ring-fidelity-green/15"
+                  className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-12 pr-4 text-sm outline-none transition focus:border-synaptic-green focus:ring-2 focus:ring-synaptic-green/15"
                 />
               </div>
               <p className="mt-1 text-xs text-gray-400">Used for AI-powered WhatsApp alerts when you need help</p>
@@ -140,7 +140,7 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Min. 6 characters"
-                  className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-4 text-sm outline-none transition focus:border-fidelity-green focus:ring-2 focus:ring-fidelity-green/15"
+                  className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-4 text-sm outline-none transition focus:border-synaptic-green focus:ring-2 focus:ring-synaptic-green/15"
                 />
               </div>
             </div>
@@ -148,7 +148,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading || success}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-fidelity-green py-3.5 text-sm font-bold text-white transition hover:bg-[#009940] disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-synaptic-green py-3.5 text-sm font-bold text-white transition hover:bg-[#009940] disabled:opacity-50"
             >
               {loading ? "Creating account..." : "Create Account"}
               {!loading && <ArrowRight size={16} />}
@@ -157,7 +157,7 @@ export default function RegisterPage() {
 
           <div className="mt-6 text-center text-sm text-gray-500">
             Already have an account?{" "}
-            <Link href="/login" className="font-semibold text-fidelity-green hover:underline">
+            <Link href="/login" className="font-semibold text-synaptic-green hover:underline">
               Sign In
             </Link>
           </div>

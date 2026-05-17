@@ -13,7 +13,7 @@ export default function LiveFunnel({ funnel, onNodeClick }) {
             Click the bounce node or a session to inspect raw telemetry.
           </p>
         </div>
-        <span className="warroom-badge border-fidelity-green/30 bg-fidelity-green/10 text-fidelity-green">
+        <span className="warroom-badge border-synaptic-green/30 bg-synaptic-green/10 text-synaptic-green">
           STREAMING
         </span>
       </div>
@@ -44,10 +44,10 @@ export default function LiveFunnel({ funnel, onNodeClick }) {
 function FunnelNode({ node, onClick }) {
   const config = {
     healthy: {
-      border: 'border-fidelity-green',
-      text: 'text-fidelity-green',
+      border: 'border-synaptic-green',
+      text: 'text-synaptic-green',
       glow: 'shadow-glow-green',
-      pulse: 'bg-fidelity-green',
+      pulse: 'bg-synaptic-green',
     },
     hesitating: {
       border: 'border-intent-hesitate',

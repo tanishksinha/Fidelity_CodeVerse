@@ -51,7 +51,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 # --- 1. Initialize FastAPI ---
-app = FastAPI(title="Fidelity Smart-Engine Backend")
+app = FastAPI(title="Synaptic Smart-Engine Backend")
 
 # Allow the frontend to talk to us (CORS)
 app.add_middleware(
@@ -139,11 +139,11 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
     user_history = await get_user_history(session_id)
 
     # 3a. SEMANTIC MAPPER: Classify page stage from DOM for foreign/unknown URLs
-    #     Skipped for known Fidelity URLs where _classify_stage handles it.
+    #     Skipped for known Synaptic URLs where _classify_stage handles it.
     dom_stage = None
     dom_context = data.get('dom_context', {})
     page_url = data.get('page_url', '/')
-    _own_site_keywords = ['localhost', 'fidelity', '/kyc', '/invest', '/checkout', '/payment']
+    _own_site_keywords = ['localhost', 'synaptic', '/kyc', '/invest', '/checkout', '/payment']
     is_own_url = any(k in page_url.lower() for k in _own_site_keywords)
     if dom_context and not is_own_url:
         try:
@@ -249,7 +249,7 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
 
 if __name__ == "__main__":
     import uvicorn
-    logger.info("Starting Fidelity Smart-Engine on port 8080...")
+    logger.info("Starting Synaptic Smart-Engine on port 8080...")
     uvicorn.run("main:socket_app", host="0.0.0.0", port=8080, reload=True)
 
 
@@ -286,6 +286,6 @@ async def get_market_data():
             ["S&P 500", "5,117.07", "+1.03%"],
             ["USD/INR", "83.51", "-0.05%"],
             ["NASDAQ", "16,117.25", "+2.03%"],
-            ["Fidelity Growth", "₹342.10", "+1.85%"]
+            ["Synaptic Growth", "₹342.10", "+1.85%"]
         ]
     }

@@ -53,9 +53,9 @@ export const sessions = [
     confidence: 95,
     profile:
       'User paused on sensitive identity collection fields (PAN/SSN) for 18.9 seconds, exhibited erratic mouse velocity, then moved cursor toward browser chrome before closing. High-confidence identity trust friction.',
-    emailSubject: 'How Fidelity protects your tax and identity details',
+    emailSubject: 'How Synaptic protects your tax and identity details',
     emailBody:
-      'Your privacy matters. We understand that sharing personal identification details requires trust. Here\'s exactly how Fidelity encrypts, segregates, and protects every piece of identity data.',
+      'Your privacy matters. We understand that sharing personal identification details requires trust. Here\'s exactly how Synaptic encrypts, segregates, and protects every piece of identity data.',
     emailCta:
       'Read our institutional-grade data protection summary — or connect with our security team directly for a private walkthrough.',
   },

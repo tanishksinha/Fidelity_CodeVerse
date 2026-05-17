@@ -11,7 +11,7 @@ module.exports = {
     extend: {
       colors: {
         // Consumer Theme (High Trust)
-        fidelity: {
+        synaptic: {
           green: "#007A33", // The "Converted" Signal
           dark: "#004B23",
           light: "#E6F2EB",
@@ -51,7 +51,7 @@ module.exports = {
         'ping-slow': 'ping 2s cubic-bezier(0, 0, 0.2, 1) infinite',
       },
       borderRadius: {
-        'fidelity': '4px', // Tight, institutional corners
+        'synaptic': '4px', // Tight, institutional corners
       }
     },
   },

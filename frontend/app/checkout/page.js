@@ -68,7 +68,7 @@ export default function CheckoutPage() {
       <div className="min-h-screen bg-gray-50 text-gray-950">
         <ConsumerHeader />
         <main className="mx-auto flex max-w-3xl flex-col items-center py-20 text-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-fidelity-green/10 text-fidelity-green mb-6">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-synaptic-green/10 text-synaptic-green mb-6">
             <CheckCircle2 size={40} />
           </div>
           <h1 className="text-4xl font-bold tracking-tight text-gray-950">Application submitted!</h1>
@@ -87,12 +87,12 @@ export default function CheckoutPage() {
       <main className="mx-auto grid max-w-7xl gap-8 px-6 py-10 lg:grid-cols-[1fr_360px] lg:px-8">
         <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-8">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-fidelity-green">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-synaptic-green">
               Secure account opening
             </p>
             <h1 className="mt-3 text-3xl font-bold tracking-tight text-gray-950">Complete your investor profile.</h1>
             <p data-track="checkout_intro_privacy_copy" className="mt-3 max-w-2xl text-sm leading-6 text-gray-600">
-              Fidelity is required to verify identity, tax residency, risk suitability, and funding authorization before
+              Synaptic is required to verify identity, tax residency, risk suitability, and funding authorization before
               activating investment instructions.
             </p>
           </div>
@@ -104,21 +104,21 @@ export default function CheckoutPage() {
                   key={step}
                   className={`rounded-md border p-3 ${
                     currentStep === index 
-                      ? "border-fidelity-green bg-fidelity-green/5" 
+                      ? "border-synaptic-green bg-synaptic-green/5" 
                       : currentStep > index 
                         ? "border-gray-200 bg-gray-100 opacity-60" 
                         : "border-gray-200 bg-gray-50"
                   }`}
                   data-track={`checkout_step_${index + 1}_${step.toLowerCase().replaceAll(" ", "_")}`}
                 >
-                  <p className="text-xs font-bold text-fidelity-green">Step {index + 1}</p>
+                  <p className="text-xs font-bold text-synaptic-green">Step {index + 1}</p>
                   <p className="mt-1 text-sm font-semibold text-gray-900">{step}</p>
                 </div>
               ))}
             </div>
             <div className="mt-4 h-2 rounded-md bg-gray-200">
               <div 
-                className="h-2 rounded-md bg-fidelity-green transition-all duration-500 ease-in-out" 
+                className="h-2 rounded-md bg-synaptic-green transition-all duration-500 ease-in-out" 
                 style={{ width: `${((currentStep + 1) / 3) * 100}%` }}
               />
             </div>
@@ -143,7 +143,7 @@ export default function CheckoutPage() {
                 <button
                   type="button"
                   onClick={handleNextStep0}
-                  className="flex w-full items-center justify-center gap-2 rounded-md bg-fidelity-dark px-5 py-4 text-sm font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-fidelity-green"
+                  className="flex w-full items-center justify-center gap-2 rounded-md bg-synaptic-dark px-5 py-4 text-sm font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-synaptic-green"
                 >
                   Next: KYC Review <ArrowRight size={16} />
                 </button>
@@ -154,7 +154,7 @@ export default function CheckoutPage() {
               <>
                 <fieldset className="rounded-lg border border-gray-200 p-5" data-track="kyc_identity_verification_block">
                   <div className="mb-5 flex items-center gap-3">
-                    <LockKeyhole className="text-fidelity-green" size={22} />
+                    <LockKeyhole className="text-synaptic-green" size={22} />
                     <div>
                       <legend className="text-lg font-bold text-gray-950">KYC and tax verification</legend>
                       <p className="text-sm text-gray-600">Required before any SIP order can be placed.</p>
@@ -191,7 +191,7 @@ export default function CheckoutPage() {
                   <button
                     type="button"
                     onClick={handleNextStep1}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-md bg-fidelity-dark px-5 py-4 text-sm font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-fidelity-green"
+                    className="flex flex-1 items-center justify-center gap-2 rounded-md bg-synaptic-dark px-5 py-4 text-sm font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-synaptic-green"
                   >
                     Next: Funding <ArrowRight size={16} />
                   </button>
@@ -203,7 +203,7 @@ export default function CheckoutPage() {
               <>
                 <fieldset className="rounded-lg border border-gray-200 p-5" data-track="funding_authorization_block">
                   <div className="mb-5 flex items-center gap-3">
-                    <Building2 className="text-fidelity-green" size={22} />
+                    <Building2 className="text-synaptic-green" size={22} />
                     <div>
                       <legend className="text-lg font-bold text-gray-950">Funding Authorization</legend>
                       <p className="text-sm text-gray-600">Link your primary bank account for SIP deductions.</p>
@@ -223,7 +223,7 @@ export default function CheckoutPage() {
                     onClick={handleSubmit}
                     disabled={loading}
                     data-track="checkout_submit_application_button"
-                    className="flex flex-1 items-center justify-center gap-2 rounded-md bg-fidelity-green px-5 py-4 text-sm font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-[#009940] disabled:bg-gray-400"
+                    className="flex flex-1 items-center justify-center gap-2 rounded-md bg-synaptic-green px-5 py-4 text-sm font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-[#009940] disabled:bg-gray-400"
                   >
                     {loading ? (
                       <><Loader2 className="animate-spin" size={18} /> Processing...</>
@@ -239,21 +239,21 @@ export default function CheckoutPage() {
 
           <p data-track="legal_disclaimer_checkout_primary" className="mt-8 text-xs leading-6 text-gray-500">
             Investing involves risk, including possible loss of principal. Tax treatment depends on individual
-            circumstances and may change. Fidelity may decline, delay, or restrict account opening when verification
+            circumstances and may change. Synaptic may decline, delay, or restrict account opening when verification
             obligations are incomplete.
           </p>
         </section>
 
         <aside className="space-y-5">
           <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm" data-track="checkout_security_sidebar">
-            <ShieldCheck className="text-fidelity-green" size={28} />
+            <ShieldCheck className="text-synaptic-green" size={28} />
             <h2 className="mt-4 text-lg font-bold">Bank-grade controls</h2>
             <p className="mt-2 text-sm leading-6 text-gray-600">
               Encrypted transmission, document review, and monitored funding authorization protect account integrity.
             </p>
           </div>
           <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm" data-track="checkout_required_documents">
-            <FileText className="text-fidelity-green" size={28} />
+            <FileText className="text-synaptic-green" size={28} />
             <h2 className="mt-4 text-lg font-bold">Documents required</h2>
             <ul className="mt-3 space-y-2 text-sm text-gray-600">
               <li>PAN / SSN or tax identifier</li>
@@ -263,12 +263,12 @@ export default function CheckoutPage() {
             </ul>
           </div>
           <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm" data-track="checkout_institutional_custody">
-            <Building2 className="text-fidelity-green" size={28} />
+            <Building2 className="text-synaptic-green" size={28} />
             <h2 className="mt-4 text-lg font-bold">Institutional custody</h2>
             <p className="mt-2 text-sm leading-6 text-gray-600">
               Assets remain segregated and reconciliation-monitored after funding.
             </p>
-            <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-fidelity-dark">
+            <div className="mt-4 flex items-center gap-2 text-sm font-semibold text-synaptic-dark">
               <BadgeCheck size={16} />
               SIP-ready after approval
             </div>
@@ -289,7 +289,7 @@ function Input({ label, name, value, onChange, placeholder, track }) {
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-3 text-sm outline-none transition focus:border-fidelity-green focus:ring-2 focus:ring-fidelity-green/15"
+        className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-3 text-sm outline-none transition focus:border-synaptic-green focus:ring-2 focus:ring-synaptic-green/15"
       />
     </label>
   );
@@ -303,7 +303,7 @@ function Select({ label, name, value, onChange, options, track }) {
         name={name}
         value={value}
         onChange={onChange}
-        className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-3 text-sm outline-none transition focus:border-fidelity-green focus:ring-2 focus:ring-fidelity-green/15"
+        className="mt-2 w-full rounded-md border border-gray-300 bg-white px-3 py-3 text-sm outline-none transition focus:border-synaptic-green focus:ring-2 focus:ring-synaptic-green/15"
       >
         {options.map((option) => (
           <option key={option} value={option}>{option}</option>
@@ -321,7 +321,7 @@ function Checkbox({ label, name, checked, onChange, track }) {
         name={name}
         checked={checked}
         onChange={onChange}
-        className="mt-1 h-4 w-4 rounded border-gray-300 text-fidelity-green focus:ring-fidelity-green" 
+        className="mt-1 h-4 w-4 rounded border-gray-300 text-synaptic-green focus:ring-synaptic-green" 
       />
       <span>{label}</span>
     </label>

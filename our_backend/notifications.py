@@ -115,7 +115,7 @@ async def trigger_priority_cascade(user_id: str, ai_message: str, contact_info: 
     # Step 3: Send Email
     if contact_info.get("send_email", True):
         logger.info(f"User {user_id} ignored Toast. Step 3: Sending Email to {contact_info['email']}")
-        email_subject = "Checking in: Can we help you with your Fidelity experience?"
+        email_subject = "Checking in: Can we help you with your Synaptic experience?"
         email_content = f"Hi there, we noticed you might need some assistance. {ai_message} Log back in to chat with an advisor."
         send_email(contact_info.get("email"), email_subject, email_content)
     else:
@@ -134,7 +134,7 @@ async def trigger_priority_cascade(user_id: str, ai_message: str, contact_info: 
     # Step 5: Send WhatsApp (Highest Urgency)
     if contact_info.get("send_whatsapp", False):
         logger.info(f"User {user_id} still unresponsive. Step 5: Sending WhatsApp to {contact_info['phone']}")
-        wa_content = f"Fidelity Alert: We're here to help you finalize your recent activity. {ai_message}"
+        wa_content = f"Synaptic Alert: We're here to help you finalize your recent activity. {ai_message}"
         send_whatsapp(contact_info.get("phone"), wa_content)
     else:
         logger.info("WhatsApp skipped as per Decision Engine strategy.")
@@ -186,7 +186,7 @@ async def run_retention_scan():
     # MOCK DB: Find users inactive for > 30 days
     inactive_users = [
         {"user_id": "user_789", "email": "tsmanaswini07@gmail.com", "profile": "Retirement Planning & IRAs"},
-        {"user_id": "user_101", "email": "fidelity_test@example.com", "profile": "Exchange Traded Funds (ETFs)"}
+        {"user_id": "user_101", "email": "synaptic_test@example.com", "profile": "Exchange Traded Funds (ETFs)"}
     ]
     
     for user in inactive_users:
@@ -195,7 +195,7 @@ async def run_retention_scan():
         # Call the Brain to write a custom message based on their profile
         custom_body = generate_retention_message(user['profile'])
         
-        email_subject = "Personalized Fidelity Update for You"
+        email_subject = "Personalized Synaptic Update for You"
         email_content = f"Hi there, {custom_body} We hope to see you back soon!"
         
         success = send_email(user['email'], email_subject, email_content)

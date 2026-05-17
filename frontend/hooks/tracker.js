@@ -4,7 +4,7 @@ import { useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 
 /**
- * FIDELITY GHOST SDK INTERFACE
+ * SYNAPTIC GHOST SDK INTERFACE
  * Safely pushes React state changes into the Vanilla JS telemetry payload.
  */
 export function useTracker() {
@@ -12,8 +12,8 @@ export function useTracker() {
 
   // Automatically log route changes in the SPA environment
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.FidelityTracker) {
-      window.FidelityTracker.logEvent('page_view', { path: pathname });
+    if (typeof window !== 'undefined' && window.SynapticTracker) {
+      window.SynapticTracker.logEvent('page_view', { path: pathname });
     }
   }, [pathname]);
 
@@ -22,7 +22,7 @@ export function useTracker() {
     if (typeof window === 'undefined') return;
 
     // We dispatch a custom DOM event that our vanilla tracker.js is listening for
-    const event = new CustomEvent('fidelity_intent', {
+    const event = new CustomEvent('synaptic_intent', {
       detail: { eventName, metadata, timestamp: new Date().toISOString() }
     });
     window.dispatchEvent(event);

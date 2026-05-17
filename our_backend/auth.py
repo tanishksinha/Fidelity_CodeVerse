@@ -1,5 +1,5 @@
 """
-auth.py — JWT Authentication for Fidelity Behavioral AI
+auth.py — JWT Authentication for Synaptic Behavioral AI
 Handles /api/auth/register and /api/auth/consumer-login
 """
 import os
@@ -14,7 +14,7 @@ from database import supabase
 logger = logging.getLogger(__name__)
 
 # --- CONFIG ---
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "fidelity-hackathon-secret-2026")
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "synaptic-hackathon-secret-2026")
 ALGORITHM = "HS256"
 TOKEN_EXPIRE_HOURS = 24
 

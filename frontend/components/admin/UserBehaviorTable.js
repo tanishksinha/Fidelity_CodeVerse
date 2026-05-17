@@ -60,7 +60,7 @@ export default function UserBehaviorTable() {
             All consumer accounts with aggregated behavioral event data.
           </p>
         </div>
-        <span className="warroom-badge border-fidelity-green/30 bg-fidelity-green/10 text-fidelity-green">
+        <span className="warroom-badge border-synaptic-green/30 bg-synaptic-green/10 text-synaptic-green">
           {users.length} users
         </span>
       </div>
@@ -113,7 +113,7 @@ export default function UserBehaviorTable() {
                 </td>
                 <td className="px-5 py-4">
                   {u.emails_sent > 0 ? (
-                    <span className="warroom-badge border-fidelity-green/30 bg-fidelity-green/10 text-fidelity-green">
+                    <span className="warroom-badge border-synaptic-green/30 bg-synaptic-green/10 text-synaptic-green">
                       {u.emails_sent}
                     </span>
                   ) : (

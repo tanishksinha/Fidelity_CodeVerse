@@ -1,6 +1,6 @@
 import { decodeJwt } from 'jose';
 
-const TOKEN_KEY = 'fidelity_secure_session';
+const TOKEN_KEY = 'synaptic_secure_session';
 
 export const AuthService = {
   /**

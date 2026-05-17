@@ -77,10 +77,10 @@ export default function AdminPage() {
   };
 
   if (loading) return (
-    <div className="flex h-screen items-center justify-center bg-warroom-bg font-mono text-fidelity-green uppercase tracking-widest">
+    <div className="flex h-screen items-center justify-center bg-warroom-bg font-mono text-synaptic-green uppercase tracking-widest">
       <div className="flex flex-col items-center gap-4">
         <div className="h-2 w-48 overflow-hidden bg-warroom-border rounded-full">
-          <div className="h-full bg-fidelity-green animate-progress-indefinite" />
+          <div className="h-full bg-synaptic-green animate-progress-indefinite" />
         </div>
         Decrypting Tactical Telemetry...
       </div>

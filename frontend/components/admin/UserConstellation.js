@@ -182,7 +182,7 @@ export default function UserConstellation() {
             max="100"
             value={filter}
             onChange={(e) => setFilter(Number(e.target.value))}
-            className="h-1 w-24 cursor-pointer appearance-none rounded-full bg-warroom-border accent-fidelity-green"
+            className="h-1 w-24 cursor-pointer appearance-none rounded-full bg-warroom-border accent-synaptic-green"
           />
           <span className="font-mono text-[10px] text-warroom-text-secondary w-6">{filter}</span>
         </div>

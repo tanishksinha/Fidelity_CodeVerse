@@ -41,7 +41,7 @@ export default function PlanningPage() {
         
         <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
           <div className="max-w-2xl">
-            <div data-track="planning_hero_badge" className="inline-flex items-center gap-2 rounded-full border border-fidelity-green/30 bg-fidelity-green/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-fidelity-green">
+            <div data-track="planning_hero_badge" className="inline-flex items-center gap-2 rounded-full border border-synaptic-green/30 bg-synaptic-green/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-synaptic-green">
               <Compass size={14} /> Comprehensive Advisory
             </div>
             <h1 className="mt-6 text-4xl font-bold tracking-tight sm:text-6xl">
@@ -61,7 +61,7 @@ export default function PlanningPage() {
           <div className="lg:col-span-5">
             <h2 className="text-3xl font-bold tracking-tight">Specialized Planning Modules</h2>
             <p className="mt-4 text-gray-600 leading-relaxed">
-              Select an area of focus to understand how Fidelity India’s SEBI-registered advisors structure solutions around your specific life goals.
+              Select an area of focus to understand how Synaptic India’s SEBI-registered advisors structure solutions around your specific life goals.
             </p>
             
             <div className="mt-10 space-y-4">
@@ -77,20 +77,20 @@ export default function PlanningPage() {
                     className={cn(
                       "w-full text-left rounded-xl border p-5 transition-all duration-200 shadow-sm",
                       isActive 
-                        ? "border-fidelity-green bg-fidelity-green/5" 
+                        ? "border-synaptic-green bg-synaptic-green/5" 
                         : "border-gray-200 bg-white hover:border-gray-300"
                     )}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <div className={cn("p-2 rounded-lg", isActive ? "bg-fidelity-green text-white" : "bg-gray-100 text-gray-500")}>
+                        <div className={cn("p-2 rounded-lg", isActive ? "bg-synaptic-green text-white" : "bg-gray-100 text-gray-500")}>
                           <Icon size={20} />
                         </div>
                         <h3 className="font-bold text-gray-900 text-lg">{mod.title}</h3>
                       </div>
                       <ChevronDown 
                         size={20} 
-                        className={cn("text-gray-400 transition-transform", isActive && "rotate-180 text-fidelity-green")} 
+                        className={cn("text-gray-400 transition-transform", isActive && "rotate-180 text-synaptic-green")} 
                       />
                     </div>
                     {isActive && (
@@ -106,21 +106,21 @@ export default function PlanningPage() {
 
           <div className="lg:col-span-7">
             <div data-track="advisory_consult_card" className="rounded-2xl border border-gray-200 bg-gray-50 p-10 h-full flex flex-col justify-center">
-              <p className="text-xs font-bold uppercase tracking-widest text-fidelity-green">Private Wealth Group</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-synaptic-green">Private Wealth Group</p>
               <h3 className="mt-3 text-2xl font-bold text-gray-900">Need a custom blueprint?</h3>
               <p className="mt-4 text-gray-600 leading-relaxed">
-                Connect with a Fidelity Wealth Advisor to discuss your unique financial situation. We provide objective, fee-transparent guidance structured around your best interests.
+                Connect with a Synaptic Wealth Advisor to discuss your unique financial situation. We provide objective, fee-transparent guidance structured around your best interests.
               </p>
               
               <ul className="mt-8 space-y-3">
                 <li className="flex items-center gap-3 text-sm font-medium text-gray-700">
-                  <div className="h-1.5 w-1.5 rounded-full bg-fidelity-green" /> Documented Fiduciary Standard
+                  <div className="h-1.5 w-1.5 rounded-full bg-synaptic-green" /> Documented Fiduciary Standard
                 </li>
                 <li className="flex items-center gap-3 text-sm font-medium text-gray-700">
-                  <div className="h-1.5 w-1.5 rounded-full bg-fidelity-green" /> Coordination with CAs & Legal Counsel
+                  <div className="h-1.5 w-1.5 rounded-full bg-synaptic-green" /> Coordination with CAs & Legal Counsel
                 </li>
                 <li className="flex items-center gap-3 text-sm font-medium text-gray-700">
-                  <div className="h-1.5 w-1.5 rounded-full bg-fidelity-green" /> Dedicated Relationship Manager
+                  <div className="h-1.5 w-1.5 rounded-full bg-synaptic-green" /> Dedicated Relationship Manager
                 </li>
               </ul>
 

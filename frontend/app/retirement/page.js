@@ -44,7 +44,7 @@ export default function RetirementPage() {
             className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm"
           >
             <div className="flex items-center gap-3 border-b border-gray-100 pb-4">
-              <Calculator className="text-fidelity-green" size={24} />
+              <Calculator className="text-synaptic-green" size={24} />
               <h2 className="text-xl font-bold">Corpus Estimator</h2>
             </div>
 
@@ -63,7 +63,7 @@ export default function RetirementPage() {
                   max="60"
                   value={currentAge}
                   onChange={(e) => setCurrentAge(Number(e.target.value))}
-                  className="w-full accent-fidelity-green"
+                  className="w-full accent-synaptic-green"
                 />
               </div>
 
@@ -81,7 +81,7 @@ export default function RetirementPage() {
                   max="80"
                   value={retirementAge}
                   onChange={(e) => setRetirementAge(Number(e.target.value))}
-                  className="w-full accent-fidelity-green"
+                  className="w-full accent-synaptic-green"
                 />
               </div>
 
@@ -100,7 +100,7 @@ export default function RetirementPage() {
                   step="5000"
                   value={monthlyContribution}
                   onChange={(e) => setMonthlyContribution(Number(e.target.value))}
-                  className="w-full accent-fidelity-green"
+                  className="w-full accent-synaptic-green"
                 />
               </div>
             </div>
@@ -112,10 +112,10 @@ export default function RetirementPage() {
             data-track="retirement_results_panel" 
             className="flex flex-col justify-center rounded-xl bg-gray-950 p-8 text-white relative overflow-hidden"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-fidelity-dark/80 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-synaptic-dark/80 to-transparent pointer-events-none" />
             
             <div className="relative z-10">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-fidelity-green">Estimated Future Value</p>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-synaptic-green">Estimated Future Value</p>
               <h3 className="mt-4 text-5xl font-bold tracking-tight">
                 ₹{(estimatedCorpus / 10000000).toFixed(2)} <span className="text-2xl text-gray-400">Crores</span>
               </h3>
@@ -127,7 +127,7 @@ export default function RetirementPage() {
                 </div>
                 <div>
                   <p className="text-xs text-gray-400 uppercase tracking-wider">Assumed Return</p>
-                  <p className="mt-1 text-lg font-mono font-semibold text-fidelity-green">10% p.a.</p>
+                  <p className="mt-1 text-lg font-mono font-semibold text-synaptic-green">10% p.a.</p>
                 </div>
               </div>
 
@@ -135,7 +135,7 @@ export default function RetirementPage() {
                 <Link
                   href="/checkout"
                   data-track="btn_start_retirement_sip"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-fidelity-green px-5 py-3 text-sm font-bold text-white transition hover:bg-[#009940]"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-synaptic-green px-5 py-3 text-sm font-bold text-white transition hover:bg-[#009940]"
                 >
                   Start your Retirement SIP <ArrowRight size={16} />
                 </Link>
@@ -149,18 +149,18 @@ export default function RetirementPage() {
       {/* Strategy Highlights */}
       <section className="bg-gray-50 border-t border-gray-200 py-16">
         <div className="mx-auto max-w-7xl px-6 lg:px-8 grid gap-8 md:grid-cols-3">
-          <div data-track="card_inflation_hedge" className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:border-fidelity-green/50 transition">
-            <Target className="text-fidelity-green mb-4" size={28} />
+          <div data-track="card_inflation_hedge" className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:border-synaptic-green/50 transition">
+            <Target className="text-synaptic-green mb-4" size={28} />
             <h4 className="font-bold text-gray-900 text-lg">Inflation Hedging</h4>
             <p className="mt-2 text-sm text-gray-600">Equities and real assets structured to outpace long-term inflation, protecting purchasing power.</p>
           </div>
-          <div data-track="card_tax_efficiency" className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:border-fidelity-green/50 transition">
-            <PieChart className="text-fidelity-green mb-4" size={28} />
+          <div data-track="card_tax_efficiency" className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:border-synaptic-green/50 transition">
+            <PieChart className="text-synaptic-green mb-4" size={28} />
             <h4 className="font-bold text-gray-900 text-lg">Tax-Free Drawdowns</h4>
             <p className="mt-2 text-sm text-gray-600">Strategic allocation between EPF, PPF, and Equity Mutual Funds to minimize tax drag upon withdrawal.</p>
           </div>
-          <div data-track="card_fiduciary" className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:border-fidelity-green/50 transition">
-            <ShieldCheck className="text-fidelity-green mb-4" size={28} />
+          <div data-track="card_fiduciary" className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:border-synaptic-green/50 transition">
+            <ShieldCheck className="text-synaptic-green mb-4" size={28} />
             <h4 className="font-bold text-gray-900 text-lg">Fiduciary Oversight</h4>
             <p className="mt-2 text-sm text-gray-600">Continuous monitoring of your risk capacity as you approach your target retirement date.</p>
           </div>

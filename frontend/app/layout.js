@@ -18,7 +18,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata = {
-  title: "Fidelity Investments | Wealth Management",
+  title: "Synaptic Investments | Wealth Management",
   description: "Institutional-grade wealth management and financial planning.",
 };
 
@@ -26,7 +26,7 @@ export default function RootLayout({ children }) {
   return (
     // suppressHydrationWarning is required for next-themes to prevent flicker
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${jetbrainsMono.variable}`}>
-      <body className="font-sans antialiased bg-fidelity-light text-warroom-bg transition-colors duration-300">
+      <body className="font-sans antialiased bg-synaptic-light text-warroom-bg transition-colors duration-300">
         <Providers>
           {/* 
             The Ghost SDK will be injected here via the layout, 

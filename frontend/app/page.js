@@ -75,7 +75,7 @@ export default function HomePage() {
               <Link
                 href="/investments"
                 data-track="hero_explore_sips_cta"
-                className="inline-flex items-center justify-center gap-2 rounded-md bg-fidelity-green px-5 py-3 text-sm font-bold text-white shadow-glow-green transition-colors hover:bg-[#009940]"
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-synaptic-green px-5 py-3 text-sm font-bold text-white shadow-glow-green transition-colors hover:bg-[#009940]"
               >
                 Explore SIP strategies
                 <ArrowRight size={16} />
@@ -103,7 +103,7 @@ export default function HomePage() {
 
       <section className="mx-auto grid max-w-7xl gap-6 px-6 py-12 md:grid-cols-[0.9fr_1.1fr] lg:px-8">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-fidelity-green">Institutional planning</p>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-synaptic-green">Institutional planning</p>
           <h2 className="mt-3 text-3xl font-bold tracking-tight text-gray-950">
             A calmer interface for decisions that usually feel noisy.
           </h2>
@@ -120,9 +120,9 @@ export default function HomePage() {
               <article
                 key={item.title}
                 data-track={item.track}
-                className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-fidelity-green/40 hover:shadow-md"
+                className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-synaptic-green/40 hover:shadow-md"
               >
-                <Icon className="mb-5 text-fidelity-green" size={30} />
+                <Icon className="mb-5 text-synaptic-green" size={30} />
                 <h3 className="text-base font-bold text-gray-950">{item.title}</h3>
                 <p className="mt-3 text-sm leading-6 text-gray-600">{item.body}</p>
               </article>
@@ -164,7 +164,7 @@ function SignalPanel({ icon: Icon, title, value, body, track }) {
   return (
     <div data-track={track} className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
       <div className="flex items-start justify-between gap-4">
-        <Icon className="text-fidelity-green" size={28} />
+        <Icon className="text-synaptic-green" size={28} />
         <span className="font-mono text-2xl font-bold text-gray-950">{value}</span>
       </div>
       <h3 className="mt-5 text-lg font-bold text-gray-950">{title}</h3>

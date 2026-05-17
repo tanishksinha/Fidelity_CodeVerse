@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ───────────────────────────────────────────
-   FIDELITY DESIGN SYSTEM — Foundation Layer
+   SYNAPTIC DESIGN SYSTEM — Foundation Layer
    8pt Grid · Institutional Palette · Type Scale
    ─────────────────────────────────────────── */
 
@@ -59,7 +59,7 @@
   }
 
   .consumer-card-hover {
-    @apply consumer-card hover:-translate-y-0.5 hover:border-fidelity-green/40 hover:shadow-md;
+    @apply consumer-card hover:-translate-y-0.5 hover:border-synaptic-green/40 hover:shadow-md;
   }
 
   .consumer-badge {
@@ -68,7 +68,7 @@
 
   .consumer-input {
     @apply w-full rounded-md border border-gray-300 bg-white px-3 py-3 text-sm outline-none transition;
-    @apply focus:border-fidelity-green focus:ring-2 focus:ring-fidelity-green/15;
+    @apply focus:border-synaptic-green focus:ring-2 focus:ring-synaptic-green/15;
   }
 
   /* ─── War Room Environment ─── */

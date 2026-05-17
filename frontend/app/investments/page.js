@@ -141,10 +141,10 @@ export default function InvestmentsPage() {
       <ConsumerHeader active="investments" />
       <div className="border-b border-gray-200 bg-gray-950 text-white" data-track="investments_market_ticker">
         <div className="mx-auto flex max-w-7xl gap-6 overflow-x-auto px-6 py-3 font-mono text-xs lg:px-8">
-          <div className="flex items-center gap-2 pr-4 border-r border-gray-800 text-fidelity-green">
+          <div className="flex items-center gap-2 pr-4 border-r border-gray-800 text-synaptic-green">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-fidelity-green opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-fidelity-green"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-synaptic-green opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-synaptic-green"></span>
             </span>
             LIVE MARKETS
           </div>
@@ -153,7 +153,7 @@ export default function InvestmentsPage() {
               <span className="text-white/55">{label}</span>
               <span className="text-white font-bold">{value}</span>
               {change && (
-                <span className={change.startsWith("-") ? "text-red-400" : "text-fidelity-green"}>
+                <span className={change.startsWith("-") ? "text-red-400" : "text-synaptic-green"}>
                   {change}
                 </span>
               )}
@@ -167,7 +167,7 @@ export default function InvestmentsPage() {
           <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
             <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-fidelity-green">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-synaptic-green">
                   Systematic Investment Plans
                 </p>
                 <h1 className="mt-3 max-w-4xl text-4xl font-bold tracking-tight text-gray-950 md:text-5xl">
@@ -178,10 +178,10 @@ export default function InvestmentsPage() {
                   committing to a recurring contribution.
                 </p>
               </div>
-              <div className="rounded-lg border border-fidelity-green/20 bg-fidelity-light p-5 shadow-sm" data-track="sip_suitability_panel">
+              <div className="rounded-lg border border-synaptic-green/20 bg-synaptic-light p-5 shadow-sm" data-track="sip_suitability_panel">
                 <div className="flex items-center gap-3">
-                  <ShieldCheck className="text-fidelity-green" size={24} />
-                  <h2 className="text-base font-bold text-fidelity-dark">Suitability checkpoint</h2>
+                  <ShieldCheck className="text-synaptic-green" size={24} />
+                  <h2 className="text-base font-bold text-synaptic-dark">Suitability checkpoint</h2>
                 </div>
                 <p className="mt-3 text-sm leading-6 text-gray-700">
                   SIPs are best evaluated over full market cycles. Short exits may trigger tax events, fees, or lower
@@ -190,11 +190,11 @@ export default function InvestmentsPage() {
                 <div className="mt-5 grid grid-cols-2 gap-3">
                   <div className="rounded-md bg-white/80 p-3">
                     <p className="text-xs font-semibold text-gray-500">Risk profile</p>
-                    <p className="mt-1 font-mono text-lg font-bold text-fidelity-dark">Balanced</p>
+                    <p className="mt-1 font-mono text-lg font-bold text-synaptic-dark">Balanced</p>
                   </div>
                   <div className="rounded-md bg-white/80 p-3">
                     <p className="text-xs font-semibold text-gray-500">Horizon</p>
-                    <p className="mt-1 font-mono text-lg font-bold text-fidelity-dark">5Y+</p>
+                    <p className="mt-1 font-mono text-lg font-bold text-synaptic-dark">5Y+</p>
                   </div>
                 </div>
               </div>
@@ -209,7 +209,7 @@ export default function InvestmentsPage() {
           >
             <div className="mb-5 flex flex-col justify-between gap-4 md:flex-row md:items-start">
               <div>
-                <div className="flex items-center gap-2 text-fidelity-green">
+                <div className="flex items-center gap-2 text-synaptic-green">
                   <BarChart3 size={20} />
                   <h2 className="text-lg font-bold text-gray-950">SIP performance vs. broad market index</h2>
                 </div>
@@ -241,7 +241,7 @@ export default function InvestmentsPage() {
                     />
                     <Legend />
                     <Line
-                      name="Fidelity model SIP"
+                      name="Synaptic model SIP"
                       type="monotone"
                       dataKey="sip"
                       stroke="#007A33"
@@ -318,7 +318,7 @@ export default function InvestmentsPage() {
                     type="button"
                     data-track={fund.track}
                     onClick={() => handleKnowMore(fund)}
-                    className="flex w-full items-center justify-center gap-2 rounded-md border border-fidelity-green px-4 py-3 text-sm font-bold text-fidelity-green transition-colors hover:bg-fidelity-light"
+                    className="flex w-full items-center justify-center gap-2 rounded-md border border-synaptic-green px-4 py-3 text-sm font-bold text-synaptic-green transition-colors hover:bg-synaptic-light"
                   >
                     {expandedFund === fund.name ? "Close" : "Know More"}
                     <ChevronDown size={16} className={cn("transition-transform", expandedFund === fund.name ? "rotate-180" : "")} />
@@ -328,7 +328,7 @@ export default function InvestmentsPage() {
                     type="button"
                     onClick={() => handleInvestNow(fund)}
                     data-track={`btn_invest_now_${fund.track}`}
-                    className="flex w-full items-center justify-center gap-2 rounded-md bg-gray-950 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-fidelity-green"
+                    className="flex w-full items-center justify-center gap-2 rounded-md bg-gray-950 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-synaptic-green"
                   >
                     Invest Now <ArrowRight size={14} />
                   </button>
@@ -369,7 +369,7 @@ export default function InvestmentsPage() {
             <Link
               href="/checkout"
               data-track="sip_continue_to_checkout_cta"
-              className="flex items-center justify-between rounded-lg bg-fidelity-green p-5 text-white transition-colors hover:bg-fidelity-dark"
+              className="flex items-center justify-between rounded-lg bg-synaptic-green p-5 text-white transition-colors hover:bg-synaptic-dark"
             >
               <span>
                 <span className="block text-xs font-bold uppercase tracking-[0.16em] text-white/80">
@@ -397,7 +397,7 @@ function Metric({ label, value, track }) {
 
 function ChartBrief({ label, value, tone, track }) {
   const tones = {
-    green: "text-fidelity-green",
+    green: "text-synaptic-green",
     gray: "text-gray-950",
     blue: "text-intent-analyzing",
   };

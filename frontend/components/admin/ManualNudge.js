@@ -15,9 +15,9 @@ import { cn } from '@/lib/cn';
 
 const PRESET_OFFERS = [
   { id: 'sip_bonus', label: '1% SIP Bonus (24hr)', message: 'Exclusive offer: Get an additional 1% bonus on your SIP investment for the next 24 hours. Act now!' },
-  { id: 'consultation', label: 'Free Wealth Consultation', message: 'We noticed you are exploring investment options. Book a free 30-minute session with a Fidelity Wealth Advisor today.' },
+  { id: 'consultation', label: 'Free Wealth Consultation', message: 'We noticed you are exploring investment options. Book a free 30-minute session with a Synaptic Wealth Advisor today.' },
   { id: 'cashback', label: '₹500 Cashback', message: 'Complete your first investment today and receive ₹500 cashback directly to your bank account. Limited time offer!' },
-  { id: 'premium', label: 'Fidelity Premium Access', message: 'Unlock Fidelity Premium: advanced analytics, priority support, and exclusive market insights — free for 3 months.' },
+  { id: 'premium', label: 'Synaptic Premium Access', message: 'Unlock Synaptic Premium: advanced analytics, priority support, and exclusive market insights — free for 3 months.' },
 ];
 
 export default function ManualNudge({ userId, userName }) {
@@ -100,7 +100,7 @@ export default function ManualNudge({ userId, userName }) {
         className={cn(
           'mt-3 flex w-full items-center justify-center gap-2 rounded py-2.5 text-[10px] font-black uppercase tracking-[0.18em] transition',
           sendState === 'sent'
-            ? 'bg-fidelity-green/20 text-fidelity-green border border-fidelity-green/30'
+            ? 'bg-synaptic-green/20 text-synaptic-green border border-synaptic-green/30'
             : sendState === 'sending'
               ? 'bg-intent-bounce/10 text-intent-bounce/60 border border-intent-bounce/20'
               : !customMessage.trim() && !selectedPreset

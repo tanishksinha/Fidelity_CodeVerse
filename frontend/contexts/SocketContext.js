@@ -19,7 +19,7 @@ export function SocketProvider({ children }) {
   useEffect(() => {
     // Retrieve JWT for authenticated socket connections (admin routes)
     const token = typeof window !== 'undefined'
-      ? localStorage.getItem('fidelity_access_token')
+      ? localStorage.getItem('synaptic_access_token')
       : null;
 
     const socket = io(BACKEND_URL, {

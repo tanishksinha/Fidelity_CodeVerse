@@ -29,7 +29,7 @@ export default function TriggerOverride({ onTrigger, onDispatch, status: parentS
           <h2 className="font-bold">Engine Command</h2>
           <p className="mt-1 text-sublabel">Execute behavioral intent analysis.</p>
         </div>
-        <Zap className={cn(isSent ? "text-fidelity-green" : "text-intent-hesitate")} size={22} />
+        <Zap className={cn(isSent ? "text-synaptic-green" : "text-intent-hesitate")} size={22} />
       </div>
 
       <div className="space-y-3">
@@ -39,7 +39,7 @@ export default function TriggerOverride({ onTrigger, onDispatch, status: parentS
             onClick={handleRunEngine}
             disabled={localStatus === 'processing'}
             className={cn(
-              'flex min-h-[60px] w-full items-center justify-center gap-3 rounded border border-fidelity-green bg-fidelity-green/10 text-[10px] font-black uppercase tracking-[0.2em] text-fidelity-green transition hover:bg-fidelity-green/20',
+              'flex min-h-[60px] w-full items-center justify-center gap-3 rounded border border-synaptic-green bg-synaptic-green/10 text-[10px] font-black uppercase tracking-[0.2em] text-synaptic-green transition hover:bg-synaptic-green/20',
               localStatus === 'processing' && 'opacity-50'
             )}
           >
@@ -63,7 +63,7 @@ export default function TriggerOverride({ onTrigger, onDispatch, status: parentS
             onClick={handleDispatch}
             disabled={localStatus === 'dispatching'}
             className={cn(
-              'flex min-h-[60px] w-full items-center justify-center gap-3 rounded bg-fidelity-green text-[10px] font-black uppercase tracking-[0.2em] text-white transition hover:bg-[#009940] shadow-glow-green',
+              'flex min-h-[60px] w-full items-center justify-center gap-3 rounded bg-synaptic-green text-[10px] font-black uppercase tracking-[0.2em] text-white transition hover:bg-[#009940] shadow-glow-green',
               localStatus === 'dispatching' && 'opacity-50'
             )}
           >
@@ -82,7 +82,7 @@ export default function TriggerOverride({ onTrigger, onDispatch, status: parentS
         )}
 
         {isSent && (
-          <div className="flex min-h-[60px] w-full items-center justify-center gap-3 rounded border border-fidelity-green bg-fidelity-green/5 text-[10px] font-black uppercase tracking-[0.2em] text-fidelity-green">
+          <div className="flex min-h-[60px] w-full items-center justify-center gap-3 rounded border border-synaptic-green bg-synaptic-green/5 text-[10px] font-black uppercase tracking-[0.2em] text-synaptic-green">
             <CheckCircle2 size={16} />
             Operations Complete
           </div>

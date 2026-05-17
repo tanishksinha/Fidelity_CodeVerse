@@ -1,5 +1,5 @@
 # ============================================================
-# FIDELITY CODEVERSE - PRODUCTION-ALIGNED MVP MODEL
+# SYNAPTIC CODEVERSE - PRODUCTION-ALIGNED MVP MODEL
 # Uses ONLY telemetry currently available in tracker.js
 # ============================================================
 

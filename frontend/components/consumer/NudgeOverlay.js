@@ -11,17 +11,17 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:808
  * NudgeOverlay — Consumer-side "God Mode" Listener
  *
  * Listens for 'receive_nudge' events from the WebSocket and renders a
- * high-end "Fidelity Advisor" slide-in modal.
+ * high-end "Synaptic Advisor" slide-in modal.
  */
 export default function NudgeOverlay() {
   const [nudge, setNudge] = useState(null); // { message, type, offerLabel }
 
   useEffect(() => {
     // Generate a persistent anonymous ID for the consumer if not present
-    let consumerId = localStorage.getItem('fidelity_ghost_id');
+    let consumerId = localStorage.getItem('synaptic_ghost_id');
     if (!consumerId) {
       consumerId = `USR_${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-      localStorage.setItem('fidelity_ghost_id', consumerId);
+      localStorage.setItem('synaptic_ghost_id', consumerId);
     }
 
     // Connect to the socket (unauthenticated, consumer side)
@@ -58,7 +58,7 @@ export default function NudgeOverlay() {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -50 }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className="fixed top-4 inset-x-4 md:inset-x-auto md:right-6 md:top-6 z-50 md:w-full md:max-w-sm rounded-2xl border border-fidelity-green/20 bg-white/95 backdrop-blur p-5 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)]"
+        className="fixed top-4 inset-x-4 md:inset-x-auto md:right-6 md:top-6 z-50 md:w-full md:max-w-sm rounded-2xl border border-synaptic-green/20 bg-white/95 backdrop-blur p-5 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)]"
       >
         <button
           onClick={() => setNudge(null)}
@@ -70,15 +70,15 @@ export default function NudgeOverlay() {
         <div className="flex items-start gap-4">
           <div className="relative mt-1 h-12 w-12 shrink-0 overflow-hidden rounded-full border border-gray-200">
             {/* Simulated Advisor Photo */}
-            <div className="absolute inset-0 bg-gradient-to-br from-fidelity-dark to-fidelity-green flex items-center justify-center text-white">
+            <div className="absolute inset-0 bg-gradient-to-br from-synaptic-dark to-synaptic-green flex items-center justify-center text-white">
               <UserCheck size={20} />
             </div>
           </div>
           
           <div>
-            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-fidelity-green">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-synaptic-green">
               <ShieldCheck size={12} />
-              Fidelity Wealth Advisor
+              Synaptic Wealth Advisor
             </div>
             
             {isPreset && (
@@ -95,14 +95,14 @@ export default function NudgeOverlay() {
               {isPreset ? (
                 <button 
                   onClick={() => setNudge(null)}
-                  className="flex-1 rounded bg-fidelity-green px-4 py-2 text-xs font-bold text-white shadow-glow-green transition hover:bg-[#009940]"
+                  className="flex-1 rounded bg-synaptic-green px-4 py-2 text-xs font-bold text-white shadow-glow-green transition hover:bg-[#009940]"
                 >
                   Claim Offer
                 </button>
               ) : (
                 <button 
                   onClick={() => setNudge(null)}
-                  className="flex-1 rounded bg-fidelity-green px-4 py-2 text-xs font-bold text-white shadow-glow-green transition hover:bg-[#009940]"
+                  className="flex-1 rounded bg-synaptic-green px-4 py-2 text-xs font-bold text-white shadow-glow-green transition hover:bg-[#009940]"
                 >
                   Connect with Advisor
                 </button>

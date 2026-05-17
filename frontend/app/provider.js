@@ -12,7 +12,7 @@ export function Providers({ children }) {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('fidelity_access_token');
+    const token = localStorage.getItem('synaptic_access_token');
     if (token) {
       setUser({ role: 'admin', id: 'USR_001' });
       setIsDarkMode(true);

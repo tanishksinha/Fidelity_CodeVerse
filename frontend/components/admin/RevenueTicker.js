@@ -78,14 +78,14 @@ export default function RevenueTicker() {
       <div className="flex flex-col gap-4 px-5 py-4 lg:flex-row lg:items-center lg:gap-8 lg:px-8">
         {/* Main Revenue Counter */}
         <div className="flex-1">
-          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-fidelity-green/70">
+          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-synaptic-green/70">
             <TrendingUp size={12} />
             Revenue Potential Saved
           </div>
           <div className="mt-1 flex items-baseline gap-3">
-            <span className="text-[10px] font-bold text-fidelity-green/50">₹</span>
+            <span className="text-[10px] font-bold text-synaptic-green/50">₹</span>
             <motion.span
-              className="font-mono text-4xl font-black tracking-tight text-fidelity-green drop-shadow-[0_0_20px_rgba(0,122,51,0.5)] md:text-6xl"
+              className="font-mono text-4xl font-black tracking-tight text-synaptic-green drop-shadow-[0_0_20px_rgba(0,122,51,0.5)] md:text-6xl"
               style={{ fontVariantNumeric: 'tabular-nums' }}
             >
               {displayRevenue}
@@ -97,7 +97,7 @@ export default function RevenueTicker() {
             </span>
             <span className="text-warroom-border">|</span>
             <span>
-              Nudge Efficiency: <span className="font-mono text-fidelity-green">{successRate}%</span>
+              Nudge Efficiency: <span className="font-mono text-synaptic-green">{successRate}%</span>
             </span>
           </div>
         </div>
@@ -122,7 +122,7 @@ export default function RevenueTicker() {
               Normal: {normalConversions}
             </div>
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-fidelity-green" />
+              <span className="h-2 w-2 rounded-full bg-synaptic-green" />
               Smart: {smartConversions}
             </div>
           </div>
@@ -131,11 +131,11 @@ export default function RevenueTicker() {
         {/* Pulse Indicator */}
         <div className="flex items-center gap-2">
           <motion.div
-            className="h-3 w-3 rounded-full bg-fidelity-green"
+            className="h-3 w-3 rounded-full bg-synaptic-green"
             animate={{ scale: [1, 1.4, 1], opacity: [0.6, 1, 0.6] }}
             transition={{ duration: 2, repeat: Infinity }}
           />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-fidelity-green/70">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-synaptic-green/70">
             Live
           </span>
         </div>

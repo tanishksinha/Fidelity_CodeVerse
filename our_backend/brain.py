@@ -41,7 +41,7 @@ else:
     client = None
 
 SYSTEM_PROMPT = """
-You are a proactive, helpful, and empathetic AI Financial Advisor for Fidelity.
+You are a proactive, helpful, and empathetic AI Financial Advisor for Synaptic.
 Your goal is to gently guide users who are experiencing confusion or friction on the website.
 
 BEHAVIOR PROFILE INSTRUCTIONS — Adjust your tone based on the Behavior Type:
@@ -169,7 +169,7 @@ def generate_intervention(user_context: dict) -> BrainResponse:
             
     # --- 3. FINAL MOCK FALLBACK (Ensure we never return None) ---
     return BrainResponse(
-        message="It looks like you're exploring our planning tools! Need a quick hand or have a specific question about Fidelity's services?",
+        message="It looks like you're exploring our planning tools! Need a quick hand or have a specific question about Synaptic's services?",
         xai_explanation="Triggered fallback due to API unavailability. User showing hesitation in key zones.",
         recommended_action="Click the 'Live Chat' icon for immediate assistance."
     )
@@ -182,7 +182,7 @@ def generate_retention_message(user_profile: str) -> str:
     safe_profile = user_profile if len(user_profile) < 500 else user_profile[:500]
     
     prompt = f"""
-    You are an AI Engagement Specialist for Fidelity. 
+    You are an AI Engagement Specialist for Synaptic. 
     A user hasn't logged in for over 30 days. Their last known interest was: "{safe_profile}".
     
     Write a warm, professional, and personalized 2-sentence re-engagement email body.

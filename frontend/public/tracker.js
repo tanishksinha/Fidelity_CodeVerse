@@ -1,19 +1,19 @@
 /**
- * FIDELITY BEHAVIORAL GHOST SDK v3.1 (Unified)
- * Works on: Fidelity site (via Next.js layout) + Any foreign site (via bookmarklet)
+ * SYNAPTIC BEHAVIORAL GHOST SDK v3.1 (Unified)
+ * Works on: Synaptic site (via Next.js layout) + Any foreign site (via bookmarklet)
  *
  * v3.0 additions: DOM context extraction, identity popup, socket.io self-loader, vanilla toast
  * v3.1 additions: 3 live beacon triggers (scroll thrash, hesitation, idle)
  * v3.1 patches  : No double toast on Next.js site, no identity popup on own domain,
- *                 CONFIG exposed as window.__FIDELITY_CONFIG for bookmarklet URL override
+ *                 CONFIG exposed as window.__SYNAPTIC_CONFIG for bookmarklet URL override
  */
 
 (function () {
   'use strict';
 
   // Prevent double-injection (critical for bookmarklet mode)
-  if (window.__FIDELITY_TRACKER_LOADED__) return;
-  window.__FIDELITY_TRACKER_LOADED__ = true;
+  if (window.__SYNAPTIC_TRACKER_LOADED__) return;
+  window.__SYNAPTIC_TRACKER_LOADED__ = true;
 
   // =====================================================================
   // --- 1. CONFIGURATION & STATE ---
@@ -45,15 +45,15 @@
   };
 
   // Expose CONFIG so bookmarklet can override ENDPOINT + SOCKET_URL after script load
-  window.__FIDELITY_CONFIG = CONFIG;
+  window.__SYNAPTIC_CONFIG = CONFIG;
 
   const sessionData = {
-    session_id: localStorage.getItem('fidelity_ghost_id') || 'usr_' + Math.random().toString(36).substring(2, 11),
+    session_id: localStorage.getItem('synaptic_ghost_id') || 'usr_' + Math.random().toString(36).substring(2, 11),
     timestamp:  new Date().toISOString(),
     page_url:   window.location.pathname,
-    user_phone: localStorage.getItem('fidelity_user_phone') || null,
-    user_email: localStorage.getItem('fidelity_user_email') || null,
-    user_name:  localStorage.getItem('fidelity_user_name')  || null,
+    user_phone: localStorage.getItem('synaptic_user_phone') || null,
+    user_email: localStorage.getItem('synaptic_user_email') || null,
+    user_name:  localStorage.getItem('synaptic_user_name')  || null,
     behavioral_telemetry: {
       total_time_seconds:       0,
       max_scroll_depth_percent: 0,
@@ -71,8 +71,8 @@
   };
 
   // Persist ghost ID if newly generated
-  if (!localStorage.getItem('fidelity_ghost_id')) {
-    localStorage.setItem('fidelity_ghost_id', sessionData.session_id);
+  if (!localStorage.getItem('synaptic_ghost_id')) {
+    localStorage.setItem('synaptic_ghost_id', sessionData.session_id);
   }
 
   let entryTime = Date.now();
@@ -115,11 +115,11 @@
   // =====================================================================
   // --- 3. IDENTITY POPUP FOR FOREIGN WEBSITES ---
   // PATCH (Risk 2): Only shown on foreign sites — never on own domain.
-  // On the Fidelity site, login already populates localStorage.
+  // On the Synaptic site, login already populates localStorage.
   // =====================================================================
   function showIdentityPopup(onSubmit) {
     const overlay = document.createElement('div');
-    overlay.id = 'fidelity-identity-overlay';
+    overlay.id = 'synaptic-identity-overlay';
     overlay.style.cssText = [
       'position:fixed', 'top:0', 'left:0', 'width:100%', 'height:100%',
       'background:rgba(0,0,0,0.55)', 'z-index:2147483647',
@@ -136,7 +136,7 @@
     card.innerHTML = [
       '<div style="text-align:center;margin-bottom:20px;">',
       '<div style="font-size:28px;">🛡️</div>',
-      '<h2 style="margin:8px 0 4px;font-size:18px;color:#111;">Fidelity AI Advisor</h2>',
+      '<h2 style="margin:8px 0 4px;font-size:18px;color:#111;">Synaptic AI Advisor</h2>',
       '<p style="margin:0;font-size:13px;color:#666;">Enter your details to receive personalized alerts</p>',
       '</div>',
       '<input id="fid-phone" type="tel" placeholder="WhatsApp Number (e.g. +919...)" ',
@@ -151,7 +151,7 @@
       'Activate AI Alerts',
       '</button>',
       '<p style="text-align:center;font-size:11px;color:#999;margin:10px 0 0;">',
-      'Powered by Fidelity Behavioral AI',
+      'Powered by Synaptic Behavioral AI',
       '</p>'
     ].join('');
 
@@ -163,23 +163,23 @@
       const email = document.getElementById('fid-email').value.trim();
       if (!phone || !email) { alert('Please enter both phone and email.'); return; }
 
-      localStorage.setItem('fidelity_user_phone', phone);
-      localStorage.setItem('fidelity_user_email', email);
-      localStorage.setItem('fidelity_user_name',  email.split('@')[0]);
+      localStorage.setItem('synaptic_user_phone', phone);
+      localStorage.setItem('synaptic_user_email', email);
+      localStorage.setItem('synaptic_user_name',  email.split('@')[0]);
 
       sessionData.user_phone = phone;
       sessionData.user_email = email;
       sessionData.user_name  = email.split('@')[0];
 
       document.body.removeChild(overlay);
-      if (CONFIG.DEBUG) console.log('[Fidelity] Identity captured:', email);
+      if (CONFIG.DEBUG) console.log('[Synaptic] Identity captured:', email);
       onSubmit(phone, email);
     });
   }
 
   // PATCH — Risk 2: Detect own site — skip identity popup
   const isOwnSite = window.location.hostname === 'localhost' ||
-                    window.location.hostname.includes('fidelity') ||
+                    window.location.hostname.includes('synaptic') ||
                     !!window.__NEXT_DATA__;
 
   if (!sessionData.user_phone && !isOwnSite) {
@@ -202,12 +202,12 @@
 
   // =====================================================================
   // --- 4. VANILLA JS NUDGE TOAST ---
-  // On Fidelity/Next.js site: React NudgeOverlay handles receive_nudge.
+  // On Synaptic/Next.js site: React NudgeOverlay handles receive_nudge.
   // On foreign sites (bookmarklet): this vanilla toast renders the nudge.
   // intensity: 'gentle' | 'standard' | 'urgent'
   // =====================================================================
   function showNudgeToast(message, intensity) {
-    const existing = document.getElementById('fidelity-nudge-toast');
+    const existing = document.getElementById('synaptic-nudge-toast');
     if (existing) existing.remove();
 
     const bgColor = intensity === 'urgent'
@@ -217,7 +217,7 @@
         : 'linear-gradient(135deg,#003b1e,#00b050)';
 
     const toast = document.createElement('div');
-    toast.id = 'fidelity-nudge-toast';
+    toast.id = 'synaptic-nudge-toast';
     toast.style.cssText = [
       'position:fixed', 'bottom:24px', 'right:24px', 'z-index:2147483646',
       'background:' + bgColor,
@@ -227,9 +227,9 @@
       'animation:fid-slide-in 0.4s ease', 'cursor:pointer'
     ].join(';');
 
-    if (!document.getElementById('fidelity-toast-styles')) {
+    if (!document.getElementById('synaptic-toast-styles')) {
       const styleEl = document.createElement('style');
-      styleEl.id = 'fidelity-toast-styles';
+      styleEl.id = 'synaptic-toast-styles';
       styleEl.textContent = '@keyframes fid-slide-in{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}';
       document.head.appendChild(styleEl);
     }
@@ -238,7 +238,7 @@
       '<div style="display:flex;align-items:flex-start;gap:12px;">',
       '<span style="font-size:22px;">🛡️</span>',
       '<div>',
-      '<div style="font-size:11px;font-weight:700;letter-spacing:0.1em;opacity:0.8;margin-bottom:4px;">FIDELITY AI ADVISOR</div>',
+      '<div style="font-size:11px;font-weight:700;letter-spacing:0.1em;opacity:0.8;margin-bottom:4px;">SYNAPTIC AI ADVISOR</div>',
       '<div style="font-size:14px;line-height:1.5;">' + message + '</div>',
       '<div style="font-size:11px;opacity:0.7;margin-top:8px;">Tap to connect with an advisor →</div>',
       '</div>',
@@ -248,7 +248,7 @@
     document.body.appendChild(toast);
     setTimeout(function () { if (toast.parentNode) toast.remove(); }, 8000);
     toast.addEventListener('click', function () { toast.remove(); });
-    if (CONFIG.DEBUG) console.log('[Fidelity] Toast displayed:', message);
+    if (CONFIG.DEBUG) console.log('[Synaptic] Toast displayed:', message);
   }
 
 
@@ -483,7 +483,7 @@
   // =====================================================================
   // --- 12. SOCKET.IO: REAL-TIME NUDGE LISTENER ---
   // PATCH (Risk 1): Only initialised on foreign sites.
-  // On Fidelity / Next.js site, React NudgeOverlay handles receive_nudge —
+  // On Synaptic / Next.js site, React NudgeOverlay handles receive_nudge —
   // initialising here would cause double toasts.
   // =====================================================================
   function initSocketConnection() {
@@ -491,7 +491,7 @@
     script.src = CONFIG.SOCKET_URL + '/socket.io/socket.io.js';
     script.onload = function () {
       if (typeof io === 'undefined') {
-        if (CONFIG.DEBUG) console.warn('[Fidelity] Socket.io client failed to load.');
+        if (CONFIG.DEBUG) console.warn('[Synaptic] Socket.io client failed to load.');
         return;
       }
 
@@ -500,16 +500,16 @@
         query: { consumer_id: sessionData.session_id }
       });
 
-      socket.on('connect',    function () { if (CONFIG.DEBUG) console.log('[Fidelity] Socket connected:', socket.id); });
-      socket.on('disconnect', function () { if (CONFIG.DEBUG) console.log('[Fidelity] Socket disconnected.'); });
+      socket.on('connect',    function () { if (CONFIG.DEBUG) console.log('[Synaptic] Socket connected:', socket.id); });
+      socket.on('disconnect', function () { if (CONFIG.DEBUG) console.log('[Synaptic] Socket disconnected.'); });
 
       socket.on('receive_nudge', function (data) {
-        if (CONFIG.DEBUG) console.log('[Fidelity] Nudge received:', data);
+        if (CONFIG.DEBUG) console.log('[Synaptic] Nudge received:', data);
         showNudgeToast(data.message || data, data.type);
       });
     };
     script.onerror = function () {
-      if (CONFIG.DEBUG) console.warn('[Fidelity] Could not load Socket.io. Nudge toasts disabled.');
+      if (CONFIG.DEBUG) console.warn('[Synaptic] Could not load Socket.io. Nudge toasts disabled.');
     };
     document.head.appendChild(script);
   }

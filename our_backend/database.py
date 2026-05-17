@@ -114,7 +114,7 @@ async def save_user_identity(identity_data: dict) -> bool:
 
     try:
         payload = {
-            "fidelity_ghost_id": identity_data.get("consumer_id"),
+            "synaptic_ghost_id": identity_data.get("consumer_id"),
             "email":             identity_data.get("user_email"),
             "phone":             identity_data.get("user_phone"),
             "name":              identity_data.get("user_name", ""),
@@ -122,7 +122,7 @@ async def save_user_identity(identity_data: dict) -> bool:
         response = supabase.table("users").upsert(payload).execute()
 
         if response.data:
-            print(f"👤 Identity Synced for Ghost ID: {payload['fidelity_ghost_id']}")
+            print(f"👤 Identity Synced for Ghost ID: {payload['synaptic_ghost_id']}")
             return True
         return False
     except Exception as e:

@@ -32,11 +32,11 @@ export default function LoginPage() {
       }
 
       const data = await res.json();
-      localStorage.setItem("fidelity_consumer_token", data.access_token);
-      localStorage.setItem("fidelity_user_email", data.email);
-      localStorage.setItem("fidelity_user_name", data.name);
-      localStorage.setItem("fidelity_user_phone", data.phone || "");  // For WhatsApp cascade
-      localStorage.setItem("fidelity_ghost_id", `USR_${data.email.split("@")[0].toUpperCase()}`);
+      localStorage.setItem("synaptic_consumer_token", data.access_token);
+      localStorage.setItem("synaptic_user_email", data.email);
+      localStorage.setItem("synaptic_user_name", data.name);
+      localStorage.setItem("synaptic_user_phone", data.phone || "");  // For WhatsApp cascade
+      localStorage.setItem("synaptic_ghost_id", `USR_${data.email.split("@")[0].toUpperCase()}`);
 
       router.push("/");
     } catch (err) {
@@ -52,11 +52,11 @@ export default function LoginPage() {
         {/* Brand */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-fidelity-green text-white shadow-glow-green">
+            <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-synaptic-green text-white shadow-glow-green">
               <ShieldCheck size={22} />
             </span>
             <span>
-              <span className="block text-xl font-bold tracking-tight text-fidelity-dark">FIDELITY</span>
+              <span className="block text-xl font-bold tracking-tight text-synaptic-dark">SYNAPTIC</span>
               <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">
                 Wealth Services
               </span>
@@ -89,7 +89,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-4 text-sm outline-none transition focus:border-fidelity-green focus:ring-2 focus:ring-fidelity-green/15"
+                  className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-4 text-sm outline-none transition focus:border-synaptic-green focus:ring-2 focus:ring-synaptic-green/15"
                 />
               </div>
             </div>
@@ -104,7 +104,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-4 text-sm outline-none transition focus:border-fidelity-green focus:ring-2 focus:ring-fidelity-green/15"
+                  className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-4 text-sm outline-none transition focus:border-synaptic-green focus:ring-2 focus:ring-synaptic-green/15"
                 />
               </div>
             </div>
@@ -112,7 +112,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-fidelity-green py-3.5 text-sm font-bold text-white transition hover:bg-[#009940] disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-synaptic-green py-3.5 text-sm font-bold text-white transition hover:bg-[#009940] disabled:opacity-50"
             >
               {loading ? "Signing in..." : "Sign In"}
               {!loading && <ArrowRight size={16} />}
@@ -121,7 +121,7 @@ export default function LoginPage() {
 
           <div className="mt-6 text-center text-sm text-gray-500">
             Don&apos;t have an account?{" "}
-            <Link href="/register" className="font-semibold text-fidelity-green hover:underline">
+            <Link href="/register" className="font-semibold text-synaptic-green hover:underline">
               Register
             </Link>
           </div>

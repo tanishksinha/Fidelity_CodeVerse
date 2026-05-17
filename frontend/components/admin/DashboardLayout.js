@@ -6,11 +6,11 @@ import { cn } from '@/lib/cn';
 
 export default function DashboardLayout({ children, activeNav = 'funnel' }) {
   return (
-    <div className="min-h-screen bg-warroom-bg text-warroom-text-primary flex flex-col md:flex-row font-sans selection:bg-fidelity-green">
+    <div className="min-h-screen bg-warroom-bg text-warroom-text-primary flex flex-col md:flex-row font-sans selection:bg-synaptic-green">
       {/* Institutional Sidebar (Desktop) */}
       <aside className="hidden w-64 border-r border-warroom-border bg-warroom-surface md:flex md:flex-col">
         <div className="p-6 border-b border-warroom-border">
-          <h2 className="text-xl font-bold tracking-tight">FIDELITY</h2>
+          <h2 className="text-xl font-bold tracking-tight">SYNAPTIC</h2>
           <p className="text-xs text-warroom-text-secondary uppercase tracking-widest mt-1">Telemetry Command</p>
         </div>
         <nav className="flex-1 p-4 space-y-2">
@@ -47,7 +47,7 @@ function MobileNavItem({ icon: Icon, label, active, href = '#' }) {
       href={href}
       className={cn(
         'flex flex-col items-center justify-center w-full h-full text-xs transition-colors',
-        active ? 'text-fidelity-green' : 'text-warroom-text-secondary hover:text-white'
+        active ? 'text-synaptic-green' : 'text-warroom-text-secondary hover:text-white'
       )}
     >
       <Icon size={20} className="mb-1" />
@@ -63,7 +63,7 @@ function NavItem({ icon: Icon, label, active, href = '#' }) {
       className={cn(
         'flex items-center gap-3 rounded-md px-4 py-3 text-sm font-semibold transition-colors',
         active
-          ? 'border border-warroom-border bg-warroom-bg text-fidelity-green'
+          ? 'border border-warroom-border bg-warroom-bg text-synaptic-green'
           : 'text-warroom-text-secondary hover:text-white hover:bg-warroom-bg'
       )}
     >

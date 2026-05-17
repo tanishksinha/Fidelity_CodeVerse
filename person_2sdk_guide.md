@@ -7,11 +7,11 @@
 
 ## What You Are Building
 
-You own the **Fidelity Behavioral Ghost SDK** — the invisible JavaScript layer that runs on any website and feeds intelligence into the backend. Your work has two distinct modes:
+You own the **Synaptic Behavioral Ghost SDK** — the invisible JavaScript layer that runs on any website and feeds intelligence into the backend. Your work has two distinct modes:
 
 | Mode | Where | How tracker gets in | Who identifies the user |
 |---|---|---|---|
-| **Fidelity Site Mode** | `localhost:3000` | Auto-loaded via `layout.js` | JWT Login → localStorage |
+| **Synaptic Site Mode** | `localhost:3000` | Auto-loaded via `layout.js` | JWT Login → localStorage |
 | **Bookmarklet Mode** | Any foreign website | Judge clicks the bookmarklet | Popup asks for phone + email |
 
 ---
@@ -24,7 +24,7 @@ The tracker already does the following (do NOT break these):
 - ✅ Tracks **hesitation zones** (hovering too long over a form field)
 - ✅ Detects **rage clicks** (clicking the same thing 3x in under 2 seconds)
 - ✅ Fires an **instant beacon** to the backend when rage click is detected
-- ✅ Reads `fidelity_user_phone` and `fidelity_user_email` from `localStorage` and includes them in every beacon
+- ✅ Reads `synaptic_user_phone` and `synaptic_user_email` from `localStorage` and includes them in every beacon
 
 The current session payload (sent to the backend) looks like this:
 ```json
@@ -115,12 +115,12 @@ sessionData.dom_context = {
 
 ### The Logic (Read this carefully)
 
-On the Fidelity site, the login page already stores the user's phone in `localStorage`. The tracker reads it automatically — **no popup needed.**
+On the Synaptic site, the login page already stores the user's phone in `localStorage`. The tracker reads it automatically — **no popup needed.**
 
 On a foreign website, `localStorage` may have the phone from a previous bookmarklet session. Check first:
 
 ```
-localStorage has fidelity_user_phone?
+localStorage has synaptic_user_phone?
   ├── YES → Use it silently. Don't show popup.
   └── NO  → Show the identity popup once.
                User enters phone + email.
@@ -154,7 +154,7 @@ function showIdentityPopup(onSubmit) {
   card.innerHTML = `
     <div style="text-align:center; margin-bottom:20px;">
       <div style="font-size:28px;">🛡️</div>
-      <h2 style="margin:8px 0 4px; font-size:18px; color:#111;">Fidelity AI Advisor</h2>
+      <h2 style="margin:8px 0 4px; font-size:18px; color:#111;">Synaptic AI Advisor</h2>
       <p style="margin:0; font-size:13px; color:#666;">Enter your details to receive personalized alerts</p>
     </div>
     <input id="fid-phone" type="tel" placeholder="WhatsApp Number (e.g. +919...)"
@@ -169,7 +169,7 @@ function showIdentityPopup(onSubmit) {
       Activate AI Alerts
     </button>
     <p style="text-align:center; font-size:11px; color:#999; margin:10px 0 0;">
-      Powered by Fidelity Behavioral AI
+      Powered by Synaptic Behavioral AI
     </p>
   `;
 
@@ -182,9 +182,9 @@ function showIdentityPopup(onSubmit) {
     if (!phone || !email) { alert('Please enter both phone and email.'); return; }
 
     // Save to localStorage — never ask again
-    localStorage.setItem('fidelity_user_phone', phone);
-    localStorage.setItem('fidelity_user_email', email);
-    localStorage.setItem('fidelity_user_name', email.split('@')[0]);
+    localStorage.setItem('synaptic_user_phone', phone);
+    localStorage.setItem('synaptic_user_email', email);
+    localStorage.setItem('synaptic_user_name', email.split('@')[0]);
 
     // Update sessionData immediately
     sessionData.user_phone = phone;
@@ -204,7 +204,7 @@ At the top of `tracker.js`, after `sessionData` is defined:
 // Identity Check
 if (!sessionData.user_phone) {
   showIdentityPopup((phone, email) => {
-    console.log('[Fidelity] Identity captured:', email);
+    console.log('[Synaptic] Identity captured:', email);
     // Optional: Register with backend
     fetch('https://YOUR_NGROK_URL/api/register-consumer', {
       method: 'POST',
@@ -231,22 +231,22 @@ The bookmarklet injects `tracker.js` from YOUR server (running on ngrok) into an
 // bookmarklet.js — this is what gets saved as the bookmark
 javascript:(function(){
   // Prevent double-injection
-  if(window.__FIDELITY_TRACKER_LOADED__) {
-    alert('Fidelity Tracker already active on this page!');
+  if(window.__SYNAPTIC_TRACKER_LOADED__) {
+    alert('Synaptic Tracker already active on this page!');
     return;
   }
-  window.__FIDELITY_TRACKER_LOADED__ = true;
+  window.__SYNAPTIC_TRACKER_LOADED__ = true;
 
   // Generate a session ID for this foreign site visit
-  if(!localStorage.getItem('fidelity_ghost_id')) {
-    localStorage.setItem('fidelity_ghost_id', 'EXT_' + Math.random().toString(36).substring(2,9).toUpperCase());
+  if(!localStorage.getItem('synaptic_ghost_id')) {
+    localStorage.setItem('synaptic_ghost_id', 'EXT_' + Math.random().toString(36).substring(2,9).toUpperCase());
   }
 
   // Load tracker.js from the public ngrok URL
   var script = document.createElement('script');
   script.src = 'https://YOUR_NGROK_URL/tracker.js?t=' + Date.now(); // cache-bust
   script.onload = function() {
-    console.log('[Fidelity] Behavioral tracker active.');
+    console.log('[Synaptic] Behavioral tracker active.');
   };
   document.head.appendChild(script);
 })();
@@ -267,18 +267,18 @@ Then the bookmarklet URL becomes: `https://YOUR_NGROK_URL/static/tracker.js`
 
 ## Part 5: The Vanilla JS Toast Popup (For Foreign Sites)
 
-On the Fidelity site, the popup is handled by React's `NudgeOverlay` component. But on Zerodha or Amazon, React doesn't exist. You need a vanilla JS popup that `tracker.js` injects when it receives a WebSocket nudge.
+On the Synaptic site, the popup is handled by React's `NudgeOverlay` component. But on Zerodha or Amazon, React doesn't exist. You need a vanilla JS popup that `tracker.js` injects when it receives a WebSocket nudge.
 
 Add this to `tracker.js`:
 
 ```javascript
 function showNudgeToast(message) {
   // Remove any existing toast
-  const existing = document.getElementById('fidelity-nudge-toast');
+  const existing = document.getElementById('synaptic-nudge-toast');
   if (existing) existing.remove();
 
   const toast = document.createElement('div');
-  toast.id = 'fidelity-nudge-toast';
+  toast.id = 'synaptic-nudge-toast';
   toast.style.cssText = `
     position: fixed; bottom: 24px; right: 24px; z-index: 2147483646;
     background: linear-gradient(135deg, #003b1e, #00b050);
@@ -298,7 +298,7 @@ function showNudgeToast(message) {
     <div style="display:flex; align-items:flex-start; gap:12px;">
       <span style="font-size:22px;">🛡️</span>
       <div>
-        <div style="font-size:11px; font-weight:700; letter-spacing:0.1em; opacity:0.8; margin-bottom:4px;">FIDELITY AI ADVISOR</div>
+        <div style="font-size:11px; font-weight:700; letter-spacing:0.1em; opacity:0.8; margin-bottom:4px;">SYNAPTIC AI ADVISOR</div>
         <div style="font-size:14px; line-height:1.5;">${message}</div>
         <div style="font-size:11px; opacity:0.7; margin-top:8px;">Tap to connect with an advisor →</div>
       </div>
@@ -333,7 +333,7 @@ socket.on('receive_nudge', (data) => {
 
 ## Part 7: How to Test Your Work
 
-### Test 1: Fidelity Site (no popup should appear)
+### Test 1: Synaptic Site (no popup should appear)
 1. Log in at `localhost:3000/login`
 2. Browse to any page
 3. Rage click a button 2-3 times

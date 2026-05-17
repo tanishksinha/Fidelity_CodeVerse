@@ -104,7 +104,7 @@ function StatusBadge({ status }) {
     <span
       className={cn(
         'warroom-badge',
-        status === 'dispatched' && 'border-fidelity-green/30 bg-fidelity-green/10 text-fidelity-green',
+        status === 'dispatched' && 'border-synaptic-green/30 bg-synaptic-green/10 text-synaptic-green',
         status === 'processed' && 'border-intent-analyzing/30 bg-intent-analyzing/10 text-intent-analyzing',
         status === 'abandoned' && 'border-intent-hesitate/30 bg-intent-hesitate/10 text-intent-hesitate'
       )}
