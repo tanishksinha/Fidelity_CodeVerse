@@ -452,7 +452,10 @@
       `s.src='${src}?ngrok=${encodeURIComponent(base)}&t='+Date.now();` +
       `s.setAttribute('data-ngrok-url','${base}');` +
       `s.onload=function(){` +
-        `if(window.__FIDELITY_CONFIG)window.__FIDELITY_CONFIG.ENDPOINT='${base}/api/ingest-telemetry';` +
+        `if(window.__FIDELITY_CONFIG){` +
+          `window.__FIDELITY_CONFIG.ENDPOINT='${base}/api/ingest-telemetry';` +
+          `window.__FIDELITY_CONFIG.SOCKET_URL='${base}';` +
+        `}` +
         `console.log('[Fidelity] Behavioral tracker active on: '+window.location.hostname);` +
       `};` +
       `s.onerror=function(){alert('Could not load Fidelity tracker. Is the backend + ngrok running?');};` +
