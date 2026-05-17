@@ -17,6 +17,9 @@ export default function NudgeOverlay() {
   const [nudge, setNudge] = useState(null); // { message, type, offerLabel }
 
   useEffect(() => {
+    // Disable nudge listener on admin routes to prevent admin from receiving user alerts
+    if (window.location.pathname.startsWith('/admin')) return;
+
     // Generate a persistent anonymous ID for the consumer if not present
     let consumerId = localStorage.getItem('fidelity_ghost_id');
     if (!consumerId) {

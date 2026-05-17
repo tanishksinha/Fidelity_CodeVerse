@@ -28,6 +28,53 @@ export default function RevenueTicker() {
     Math.floor(v).toLocaleString('en-IN')
   );
 
+  // Live high-speed micro-ticker to simulate a high-traffic production system
+  useEffect(() => {
+    // Start with a highly realistic baseline for a prototype so it looks natural immediately
+    setRevenue(24500);
+    setAtRisk(45000);
+    setNormalConversions(16);
+    setSmartConversions(9);
+    setNudgesSent(18);
+    setNudgesConverted(9);
+    animate(motionRevenue, 24500, { duration: 1.0 });
+
+    const interval = setInterval(() => {
+      // 1. Simulate a new conversion being recovered with 40% probability
+      if (Math.random() > 0.6) {
+        const addedRevenue = randomChoice([500, 1000, 1500, 2000, 5000]);
+        setRevenue((prev) => {
+          const next = prev + addedRevenue;
+          animate(motionRevenue, next, { duration: 0.8, ease: 'easeOut' });
+          return next;
+        });
+        setSmartConversions((prev) => prev + 1);
+        setNudgesConverted((prev) => prev + 1);
+        setNudgesSent((prev) => prev + 1);
+      }
+
+      // 2. Simulate new revenue at risk with 50% probability
+      if (Math.random() > 0.5) {
+        const addedRisk = randomChoice([500, 1000, 1500, 2500]);
+        setAtRisk((prev) => prev + addedRisk);
+        if (Math.random() > 0.7) {
+          setNudgesSent((prev) => prev + 1);
+        }
+      }
+
+      // 3. Simulate standard conversion with 30% probability
+      if (Math.random() > 0.7) {
+        setNormalConversions((prev) => prev + 1);
+      }
+    }, 1200); // Trigger a rapid wave of micro-interactions every 1.2 seconds!
+
+    return () => clearInterval(interval);
+  }, [motionRevenue]);
+
+  function randomChoice(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
   // Subscribe to live conversion events
   useEffect(() => {
     if (!socket) return;

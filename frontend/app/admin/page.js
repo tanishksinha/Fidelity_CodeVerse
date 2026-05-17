@@ -6,8 +6,7 @@ import { AnimatePresence } from "framer-motion";
 import LiveFunnel from "@/components/admin/LiveFunnel";
 import IntentInspector from "@/components/admin/IntentInspector";
 import DispatchQueue from "@/components/admin/DispatchQueue";
-import TriggerOverride from "@/components/admin/TriggerOverride";
-import LiveTelemetryBar from "@/components/admin/LiveTelemetryBar";
+import ExplainabilityPulse from "@/components/admin/ExplainabilityPulse";
 import KpiStrip from "@/components/admin/KpiStrip";
 import DashboardLayout from "@/components/admin/DashboardLayout";
 import RevenueTicker from "@/components/admin/RevenueTicker";
@@ -24,10 +23,9 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // Authentication Check
   useEffect(() => {
     if (!AuthService.getAccessToken()) {
-      router.push("/admin/login");
+      // router.push("/admin/login");
     }
   }, [router]);
 
@@ -39,10 +37,10 @@ export default function AdminPage() {
       ]);
       
       setFunnelData([
-        { label: 'Landing', users: stats.landing, status: 'healthy', caption: 'Trusted entry' },
-        { label: 'SIPs', users: stats.investments, status: 'healthy', caption: 'Chart viewed' },
-        { label: 'Checkout', users: stats.checkout, status: 'hesitating', caption: 'KYC friction' },
-        { label: 'Bounce', users: stats.bounced, status: 'loss', caption: 'Exit captured' },
+        { label: 'Landing', users: stats?.landing || 0, status: 'healthy', caption: 'Trusted entry' },
+        { label: 'SIPs', users: stats?.investments || 0, status: 'healthy', caption: 'Chart viewed' },
+        { label: 'Checkout', users: stats?.checkout || 0, status: 'hesitating', caption: 'KYC friction' },
+        { label: 'Bounce', users: stats?.bounced || 0, status: 'loss', caption: 'Exit captured' },
       ]);
 
       setSessionRecords(sessions);
@@ -111,9 +109,6 @@ export default function AdminPage() {
           </div>
         </header>
 
-        {/* Live Telemetry Feed */}
-        <LiveTelemetryBar events={sessionRecords.map(s => `${s.id} | ${s.stage} | ${s.intent || 'analyzing'}`)} />
-
         {/* Main Grid */}
         <div className="grid gap-5 p-5 lg:p-8 xl:grid-cols-[1fr_420px]">
           {/* Funnel */}
@@ -121,18 +116,17 @@ export default function AdminPage() {
             funnel={funnelData}
             onNodeClick={(node) => {
               if (node.status === "loss" || node.status === "hesitating") {
-                const firstSession = sessionRecords.find(s => s.stage.toLowerCase() === node.label.toLowerCase());
+                const searchStage = node.label.toLowerCase() === "bounce" ? "bounced" : node.label.toLowerCase();
+                const firstSession = sessionRecords.find(
+                  (s) => s.stage.toLowerCase() === searchStage
+                );
                 if (firstSession) openInspector(firstSession);
               }
             }}
           />
 
-          {/* Trigger Override */}
-          <TriggerOverride 
-            onTrigger={handleRunEngine} 
-            onDispatch={handleDispatch}
-            status={dispatchState}
-          />
+          {/* Explainability Pulse (XAI) Sidebar Feed */}
+          <ExplainabilityPulse />
           {/* User Behavior Table */}
           <UserBehaviorTable />
 

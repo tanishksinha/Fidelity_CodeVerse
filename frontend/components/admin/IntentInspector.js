@@ -52,7 +52,7 @@ export default function IntentInspector({ session, onClose }) {
         <div>
           <p className="font-mono text-sm font-bold text-white">Session {session.id}</p>
           <p className="mt-2 inline-flex rounded-md bg-intent-bounce/10 px-2 py-1 text-xs font-bold uppercase tracking-[0.14em] text-intent-bounce">
-            Abandoned at {session.stage}
+            {session.status === 'live' ? 'Active in' : 'Abandoned at'} {session.stage}
           </p>
         </div>
         <button
