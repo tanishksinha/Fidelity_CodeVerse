@@ -24,7 +24,7 @@ export default function ExplainabilityCard({ data, isOpen, onToggle }) {
   const tone = data?.ai_tone_selected || data?.intent || 'Empathetic / Reassuring';
 
   const scoreColor = scorePercent < 40
-    ? 'text-synaptic-green'
+    ? 'text-fidelity-green'
     : scorePercent < 70
       ? 'text-intent-hesitate'
       : 'text-intent-bounce';
@@ -70,7 +70,7 @@ export default function ExplainabilityCard({ data, isOpen, onToggle }) {
                   <span className="text-[9px] text-warroom-text-secondary">/100</span>
                   <div className="flex-1 h-1.5 rounded-full bg-warroom-border overflow-hidden ml-2">
                     <div
-                      className={cn('h-full rounded-full', scorePercent < 40 ? 'bg-synaptic-green' : scorePercent < 70 ? 'bg-intent-hesitate' : 'bg-intent-bounce')}
+                      className={cn('h-full rounded-full', scorePercent < 40 ? 'bg-fidelity-green' : scorePercent < 70 ? 'bg-intent-hesitate' : 'bg-intent-bounce')}
                       style={{ width: `${scorePercent}%` }}
                     />
                   </div>

@@ -13,7 +13,7 @@ export default function LiveTelemetryBar({ events }) {
             animate={{ opacity: [0.45, 1, 0.45] }}
             transition={{ duration: 2.4, repeat: Infinity, delay: i * 0.3 }}
           >
-            <span className="text-synaptic-green">&gt;</span> {event}
+            <span className="text-fidelity-green">&gt;</span> {event}
           </motion.span>
         ))}
       </div>

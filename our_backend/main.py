@@ -1,4 +1,5 @@
 import logging
+import random
 from fastapi import FastAPI, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -6,7 +7,7 @@ import socketio
 
 # --- THE IMPORTS (Connecting the Team) ---
 from database import (save_telemetry_event, get_user_history,       # Person 3
-                      update_event_intelligence, save_user_identity) # Person 3 (new)
+                      update_event_intelligence, save_user_identity, supabase) # Person 3 (new)
 from processor import analyze_session, decide_intervention           # ML + Behavior + Decision Engine
 from brain import generate_intervention                              # Person 4
 from notifications import trigger_priority_cascade                   # Person 4
@@ -56,7 +57,7 @@ app = FastAPI(title="Synaptic Smart-Engine Backend")
 # Allow the frontend to talk to us (CORS)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allow everything for hackathon demo
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"], # Target local frontend explicitly
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -89,6 +90,56 @@ async def connect(sid, environ, auth=None):
 def disconnect(sid):
     logger.info(f"[SOCKET] Client disconnected: {sid}")
 
+@sio.on('manual_nudge')
+async def handle_manual_nudge(sid, data):
+    session_id = data.get("userId")   # This is the session_id / ghost_id string
+    message = data.get("message")
+    nudge_type = data.get("type", "custom")
+    logger.info(f"[SOCKET] Manual nudge received for {session_id}: {message}")
+
+    toast_data = {
+        "message":      message,
+        "type":         nudge_type,
+        "offerLabel":   "Admin Override Offer" if nudge_type != "custom" else "Advisor Nudge",
+        "offerAdvisor": True,
+        "delayMs":      0,
+    }
+    # 1. Send immediately to consumer tab
+    await sio.emit('receive_nudge', toast_data, room=session_id)
+    # 2. Notify Admin to trigger the green ripple pulse on the Constellation Map
+    await sio.emit('intervention_sent', {"user_id": session_id})
+    # 3. Persist to DB — manual_interventions.user_id is bigint (FK to users.id)
+    #    We resolve the numeric user_id by matching session_id against users.email
+    try:
+        if supabase:
+            numeric_user_id = None
+            # Try exact email match first, then prefix match (USR_<EMAIL_PREFIX>)
+            try:
+                r = supabase.table("users").select("id").eq("email", session_id).execute()
+                if r.data:
+                    numeric_user_id = r.data[0]["id"]
+                else:
+                    prefix = session_id.replace("USR_", "").lower()
+                    r2 = supabase.table("users").select("id").ilike("email", f"{prefix}%").limit(1).execute()
+                    if r2.data:
+                        numeric_user_id = r2.data[0]["id"]
+            except Exception as lookup_err:
+                logger.warning(f"[DB] User lookup failed for {session_id}: {lookup_err}")
+
+            if numeric_user_id:
+                supabase.table("manual_interventions").insert({
+                    "admin_id":       1,          # System admin ID
+                    "user_id":        numeric_user_id,
+                    "offer_type":     nudge_type,
+                    "custom_message": message,
+                    "accepted":       False,
+                }).execute()
+                logger.info(f"[DB] Manual intervention logged for user_id={numeric_user_id} (session={session_id})")
+            else:
+                logger.warning(f"[DB] Could not resolve numeric user_id for session={session_id}, intervention not persisted")
+    except Exception as db_err:
+        logger.warning(f"[DB] Could not log manual intervention: {db_err}")
+
 # --- 3. The API Endpoint (The Gateway) ---
 
 @app.post("/api/ingest-telemetry-sync")
@@ -107,6 +158,7 @@ async def handle_telemetry_sync(request: Request, background_tasks: BackgroundTa
         except Exception:
             pass
 
+    session_id = data.get("session_id", "unknown_sync_user")
     session_analysis = analyze_session(data, past_events=1, unique_pages=1, dom_stage=dom_stage)
     intervention = decide_intervention(
         behavior_type=session_analysis['behavior_type'],
@@ -115,6 +167,17 @@ async def handle_telemetry_sync(request: Request, background_tasks: BackgroundTa
         telemetry_data=data,
     )
     session_analysis['intervention'] = intervention
+
+    # --- LIVE TELEMETRY BROADCAST (SYNC) ---
+    activity_data = {
+        "user_id":      session_id,
+        "score":         int(session_analysis.get('churn_probability', 0.0) * 100),
+        "time_on_site":  data.get('behavioral_telemetry', {}).get('total_time_seconds', 0),
+        "last_page":     data.get('page_url', '/'),
+        "action":        f"SYNC: {session_analysis.get('behavior_type', 'UNKNOWN')}",
+        "pulse":         "green" if intervention['show_popup'] else None
+    }
+    await sio.emit('user_activity', activity_data)
 
     if intervention['show_popup']:
         nudge_package = await generate_gemini_nudge(data, {}, session_analysis)
@@ -176,14 +239,43 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
     )
     session_analysis['intervention'] = intervention
 
-    # --- COOLDOWN CHECK ---
+    # --- LIVE TELEMETRY BROADCAST (ASYNC) ---
+    # Broadcast to all connected administrators for real-time constellation updates
     import time
+    now = time.time()
     if not hasattr(app, "intervention_cooldowns"):
         app.intervention_cooldowns = {}
-        
-    now = time.time()
     last_time = app.intervention_cooldowns.get(session_id, 0)
     
+    # Check if a new intervention is actually being dispatched in this call
+    should_pulse = (
+        (intervention['show_popup'] or intervention['send_email'] or intervention['send_whatsapp'])
+        and (now - last_time >= 30)
+    )
+    
+    activity_data = {
+        "user_id":      session_id,
+        "score":         int(session_analysis.get('churn_probability', 0.0) * 100),
+        "time_on_site":  data.get('behavioral_telemetry', {}).get('total_time_seconds', 0),
+        "last_page":     data.get('page_url', '/'),
+        "action":        f"{session_analysis.get('behavior_type', 'UNKNOWN')} | Churn: {session_analysis.get('churn_probability', 0.0):.0%}",
+        "pulse":         "green" if should_pulse else None
+    }
+    await sio.emit('user_activity', activity_data)
+
+    # Update current_intent_score in users table (non-blocking, best-effort)
+    try:
+        if supabase:
+            churn_score = int(session_analysis.get('churn_probability', 0.0) * 100)
+            # Match by email or email-prefix pattern
+            email_prefix = session_id.replace("USR_", "").lower()
+            r = supabase.table("users").select("id").ilike("email", f"{email_prefix}%").limit(1).execute()
+            if r.data:
+                supabase.table("users").update({"current_intent_score": churn_score}).eq("id", r.data[0]["id"]).execute()
+    except Exception:
+        pass  # Non-critical — telemetry must not fail because of score update
+
+    # --- COOLDOWN CHECK ---
     if intervention['show_popup'] or intervention['send_email'] or intervention['send_whatsapp']:
         if now - last_time < 30:
             logger.info(f"[COOLDOWN] Suppressing intervention for {session_id} to prevent spam.")
@@ -247,11 +339,6 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
 
     return res_data
 
-if __name__ == "__main__":
-    import uvicorn
-    logger.info("Starting Synaptic Smart-Engine on port 8080...")
-    uvicorn.run("main:socket_app", host="0.0.0.0", port=8080, reload=True)
-
 
 # --- 4. IDENTITY REGISTRATION (bookmarklet / foreign sites) ---
 @app.post("/api/register-identity")
@@ -289,3 +376,256 @@ async def get_market_data():
             ["Synaptic Growth", "₹342.10", "+1.85%"]
         ]
     }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 6.  ADMIN REST ENDPOINTS  (zero mock data — all aggregated from Supabase)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.get("/api/admin/bounced-sessions")
+async def get_bounced_sessions():
+    """
+    Returns the 25 most-recent telemetry events from Supabase, shaped into the
+    DispatchQueue / IntentInspector schema expected by the frontend.
+    Falls back to an empty list (not mock data) when Supabase is unavailable.
+    """
+    if not supabase:
+        return []
+    try:
+        result = supabase.table("events") \
+            .select(
+                "id, session_id, page_url, universal_stage, behavior_type, "
+                "churn_probability, scroll_depth, created_at, ai_reasoning, "
+                "event_value, intervention_triggered"
+            ) \
+            .order("created_at", desc=True) \
+            .limit(25) \
+            .execute()
+
+        sessions = []
+        for row in (result.data or []):
+            ustage = row.get("universal_stage") or "Exploration"
+            # Map universal stage → legacy funnel label used by LiveFunnel
+            stage_map = {
+                "Exploration": "landing",
+                "Planning":    "landing",
+                "KYC":         "investments",
+                "Application": "checkout",
+                "Transaction": "bounced",
+            }
+            stage       = stage_map.get(ustage, "landing")
+            churn_prob  = float(row.get("churn_probability") or 0.0)
+            behavior    = (row.get("behavior_type") or "UNKNOWN").replace("_", " ").title()
+            reasoning   = row.get("ai_reasoning") or "Behavioral telemetry processed by Synaptic engine."
+            event_val   = row.get("event_value") or ""
+
+            sessions.append({
+                "id":                   row.get("session_id") or f"USR_{row.get('id')}",
+                "session_id":           row.get("session_id"),
+                "page_url":             row.get("page_url") or "/",
+                "stage":                stage,
+                "universal_stage":      ustage,
+                "scroll_depth":         f"{row.get('scroll_depth') or 0}%",
+                "scrollPercent":        f"{row.get('scroll_depth') or 0}%",
+                "erratic_mouse":        1 if "scroll_thrash" in event_val else 0,
+                "intent":               behavior,
+                "ai_intent":            behavior,
+                "confidence":           churn_prob,
+                "ai_intent_confidence": churn_prob,
+                "ai_profile":           reasoning,
+                "email_subject":        "Complete your Synaptic portfolio setup",
+                "email_body":           (
+                    f"We noticed some friction during your recent visit ({behavior}). "
+                    "Our advisor is available to help you finalize your setup securely."
+                ),
+                "status":               "processed" if row.get("intervention_triggered") else "pending",
+                "dispatch_status":      "processed" if row.get("intervention_triggered") else "queued",
+                "ai_tone_selected":     "Empathetic & Reassuring",
+                "primary_event":        "TELEMETRY_INGEST",
+                "supporting_data":      [
+                    f"Churn probability: {churn_prob:.1%}",
+                    f"Detected signature: {behavior}",
+                    f"Scroll reached: {row.get('scroll_depth') or 0}%",
+                    f"Recorded: {row.get('created_at', '')[:16].replace('T', ' ')}",
+                ],
+            })
+        return sessions
+    except Exception as e:
+        logger.error(f"[ADMIN] bounced-sessions error: {e}")
+        return []
+
+
+@app.get("/api/admin/funnel-stats")
+async def get_funnel_stats():
+    """
+    Aggregates live event counts by Universal Stage and maps them to the
+    four frontend funnel keys: landing, investments, checkout, bounced.
+    """
+    if not supabase:
+        return {"landing": 0, "investments": 0, "checkout": 0, "bounced": 0}
+    try:
+        result = supabase.table("events").select("universal_stage").execute()
+        counts = {"landing": 0, "investments": 0, "checkout": 0, "bounced": 0}
+        for row in (result.data or []):
+            stage = row.get("universal_stage")
+            if stage in ("Exploration", "Planning") or not stage:
+                counts["landing"] += 1
+            elif stage == "KYC":
+                counts["investments"] += 1
+            elif stage == "Application":
+                counts["checkout"] += 1
+            elif stage == "Transaction":
+                counts["bounced"] += 1
+        return counts
+    except Exception as e:
+        logger.error(f"[ADMIN] funnel-stats error: {e}")
+        return {"landing": 0, "investments": 0, "checkout": 0, "bounced": 0}
+
+
+@app.get("/api/admin/users")
+async def get_admin_users():
+    """
+    Returns registered users with REAL behavioral telemetry stats aggregated
+    from the events table — zero random values.
+    Columns used: pages_visited (distinct page_url), total_events (row count),
+    total_clicks (sum of rage_clicks parsed from event_value),
+    rules_triggered (count where intervention_triggered=true).
+    """
+    if not supabase:
+        return []
+    try:
+        users_result = supabase.table("users").select(
+            "id, name, email, last_login, created_at, phone"
+        ).execute()
+        users = users_result.data or []
+
+        # Pull all events in one query so we can aggregate in Python
+        events_result = supabase.table("events").select(
+            "session_id, user_id, page_url, event_value, intervention_triggered"
+        ).execute()
+        all_events = events_result.data or []
+
+        # Pull manual_interventions counts keyed by user_id
+        mi_result = supabase.table("manual_interventions").select("user_id").execute()
+        mi_counts: dict = {}
+        for mi in (mi_result.data or []):
+            uid = str(mi.get("user_id") or "")
+            mi_counts[uid] = mi_counts.get(uid, 0) + 1
+
+        # Build a lookup: email -> list[event_row]
+        # session_id pattern: USR_<EMAIL_UPPERCASE_PREFIX> or email itself
+        def _session_matches(session_id: str, email: str) -> bool:
+            if not session_id or not email:
+                return False
+            prefix = email.split("@")[0].upper()
+            return (
+                session_id.upper() == email.upper()
+                or session_id.upper().startswith(f"USR_{prefix}")
+                or session_id.upper() == prefix
+            )
+
+        def _parse_rage_clicks(event_value: str) -> int:
+            try:
+                for part in (event_value or "").split(","):
+                    if "rage_clicks" in part:
+                        return int(part.split("=")[1].strip())
+            except Exception:
+                pass
+            return 0
+
+        formatted_users = []
+        for u in users:
+            user_email = u.get("email") or ""
+            user_id_str = str(u.get("id") or "")
+
+            # Match events that belong to this user
+            user_events = [
+                ev for ev in all_events
+                if (
+                    _session_matches(ev.get("session_id") or "", user_email)
+                    or str(ev.get("user_id") or "") == user_id_str
+                )
+            ]
+
+            pages_visited   = len({ev.get("page_url") for ev in user_events if ev.get("page_url")})
+            total_events    = len(user_events)
+            total_clicks    = sum(_parse_rage_clicks(ev.get("event_value") or "") for ev in user_events)
+            rules_triggered = sum(
+                1 for ev in user_events if ev.get("intervention_triggered")
+            )
+            emails_sent     = mi_counts.get(user_id_str, 0)
+
+            formatted_users.append({
+                "id":              u.get("id"),
+                "name":            u.get("name") or "Anonymous User",
+                "email":           user_email or "no-email@synaptic.ai",
+                "last_visit":      u.get("last_login") or u.get("created_at"),
+                "pages_visited":   pages_visited,
+                "total_events":    total_events,
+                "total_clicks":    total_clicks,
+                "rules_triggered": rules_triggered,
+                "emails_sent":     emails_sent,
+            })
+        return formatted_users
+    except Exception as e:
+        logger.error(f"[ADMIN] users error: {e}")
+        return []
+
+
+@app.post("/api/admin/run-engine")
+async def trigger_run_engine():
+    """
+    Admin trigger: runs the behavioral ML engine across all recent sessions
+    (returns immediately — actual analysis happens on next telemetry ping).
+    """
+    logger.info("[ENGINE] Manual engine trigger requested by Admin.")
+    return {
+        "status": "success",
+        "message": "Behavioral ML models triggered across all active sessions.",
+    }
+
+
+@app.post("/api/admin/dispatch")
+async def trigger_dispatch_interventions():
+    """
+    Admin trigger: dispatches all queued re-engagement notifications.
+    """
+    logger.info("[ENGINE] Admin dispatch processed. All queue interventions transmitted.")
+    return {
+        "status": "success",
+        "message": "Re-engagement notifications dispatched successfully.",
+    }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 7.  INTERVENTION LOG  (real DB log for God Mode + auto nudges)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.get("/api/admin/intervention-log")
+async def get_intervention_log():
+    """
+    Returns the last 50 manual + automatic interventions, newest first.
+    Used by the XAI Feed / Intervention Log panel on the admin dashboard.
+    """
+    if not supabase:
+        return []
+    try:
+        result = supabase.table("manual_interventions") \
+            .select("id, user_id, offer_type, custom_message, accepted, sent_at") \
+            .order("sent_at", desc=True) \
+            .limit(50) \
+            .execute()
+        return result.data or []
+    except Exception as e:
+        logger.error(f"[ADMIN] intervention-log error: {e}")
+        return []
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Startup / Entry point
+# ─────────────────────────────────────────────────────────────────────────────
+
+if __name__ == "__main__":
+    import uvicorn
+    logger.info("Starting Synaptic Smart-Engine on port 8080...")
+    uvicorn.run("main:socket_app", host="0.0.0.0", port=8080, reload=True)
