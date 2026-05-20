@@ -107,24 +107,35 @@ async def save_user_identity(identity_data: dict) -> bool:
     """
     Saves or updates a user's contact info from the identity popup (foreign sites).
     Enables the full priority cascade (Email + WhatsApp) for bookmarklet sessions.
+    NOTE: fidelity_ghost_id does not exist as a column in `users`; we upsert by email.
     """
     if not supabase:
         print(f"[MOCK DB] Saved Identity for {identity_data.get('consumer_id')}")
         return True
 
     try:
+        consumer_id = identity_data.get("consumer_id", "")
+        email = identity_data.get("user_email", "")
+
+        if not email:
+            print(f"⚠️  save_user_identity: no email provided, skipping.")
+            return False
+
         payload = {
-            "synaptic_ghost_id": identity_data.get("consumer_id"),
-            "email":             identity_data.get("user_email"),
-            "phone":             identity_data.get("user_phone"),
-            "name":              identity_data.get("user_name", ""),
+            "email":         email,
+            "name":          identity_data.get("user_name", "") or consumer_id,
+            "phone":         identity_data.get("user_phone"),
+            # password_hash is NOT NULL — ghost/bookmarklet users get a sentinel value
+            "password_hash": "ghost_user_no_password",
+            "role":          "USER",
         }
-        response = supabase.table("users").upsert(payload).execute()
+        response = supabase.table("users").upsert(payload, on_conflict="email").execute()
 
         if response.data:
-            print(f"[USER] Identity Synced for Ghost ID: {payload['synaptic_ghost_id']}")
+            print(f"👤 Identity Synced for Ghost ID: {consumer_id} → email: {email}")
             return True
         return False
     except Exception as e:
         print(f"Database Error (save_user_identity): {e}")
         return False
+

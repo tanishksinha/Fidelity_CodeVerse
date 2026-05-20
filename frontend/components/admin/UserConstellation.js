@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Eye, Zap, Filter } from 'lucide-react';
 import { useSocket } from '@/contexts/SocketContext';
+import IntentInspector from '@/components/admin/IntentInspector';
 import { cn } from '@/lib/cn';
 
 /**
@@ -239,12 +240,20 @@ export default function UserConstellation() {
             const glowR = scoreToGlow(u.score);
 
             return (
-              <g key={u.user_id} onClick={() => setSelectedUser(u)} className="cursor-pointer">
+              <g
+                key={u.user_id}
+                onClick={() => setSelectedUser(u)}
+                className="cursor-pointer pointer-events-auto"
+                style={{
+                  transition: 'transform 1.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                  transform: `translate(${u.x}px, ${u.y}px)`
+                }}
+              >
                 {/* Halo glow for high-intent — cardiac pulse */}
                 {glowR > 0 && (
                   <circle
-                    cx={u.x}
-                    cy={u.y}
+                    cx={0}
+                    cy={0}
                     r={r + glowR}
                     fill={`url(#glow-${u.user_id})`}
                     className={`animate-telemetry-pulse ${pulseDelayClass(u.user_id)}`}
@@ -252,15 +261,15 @@ export default function UserConstellation() {
                 )}
                 {/* Intervention pulse (green flash) */}
                 {u.pulse === 'green' && (
-                  <circle cx={u.x} cy={u.y} r={r + 16} fill="none" stroke="#007A33" strokeWidth="2" opacity="0.7">
+                  <circle cx={0} cy={0} r={r + 16} fill="none" stroke="#007A33" strokeWidth="2" opacity="0.7">
                     <animate attributeName="r" from={r} to={r + 30} dur="0.8s" fill="freeze" />
                     <animate attributeName="opacity" from="0.7" to="0" dur="0.8s" fill="freeze" />
                   </circle>
                 )}
                 {/* Main dot — subtle breathe animation */}
                 <circle
-                  cx={u.x}
-                  cy={u.y}
+                  cx={0}
+                  cy={0}
                   r={r}
                   fill={color}
                   stroke={color}
@@ -269,7 +278,7 @@ export default function UserConstellation() {
                 />
                 {/* Score label for large dots */}
                 {r > 10 && (
-                  <text x={u.x} y={u.y + 3} textAnchor="middle" fill="#000" fontSize="8" fontWeight="bold" fontFamily="monospace">
+                  <text x={0} y={3} textAnchor="middle" fill="#000" fontSize="8" fontWeight="bold" fontFamily="monospace">
                     {u.score}
                   </text>
                 )}
@@ -284,64 +293,28 @@ export default function UserConstellation() {
         </div>
       </div>
 
-      {/* Quick View Panel */}
+      {/* Intent Inspector (Session Ghost & God Mode) */}
       <AnimatePresence>
         {selectedUser && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            className="absolute bottom-0 left-0 right-0 z-20 border-t border-warroom-border bg-warroom-surface/95 backdrop-blur-md p-4"
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="font-mono text-xs font-bold text-white">{selectedUser.user_id}</p>
-                <div className="mt-1 flex items-center gap-3 text-[10px] text-warroom-text-secondary">
-                  <span>Score: <span className="font-bold" style={{ color: scoreToColor(selectedUser.score) }}>{selectedUser.score}</span></span>
-                  <span>Page: <span className="text-white">{selectedUser.last_page}</span></span>
-                  <span>Time: <span className="text-white">{selectedUser.time_on_site}s</span></span>
-                </div>
-              </div>
-              <button onClick={() => setSelectedUser(null)} className="p-1 text-warroom-text-secondary hover:text-white">
-                <X size={14} />
-              </button>
-            </div>
-
-            {/* Recent Actions */}
-            <div className="mt-3 space-y-1">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-warroom-text-secondary">Recent Actions</p>
-              {(selectedUser.actions || []).slice(-3).map((a, i) => (
-                <div key={i} className="flex items-center gap-2 text-[10px] font-mono text-warroom-text-secondary">
-                  <span className="text-warroom-border">{a.time}</span>
-                  <span className="text-white">{a.action}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* God Mode Actions */}
-            <div className="mt-3 flex gap-2">
-              <button
-                onClick={() => {
-                  emit('manual_nudge', {
-                    userId: selectedUser.user_id,
-                    message: 'Special offer: 1% SIP Bonus for the next 24 hours!',
-                    type: 'preset_offer',
-                  });
-                }}
-                className="flex items-center gap-1.5 rounded border border-intent-bounce/40 bg-intent-bounce/10 px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest text-intent-bounce transition hover:bg-intent-bounce/20"
-              >
-                <Zap size={10} />
-                Send Ultra-Nudge
-              </button>
-              <button
-                onClick={() => setSelectedUser(null)}
-                className="flex items-center gap-1.5 rounded border border-warroom-border bg-warroom-bg px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest text-warroom-text-secondary transition hover:text-white"
-              >
-                <Eye size={10} />
-                Session Ghost
-              </button>
-            </div>
-          </motion.div>
+          <IntentInspector
+            session={{
+              id: selectedUser.user_id,
+              stage: (() => {
+                const p = (selectedUser.last_page || '').toLowerCase();
+                if (p.includes('checkout') || p.includes('payment')) return 'Transaction (Checkout)';
+                if (p.includes('kyc') || p.includes('verify')) return 'KYC Verification';
+                if (p.includes('invest') || p.includes('sip') || p.includes('apply')) return 'Application (SIP)';
+                if (p.includes('plan')) return 'Planning';
+                return 'Exploration (Landing)';
+              })(),
+              total_time_seconds: selectedUser.time_on_site,
+              intent: selectedUser.score > 70 ? 'HIGH CHURN RISK' : 'EXPLORING',
+              confidence: selectedUser.score / 100,
+              profile: selectedUser.action,
+              status: 'live'
+            }}
+            onClose={() => setSelectedUser(null)}
+          />
         )}
       </AnimatePresence>
     </div>

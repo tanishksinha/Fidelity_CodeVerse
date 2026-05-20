@@ -247,7 +247,7 @@ export default function SessionGhost({ events, sessionId }) {
           <div className="p-4 space-y-4">
             {/* Nav bar */}
             <div className="flex items-center gap-3">
-              <div className="h-6 w-6 rounded bg-synaptic-green/40" />
+              <div className="h-6 w-6 rounded bg-fidelity-green/40" />
               <div className="h-4 w-20 rounded bg-warroom-border/30" />
               <div className="ml-auto flex gap-4">
                 <div className="h-3 w-16 rounded bg-warroom-border/20" />
@@ -260,7 +260,7 @@ export default function SessionGhost({ events, sessionId }) {
               <div className="h-6 w-72 rounded bg-warroom-border/30" />
               <div className="mt-2 h-4 w-96 rounded bg-warroom-border/20" />
               <div className="mt-1 h-4 w-80 rounded bg-warroom-border/15" />
-              <div className="mt-3 h-8 w-28 rounded bg-synaptic-green/25" /> {/* CTA button */}
+              <div className="mt-3 h-8 w-28 rounded bg-fidelity-green/25" /> {/* CTA button */}
             </div>
             {/* Chart Area */}
             <div className="mt-4 rounded border border-warroom-border/20 p-3">
@@ -284,17 +284,17 @@ export default function SessionGhost({ events, sessionId }) {
               <div className="h-28 rounded bg-warroom-border/12 p-2">
                 <div className="h-3 w-16 rounded bg-warroom-border/25" />
                 <div className="mt-2 h-3 w-24 rounded bg-warroom-border/20" />
-                <div className="mt-auto pt-4 h-6 w-full rounded bg-synaptic-green/15" />
+                <div className="mt-auto pt-4 h-6 w-full rounded bg-fidelity-green/15" />
               </div>
               <div className="h-28 rounded bg-warroom-border/12 p-2">
                 <div className="h-3 w-16 rounded bg-warroom-border/25" />
                 <div className="mt-2 h-3 w-24 rounded bg-warroom-border/20" />
-                <div className="mt-auto pt-4 h-6 w-full rounded bg-synaptic-green/15" />
+                <div className="mt-auto pt-4 h-6 w-full rounded bg-fidelity-green/15" />
               </div>
               <div className="h-28 rounded bg-warroom-border/12 p-2">
                 <div className="h-3 w-16 rounded bg-warroom-border/25" />
                 <div className="mt-2 h-3 w-24 rounded bg-warroom-border/20" />
-                <div className="mt-auto pt-4 h-6 w-full rounded bg-synaptic-green/15" />
+                <div className="mt-auto pt-4 h-6 w-full rounded bg-fidelity-green/15" />
               </div>
             </div>
             {/* Fee Section */}
@@ -372,7 +372,7 @@ export default function SessionGhost({ events, sessionId }) {
           {/* Play/Pause */}
           <button
             onClick={isPlaying ? handlePause : handlePlay}
-            className="flex h-8 w-8 min-w-[44px] min-h-[44px] items-center justify-center rounded bg-warroom-bg text-synaptic-green hover:bg-warroom-border transition"
+            className="flex h-8 w-8 min-w-[44px] min-h-[44px] items-center justify-center rounded bg-warroom-bg text-fidelity-green hover:bg-warroom-border transition"
           >
             {isPlaying ? <Pause size={12} /> : <Play size={12} />}
           </button>

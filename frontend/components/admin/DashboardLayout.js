@@ -15,11 +15,11 @@ export default function DashboardLayout({ children, activeNav = 'funnel' }) {
         </div>
         <nav className="flex-1 p-4 space-y-2">
           <NavItem icon={Activity} label="Live Funnel" href="/admin" active={activeNav === 'funnel'} />
-          <NavItem icon={Users} label="Users" href="/admin" active={activeNav === 'users'} />
+          <NavItem icon={Users} label="Users" href="/admin/users" active={activeNav === 'users'} />
           <NavItem icon={Map} label="Constellation" href="/admin/constellation" active={activeNav === 'constellation'} />
-          <NavItem icon={BrainCircuit} label="Intent Inspector" active={activeNav === 'inspector'} />
-          <NavItem icon={Mail} label="Email Log" active={activeNav === 'dispatch'} />
-          <NavItem icon={Radar} label="Engine Health" active={activeNav === 'health'} />
+          <NavItem icon={BrainCircuit} label="Intent Inspector" href="/admin/inspector" active={activeNav === 'inspector'} />
+          <NavItem icon={Mail} label="Email Log" href="/admin/dispatch" active={activeNav === 'dispatch'} />
+          <NavItem icon={Radar} label="Engine Health" href="/admin/health" active={activeNav === 'health'} />
         </nav>
         <div className="p-4 border-t border-warroom-border text-xs text-warroom-text-secondary font-mono">
           SYSTEM_STATUS: ONLINE
