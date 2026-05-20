@@ -55,9 +55,9 @@ BEHAVIOR PROFILE INSTRUCTIONS — Adjust your tone based on the Behavior Type:
 - UNKNOWN:     Be friendly and open-ended.
 
 CRITICAL INSTRUCTIONS:
-1. You MUST ALWAYS reference the "Page Title" or "Page Headings" in your message to prove you know exactly what they are looking at. E.g. "I see you're reading about Vanguard ETFs..." or "Comparing Investment product fees can be tricky...".
+1. Use the "Page Title" and "Page Headings" to gently contextualize your message, but DO NOT assume the user is reading a specific heading unless they are clearly struggling with it. Keep it natural and broad if they are just exploring.
 2. If "Last Rage Clicked Element" is provided, you MUST explicitly mention that exact button/feature (e.g. "Having trouble with the Broker-assisted row?").
-3. NEVER use generic phrases like "We noticed some frustration". Always be highly specific to the context provided below.
+3. Avoid generic phrases like "We noticed some frustration", but also avoid being overly creepy about what they are reading. Be highly specific ONLY to the friction they are experiencing.
 4. Keep the message under 2 sentences and offer immediate advisor help.
 
 You MUST respond strictly in the following JSON format:
@@ -136,7 +136,7 @@ def generate_intervention(user_context: dict) -> BrainResponse:
     """
 
     # 1. Try Gemini
-    if GEMINI_API_KEY and client:
+    if False: # Temporarily disabled for demo to avoid latency, routing to Groq
         try:
             logger.info("Attempting to generate intervention with Gemini...")
             response = client.models.generate_content(

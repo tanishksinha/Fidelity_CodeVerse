@@ -1,4 +1,6 @@
 import logging
+import time
+import asyncio
 from fastapi import FastAPI, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -122,6 +124,24 @@ async def handle_telemetry_sync(request: Request, background_tasks: BackgroundTa
     
     return {"status": "ignored"}
 
+async def handle_disengaged_timeout(session_id: str, nudge_message: str, contact_info: dict, wait_seconds: int = 60):
+    """Waits, then checks if user remained disengaged before firing WhatsApp."""
+    logger.info(f"[CASCADE] Timer started for {session_id}: waiting {wait_seconds}s...")
+    await asyncio.sleep(wait_seconds)
+    
+    last_ping = getattr(app, "last_active_time", {}).get(session_id, 0)
+    current_behavior = getattr(app, "latest_behavior", {}).get(session_id, "UNKNOWN")
+    time_since_ping = time.time() - last_ping
+    
+    # If they haven't pinged in >30s (closed tab) OR they are still staring blankly
+    if time_since_ping > 30 or current_behavior == "DISENGAGING":
+        logger.info(f"[CASCADE] {session_id} remained disengaged. Escalating to WhatsApp.")
+        contact_info["send_whatsapp"] = True
+        contact_info["send_email"] = False
+        await trigger_priority_cascade(session_id, nudge_message, contact_info)
+    else:
+        logger.info(f"[CASCADE] {session_id} became active ({current_behavior}). Escalation cancelled.")
+
 @app.post("/api/ingest-telemetry")
 async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
     try:
@@ -143,7 +163,7 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
     dom_stage = None
     dom_context = data.get('dom_context', {})
     page_url = data.get('page_url', '/')
-    _own_site_keywords = ['localhost', 'synaptic', '/kyc', '/invest', '/checkout', '/payment']
+    _own_site_keywords = ['localhost', '127.0.0.1', 'synaptic', '/kyc', '/invest', '/checkout', '/payment', '/application']
     is_own_url = any(k in page_url.lower() for k in _own_site_keywords)
     if dom_context and not is_own_url:
         try:
@@ -176,8 +196,15 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
     )
     session_analysis['intervention'] = intervention
 
+    # --- TRACK LIVE STATE ---
+    if not hasattr(app, "last_active_time"):
+        app.last_active_time = {}
+        app.latest_behavior = {}
+    
+    app.last_active_time[session_id] = time.time()
+    app.latest_behavior[session_id] = session_analysis['behavior_type']
+
     # --- COOLDOWN CHECK ---
-    import time
     if not hasattr(app, "intervention_cooldowns"):
         app.intervention_cooldowns = {}
         
@@ -234,7 +261,12 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
             f"whatsapp={intervention['send_whatsapp']} | "
             f"email_delay={intervention['email_delay_seconds']}s"
         )
-        background_tasks.add_task(trigger_priority_cascade, session_id, nudge_package["message"], contact_info)
+        
+        if session_analysis["behavior_type"] == "DISENGAGING":
+            # Launch temporal cascade instead of standard cascade
+            asyncio.create_task(handle_disengaged_timeout(session_id, nudge_package["message"], contact_info, wait_seconds=60))
+        else:
+            background_tasks.add_task(trigger_priority_cascade, session_id, nudge_package["message"], contact_info)
 
     res_data = {"status": "success", "session_id": session_id}
     # If a popup nudge was generated, return it directly in the HTTP response

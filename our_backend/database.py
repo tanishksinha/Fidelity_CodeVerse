@@ -28,7 +28,7 @@ async def save_telemetry_event(telemetry_data: dict) -> bool:
     Flattens and saves the tracker JSON into the Supabase 'events' table.
     """
     if not supabase:
-        print(f"💾 [MOCK DB] Saved event")
+        print(f"[MOCK DB] Saved event")
         return True
 
     try:
@@ -51,7 +51,7 @@ async def save_telemetry_event(telemetry_data: dict) -> bool:
 
         response = supabase.table("events").insert(flat_record).execute()
         if response.data:
-            print(f"💾 Saved event for {flat_record['session_id']}")
+            print(f"[DB] Saved event for {flat_record['session_id']}")
             return True
         return False
     except Exception as e:
@@ -85,7 +85,7 @@ async def update_event_intelligence(session_id: str, intelligence: dict) -> bool
     Called after semantic_mapper classifies the page.
     """
     if not supabase:
-        print(f"💾 [MOCK DB] Updated intelligence for {session_id}: {intelligence}")
+        print(f"[MOCK DB] Updated intelligence for {session_id}: {intelligence}")
         return True
 
     try:
@@ -95,7 +95,7 @@ async def update_event_intelligence(session_id: str, intelligence: dict) -> bool
             .execute()
 
         if response.data:
-            print(f"🧠 AI Intelligence saved for {session_id}")
+            print(f"[AI] AI Intelligence saved for {session_id}")
             return True
         return False
     except Exception as e:
@@ -109,7 +109,7 @@ async def save_user_identity(identity_data: dict) -> bool:
     Enables the full priority cascade (Email + WhatsApp) for bookmarklet sessions.
     """
     if not supabase:
-        print(f"💾 [MOCK DB] Saved Identity for {identity_data.get('consumer_id')}")
+        print(f"[MOCK DB] Saved Identity for {identity_data.get('consumer_id')}")
         return True
 
     try:
@@ -122,7 +122,7 @@ async def save_user_identity(identity_data: dict) -> bool:
         response = supabase.table("users").upsert(payload).execute()
 
         if response.data:
-            print(f"👤 Identity Synced for Ghost ID: {payload['synaptic_ghost_id']}")
+            print(f"[USER] Identity Synced for Ghost ID: {payload['synaptic_ghost_id']}")
             return True
         return False
     except Exception as e:

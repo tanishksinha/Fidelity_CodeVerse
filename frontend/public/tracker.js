@@ -318,6 +318,43 @@
     });
   }, 2000);
 
+  const hoverTimers = {};
+  document.addEventListener('mouseover', function(e) {
+    const target = e.target.closest('button, a, input, [data-track]');
+    if (!target) return;
+    const id = target.getAttribute('data-track') || (target.innerText ? target.innerText.substring(0, 30) : null) || target.id || target.tagName;
+    
+    if (!hoverTimers[id]) {
+      hoverTimers[id] = setTimeout(function() {
+        sessionData.behavioral_telemetry.hesitation_zones.push({
+          element_id: id,
+          dwell_duration_ms: CONFIG.DWELL_THRESHOLD_MS,
+          type: 'hover'
+        });
+        if (CONFIG.DEBUG) console.log('⚠️ Hover hesitation logged: ' + id);
+        if (sessionData.behavioral_telemetry.hesitation_zones.length >= 2) {
+          fireBeacon('hesitation_trigger');
+        }
+      }, CONFIG.DWELL_THRESHOLD_MS);
+    }
+  });
+
+  document.addEventListener('mouseout', function(e) {
+    const target = e.target.closest('button, a, input, [data-track]');
+    if (!target) return;
+    
+    // Ignore internal movements (wiggling mouse inside the block)
+    if (e.relatedTarget && target.contains(e.relatedTarget)) {
+      return;
+    }
+
+    const id = target.getAttribute('data-track') || (target.innerText ? target.innerText.substring(0, 30) : null) || target.id || target.tagName;
+    if (hoverTimers[id]) {
+      clearTimeout(hoverTimers[id]);
+      delete hoverTimers[id];
+    }
+  });
+
 
   // =====================================================================
   // --- 7. MOBILE FRICTION: SCROLL THRASHING ---
@@ -355,6 +392,29 @@
   }, { passive: true });
 
   document.addEventListener('touchend', function () { lastTouchY = 0; });
+
+  document.addEventListener('wheel', function (e) {
+    if (Math.abs(e.deltaY) < 10) return; // Ignore trackpad micro-fluctuations
+    const newDirection = e.deltaY > 0 ? 'down' : 'up';
+    if (currentDirection !== newDirection) {
+      currentDirection = newDirection;
+      scrollDirections.push({ dir: newDirection, time: Date.now() });
+      scrollDirections = scrollDirections.filter(function (d) {
+        return Date.now() - d.time < CONFIG.SCROLL_THRASH_TIME_MS;
+      });
+
+      if (scrollDirections.length >= 4) {
+        sessionData.behavioral_telemetry.friction_signals.scroll_thrash_count += 1;
+        if (CONFIG.DEBUG) console.log('🌀 Scroll Thrashing Detected (Desktop)!');
+        scrollDirections = [];
+
+        // LIVE TRIGGER: 3+ thrashes → CONFUSED signal
+        if (sessionData.behavioral_telemetry.friction_signals.scroll_thrash_count >= 3) {
+          fireBeacon('scroll_thrash_trigger');
+        }
+      }
+    }
+  }, { passive: true });
 
 
   // =====================================================================

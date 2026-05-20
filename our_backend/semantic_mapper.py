@@ -4,6 +4,7 @@ import os
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
+from groq import Groq
 
 load_dotenv()
 
@@ -11,6 +12,9 @@ logger = logging.getLogger("synaptic.semantic_mapper")
 
 GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
 client = None
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+groq_client = Groq(api_key=GROQ_API_KEY) if GROQ_API_KEY else None
 
 if GEMINI_API_KEY:
     try:
@@ -86,7 +90,27 @@ async def classify_page_structure(dom_summary: dict) -> dict:
 
         except Exception as api_err:
             if "429" in str(api_err):
-                logger.warning("[SEMANTIC MAPPER] Rate limit hit. Using Exploration fallback.")
+                if groq_client:
+                    logger.warning("[SEMANTIC MAPPER] Rate limit hit. Falling back to Groq.")
+                    try:
+                        groq_resp = groq_client.chat.completions.create(
+                            messages=[
+                                {"role": "system", "content": SYSTEM_PROMPT},
+                                {"role": "user", "content": prompt}
+                            ],
+                            model="llama-3.1-8b-instant",
+                            response_format={"type": "json_object"},
+                            temperature=0.2,
+                        )
+                        result = json.loads(groq_resp.choices[0].message.content)
+                        logger.info(f"[SEMANTIC MAPPER] (Groq Fallback) Classified as {result.get('stage')} (conf: {result.get('confidence')})")
+                        if cache_key:
+                            _stage_cache[cache_key] = result
+                        return result
+                    except Exception as groq_err:
+                        logger.error(f"[SEMANTIC MAPPER] Groq fallback failed: {groq_err}")
+                else:
+                    logger.warning("[SEMANTIC MAPPER] Rate limit hit. Using Exploration fallback.")
                 return {"stage": "Exploration", "confidence": 0.5, "reasoning": "Rate limit hit."}
             raise api_err
 

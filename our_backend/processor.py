@@ -409,10 +409,9 @@ def get_behavior_profile(telemetry_data: dict, past_events: int = 0, unique_page
     best_score = MIN_CONFIDENCE
 
     for profile in PRIORITY:
-        if scores[profile] >= best_score:
+        if scores[profile] > best_score:  # Strictly greater to respect priority order on ties
             best_score = scores[profile]
             winner = profile
-            break  # stop at first profile that crosses threshold (respects priority order)
 
     logger.info(f"[BEHAVIOR] Profile: {winner} (score={best_score}) | Scores: {scores}")
     return winner
