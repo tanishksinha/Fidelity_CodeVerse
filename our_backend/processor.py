@@ -6,6 +6,40 @@ import pandas as pd
 logger = logging.getLogger("main")
 
 # ============================================================
+# 0. HELPER: Fetch dynamic fallback thresholds from Supabase
+# ============================================================
+def _get_fallback_thresholds() -> dict:
+    """
+    Queries the `rules` table for active rules and returns a dict of:
+      rule_name -> {min_intent_score, count_threshold}
+
+    Admins can change thresholds in the Supabase dashboard and they
+    take effect immediately on the next heuristic evaluation.
+    """
+    try:
+        from database import supabase as sb
+        if not sb:
+            return {}
+        response = (
+            sb.table("rules")
+            .select("rule_name, min_intent_score, count_threshold")
+            .eq("is_active", True)
+            .execute()
+        )
+        if not response.data:
+            return {}
+        return {
+            rec["rule_name"]: {
+                "min_intent_score": rec.get("min_intent_score"),
+                "count_threshold":  rec.get("count_threshold"),
+            }
+            for rec in response.data
+        }
+    except Exception as e:
+        logger.error(f"[PROCESSOR] Failed to fetch rules from Supabase: {e}")
+        return {}
+
+# ============================================================
 # 1. LOAD THE MODEL
 # ============================================================
 try:
@@ -136,10 +170,15 @@ def should_we_nudge(telemetry_data: dict) -> bool:
     stage    = _classify_stage(page_url)
     hesitate = _analyze_hesitation(hesitation_zones)
 
-    # --- Heuristic Safety-Switch: If model failed to load, use rules ---
+    # --- Heuristic Safety-Switch: If model failed to load, use DB rules ---
     if model is None:
         logger.warning("[PROCESSOR] ML Model unavailable. Using heuristic fallback.")
-        return rage_clicks >= 1 or scroll_thrash_count >= 2
+        thresholds = _get_fallback_thresholds()
+        # RAGE_TAP_DETECTED rule drives rage_clicks threshold
+        rage_thr   = (thresholds.get("RAGE_TAP_DETECTED", {}).get("count_threshold")  or 1)
+        scroll_thr = (thresholds.get("SCROLL_THRASH",     {}).get("count_threshold")  or 2)
+        logger.info(f"[HEURISTIC] rage_thr={rage_thr} scroll_thr={scroll_thr} (from DB rules)")
+        return rage_clicks >= rage_thr or scroll_thrash_count >= scroll_thr
 
     # Build the feature DataFrame (must match training column order exactly)
     try:
@@ -226,8 +265,12 @@ def analyze_session(telemetry_data: dict, past_events: int = 0, unique_pages: in
     churn_prob      = 0.0
 
     if model is None:
-        # Heuristic fallback
-        should_nudge = rage_clicks >= 1 or scroll_thrash_count >= 2
+        # Heuristic fallback — pull thresholds from Supabase rules table
+        thresholds = _get_fallback_thresholds()
+        rage_thr   = (thresholds.get("RAGE_TAP_DETECTED", {}).get("count_threshold")  or 1)
+        scroll_thr = (thresholds.get("SCROLL_THRASH",     {}).get("count_threshold")  or 2)
+        logger.info(f"[HEURISTIC] rage_thr={rage_thr} scroll_thr={scroll_thr} (from DB rules)")
+        should_nudge = rage_clicks >= rage_thr or scroll_thrash_count >= scroll_thr
         churn_prob   = min(0.95, (rage_clicks * 0.2) + (scroll_thrash_count * 0.1))
     else:
         try:

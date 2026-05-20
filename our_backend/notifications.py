@@ -101,13 +101,16 @@ async def trigger_priority_cascade(user_id: str, ai_message: str, contact_info: 
     # Step 1: Toast is triggered externally when the API returns the ai_message.
     logger.info(f"Step 1: Toast sent to frontend (handled by Socket.io): '{ai_message}'")
     
-    # Step 2: Wait for user to come back. 
+    import time
+    cascade_start_time = time.time()
+
+    # Step 2: Wait for user to come back.
     logger.info("Waiting 5 seconds to check if user interacted with the Toast...")
     await asyncio.sleep(5)
-    
-    # Check DB/State (MOCK LOGIC)
-    user_came_back = check_mock_db_if_user_returned(user_id)
-    
+
+    # Check real DB — did user log any event after the nudge was sent?
+    user_came_back = check_db_if_user_returned(user_id, cascade_start_time)
+
     if user_came_back:
         logger.info(f"User {user_id} interacted with the Toast. Cascade halted.")
         return
@@ -120,13 +123,13 @@ async def trigger_priority_cascade(user_id: str, ai_message: str, contact_info: 
         send_email(contact_info.get("email"), email_subject, email_content)
     else:
         logger.info("Email skipped as per Decision Engine strategy.")
-    
-    # Step 4: Wait again for critical followup
+
+    # Step 4: Wait again for critical follow-up
     email_delay = contact_info.get("email_delay_seconds", 3)
     logger.info(f"Waiting {email_delay} seconds before checking follow-up...")
     await asyncio.sleep(email_delay)
-    
-    user_came_back = check_mock_db_if_user_returned(user_id) # Checking again
+
+    user_came_back = check_db_if_user_returned(user_id, cascade_start_time)  # Check again
     if user_came_back:
         logger.info(f"User {user_id} returned after Email. Cascade halted.")
         return
@@ -170,11 +173,35 @@ async def get_user_contact_from_db(user_id: str) -> dict:
     logger.info(f"[DB] No record found for {user_id} — treating as anonymous.")
     return {}
 
-def check_mock_db_if_user_returned(user_id: str) -> bool:
+def check_db_if_user_returned(user_id: str, since_timestamp: float) -> bool:
     '''
-    Mock function to simulate a database check.
+    Checks the Supabase `events` table to see if the user has generated any
+    new events after `since_timestamp`. If yes, the cascade is halted because
+    the user has re-engaged with the app.
     '''
-    return False
+    import datetime
+    from database import supabase as sb
+
+    if not sb:
+        logger.warning("[CASCADE] Supabase unavailable — assuming user has NOT returned.")
+        return False
+    try:
+        # Convert Unix timestamp to ISO 8601 UTC string for Supabase filtering
+        dt_str = datetime.datetime.utcfromtimestamp(since_timestamp).isoformat() + 'Z'
+        response = (
+            sb.table("events")
+            .select("id")
+            .eq("session_id", user_id)
+            .gt("created_at", dt_str)
+            .limit(1)
+            .execute()
+        )
+        returned = bool(response.data)
+        logger.info(f"[CASCADE] User {user_id} returned={returned} (events since {dt_str})")
+        return returned
+    except Exception as e:
+        logger.error(f"[CASCADE] DB check failed for {user_id}: {e}")
+        return False
 
 async def run_retention_scan():
     '''

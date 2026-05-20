@@ -180,6 +180,8 @@ async def handle_telemetry_sync(request: Request, background_tasks: BackgroundTa
         "pulse":         "green" if intervention['show_popup'] else None
     }
     await sio.emit('user_activity', activity_data)
+    # Fix C: Notify admin dashboard to refresh funnel stats in real-time
+    await sio.emit('admin_update', {"event": "new_telemetry", "user_id": session_id})
 
     if intervention['show_popup']:
         nudge_package = await generate_gemini_nudge(data, {}, session_analysis)
@@ -290,6 +292,8 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
         "pulse":         "green" if should_pulse else None
     }
     await sio.emit('user_activity', activity_data)
+    # Fix C: Notify admin dashboard to refresh funnel stats in real-time
+    await sio.emit('admin_update', {"event": "new_telemetry", "user_id": session_id})
 
     # Update current_intent_score in users table (non-blocking, best-effort)
     try:
