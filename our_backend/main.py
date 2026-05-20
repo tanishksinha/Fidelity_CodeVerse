@@ -46,7 +46,7 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 # --- 1. Initialize FastAPI ---
-app = FastAPI(title="Fidelity Smart-Engine Backend")
+app = FastAPI(title="Synaptic Smart-Engine Backend")
 
 # Allow the frontend to talk to us (CORS)
 app.add_middleware(
@@ -257,7 +257,7 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
 
 if __name__ == "__main__":
     import uvicorn
-    logger.info("Starting Fidelity Smart-Engine on port 8080...")
+    logger.info("Starting Synaptic Smart-Engine on port 8080...")
     uvicorn.run("main:socket_app", host="0.0.0.0", port=8080, reload=True)
 
 

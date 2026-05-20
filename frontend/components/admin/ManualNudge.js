@@ -15,9 +15,9 @@ import { cn } from '@/lib/cn';
 
 const PRESET_OFFERS = [
   { id: 'sip_bonus', label: '1% SIP Bonus (24hr)', message: 'Exclusive offer: Get an additional 1% bonus on your SIP investment for the next 24 hours. Act now!' },
-  { id: 'consultation', label: 'Free Wealth Consultation', message: 'We noticed you are exploring investment options. Book a free 30-minute session with a Fidelity Wealth Advisor today.' },
+  { id: 'consultation', label: 'Free Wealth Consultation', message: 'We noticed you are exploring investment options. Book a free 30-minute session with a Synaptic Wealth Advisor today.' },
   { id: 'cashback', label: '₹500 Cashback', message: 'Complete your first investment today and receive ₹500 cashback directly to your bank account. Limited time offer!' },
-  { id: 'premium', label: 'Fidelity Premium Access', message: 'Unlock Fidelity Premium: advanced analytics, priority support, and exclusive market insights — free for 3 months.' },
+  { id: 'premium', label: 'Synaptic Premium Access', message: 'Unlock Synaptic Premium: advanced analytics, priority support, and exclusive market insights — free for 3 months.' },
 ];
 
 export default function ManualNudge({ userId, userName }) {

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fidelity AI — Bookmarklet Setup</title>
+  <title>Synaptic AI — Bookmarklet Setup</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
   <style>
@@ -314,7 +314,7 @@
 <div class="container">
 
   <div class="header">
-    <div class="badge"><span class="badge-dot"></span>Fidelity Behavioral AI</div>
+    <div class="badge"><span class="badge-dot"></span>Synaptic Behavioral AI</div>
     <h1>Bookmarklet Setup</h1>
     <p class="subtitle">Install the tracker in your browser once.<br>Click it on any website to start the behavioral AI engine.</p>
   </div>
@@ -383,7 +383,7 @@
           <div style="font-size:11px; color:var(--muted);">Drag up to bookmarks bar</div>
         </div>
         <a id="bookmarklet-btn" class="disabled" href="#" draggable="true">
-          🛡️ &nbsp;Fidelity AI Tracker
+          🛡️ &nbsp;Synaptic AI Tracker
         </a>
         <div class="drag-hint">
           Or right-click → <span>Bookmark this link</span>
@@ -408,7 +408,7 @@
         <div class="divider"></div>
         <div class="how-item">
           <div class="how-icon">🖱️</div>
-          <div>Click <strong>🛡️ Fidelity AI Tracker</strong> in your bookmarks bar</div>
+          <div>Click <strong>🛡️ Synaptic AI Tracker</strong> in your bookmarks bar</div>
         </div>
         <div class="divider"></div>
         <div class="how-item">
@@ -431,7 +431,7 @@
   </div>
 
   <div class="footer">
-    Powered by <strong>Fidelity Behavioral AI</strong> · Decision Engine v1.1 · feature/behavior-logic
+    Powered by <strong>Synaptic Behavioral AI</strong> · Decision Engine v1.1 · feature/behavior-logic
   </div>
 
 </div>
@@ -443,7 +443,7 @@
     const base = ngrokUrl.replace(/\/$/, '');
     const src  = base + '/static/tracker.js';
     return `javascript:(function(){` +
-      `if(window.__FIDELITY_TRACKER_LOADED__){alert('Fidelity Tracker already active on this page!');return;}` +
+      `if(window.__FIDELITY_TRACKER_LOADED__){alert('Synaptic Tracker already active on this page!');return;}` +
       `window.__FIDELITY_TRACKER_LOADED__=true;` +
       `if(!localStorage.getItem('fidelity_ghost_id')){` +
         `localStorage.setItem('fidelity_ghost_id','EXT_'+Math.random().toString(36).substring(2,9).toUpperCase());` +
@@ -453,9 +453,9 @@
       `s.setAttribute('data-ngrok-url','${base}');` +
       `s.onload=function(){` +
         `if(window.__FIDELITY_CONFIG)window.__FIDELITY_CONFIG.ENDPOINT='${base}/api/ingest-telemetry';` +
-        `console.log('[Fidelity] Behavioral tracker active on: '+window.location.hostname);` +
+        `console.log('[Synaptic] Behavioral tracker active on: '+window.location.hostname);` +
       `};` +
-      `s.onerror=function(){alert('Could not load Fidelity tracker. Is the backend + ngrok running?');};` +
+      `s.onerror=function(){alert('Could not load Synaptic tracker. Is the backend + ngrok running?');};` +
       `document.head.appendChild(s);` +
     `})();`;
   }

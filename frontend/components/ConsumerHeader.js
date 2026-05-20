@@ -27,7 +27,7 @@ export default function ConsumerHeader({ active }) {
     <header className="sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur">
       <div className="border-b border-gray-100 bg-gray-50">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-2 text-xs font-semibold text-gray-600 lg:px-8">
-          <span data-track="global_trust_strip">FIDELITY SIMULATION: Secure planning portal</span>
+          <span data-track="global_trust_strip">SYNAPTIC SIMULATION: Secure planning portal</span>
           <span className="hidden font-mono text-fidelity-green sm:inline">MARKET_STATUS: OPEN</span>
         </div>
       </div>
@@ -37,7 +37,7 @@ export default function ConsumerHeader({ active }) {
             <ShieldCheck size={18} />
           </span>
           <span>
-            <span className="block text-lg font-bold tracking-tight text-fidelity-dark">FIDELITY</span>
+            <span className="block text-lg font-bold tracking-tight text-fidelity-dark">SYNAPTIC</span>
             <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-500">
               Wealth Services
             </span>

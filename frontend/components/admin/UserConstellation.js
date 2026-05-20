@@ -43,9 +43,9 @@ function hashPositionToGalaxy(userId, cx, cy) {
   for (let i = 0; i < userId.length; i++) hash = ((hash << 5) - hash) + userId.charCodeAt(i);
   const angle = Math.abs(hash % 360) * (Math.PI / 180);
   const distance = 25 + (Math.abs(hash * 2654435761) % 60); // Orbit distance between 25px and 85px
-  return { 
-    x: cx + Math.cos(angle) * distance, 
-    y: cy + Math.sin(angle) * distance 
+  return {
+    x: cx + Math.cos(angle) * distance,
+    y: cy + Math.sin(angle) * distance
   };
 }
 
@@ -340,17 +340,17 @@ export default function UserConstellation() {
             ))}
 
             {/* The Neural Constellation Path */}
-            <path 
-              d={`M ${GALAXIES.map(g => `${g.cx},${g.cy}`).join(' L ')}`} 
-              fill="none" 
-              stroke="url(#path-gradient)" 
-              strokeWidth="3" 
+            <path
+              d={`M ${GALAXIES.map(g => `${g.cx},${g.cy}`).join(' L ')}`}
+              fill="none"
+              stroke="url(#path-gradient)"
+              strokeWidth="3"
               opacity="0.8"
             />
 
             {/* Flow Indicators (Arrows) to show progression */}
             {GALAXIES.slice(0, -1).map((g, i) => {
-              const nextG = GALAXIES[i+1];
+              const nextG = GALAXIES[i + 1];
               const midX = (g.cx + nextG.cx) / 2;
               return (
                 <text key={`arrow-${i}`} x={midX} y={g.cy + 4} fill="#ffffff" opacity="0.5" fontSize="14" fontWeight="bold" textAnchor="middle">
@@ -364,15 +364,15 @@ export default function UserConstellation() {
               <g key={`galaxy-${i}`}>
                 {/* Glowing Core Aura */}
                 <circle cx={g.cx} cy={g.cy} r="100" fill={`url(#gal-glow-${i})`} />
-                
+
                 {/* Core Star */}
                 <circle cx={g.cx} cy={g.cy} r="3" fill="#ffffff" opacity="0.9" />
                 <circle cx={g.cx} cy={g.cy} r="8" fill="none" stroke={g.color} strokeWidth="1" opacity="0.6" />
-                
+
                 {/* Orbit Rings */}
                 <circle cx={g.cx} cy={g.cy} r="45" fill="none" stroke="#ffffff" strokeOpacity="0.06" strokeWidth="1" />
                 <circle cx={g.cx} cy={g.cy} r="95" fill="none" stroke="#ffffff" strokeOpacity="0.04" strokeWidth="1" strokeDasharray="2 4" />
-                
+
                 <text x={g.cx} y={g.cy + 115} textAnchor="middle" fill="#aaa" fontSize="9" fontFamily="monospace" letterSpacing="3" fontWeight="bold">
                   {g.name.toUpperCase()}
                 </text>
@@ -388,9 +388,9 @@ export default function UserConstellation() {
               const glowR = scoreToGlow(u.score);
 
               return (
-                <g 
-                  key={u.user_id} 
-                  onClick={() => setSelectedUser(u)} 
+                <g
+                  key={u.user_id}
+                  onClick={() => setSelectedUser(u)}
                   className="cursor-pointer pointer-events-auto"
                   style={{
                     transition: 'transform 1.5s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -445,7 +445,7 @@ export default function UserConstellation() {
       {/* Intent Inspector (Session Ghost & God Mode) */}
       <AnimatePresence>
         {selectedUser && (
-          <IntentInspector 
+          <IntentInspector
             session={{
               id: selectedUser.user_id,
               stage: (() => {
@@ -461,8 +461,8 @@ export default function UserConstellation() {
               confidence: selectedUser.score / 100,
               profile: selectedUser.action,
               status: 'live'
-            }} 
-            onClose={() => setSelectedUser(null)} 
+            }}
+            onClose={() => setSelectedUser(null)}
           />
         )}
       </AnimatePresence>

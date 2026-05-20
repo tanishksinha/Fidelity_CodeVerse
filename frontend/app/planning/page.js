@@ -61,7 +61,7 @@ export default function PlanningPage() {
           <div className="lg:col-span-5">
             <h2 className="text-3xl font-bold tracking-tight">Specialized Planning Modules</h2>
             <p className="mt-4 text-gray-600 leading-relaxed">
-              Select an area of focus to understand how Fidelity India’s SEBI-registered advisors structure solutions around your specific life goals.
+              Select an area of focus to understand how Synaptic India’s SEBI-registered advisors structure solutions around your specific life goals.
             </p>
             
             <div className="mt-10 space-y-4">
@@ -109,7 +109,7 @@ export default function PlanningPage() {
               <p className="text-xs font-bold uppercase tracking-widest text-fidelity-green">Private Wealth Group</p>
               <h3 className="mt-3 text-2xl font-bold text-gray-900">Need a custom blueprint?</h3>
               <p className="mt-4 text-gray-600 leading-relaxed">
-                Connect with a Fidelity Wealth Advisor to discuss your unique financial situation. We provide objective, fee-transparent guidance structured around your best interests.
+                Connect with a Synaptic Wealth Advisor to discuss your unique financial situation. We provide objective, fee-transparent guidance structured around your best interests.
               </p>
               
               <ul className="mt-8 space-y-3">

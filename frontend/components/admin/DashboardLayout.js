@@ -10,7 +10,7 @@ export default function DashboardLayout({ children, activeNav = 'funnel' }) {
       {/* Institutional Sidebar (Desktop) */}
       <aside className="hidden w-64 border-r border-warroom-border bg-warroom-surface md:flex md:flex-col">
         <div className="p-6 border-b border-warroom-border">
-          <h2 className="text-xl font-bold tracking-tight">FIDELITY</h2>
+          <h2 className="text-xl font-bold tracking-tight">SYNAPTIC</h2>
           <p className="text-xs text-warroom-text-secondary uppercase tracking-widest mt-1">Telemetry Command</p>
         </div>
         <nav className="flex-1 p-4 space-y-2">

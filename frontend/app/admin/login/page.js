@@ -103,7 +103,7 @@ export default function AdminLogin() {
 
           <div className="mt-8 border-t border-warroom-border pt-6 text-[10px] text-warroom-text-secondary uppercase">
             <div className="flex justify-between">
-              <span>System: Fidelity-v3.4</span>
+              <span>System: Synaptic-v3.4</span>
               <span>Enc: AES-256</span>
             </div>
             <p className="mt-2 text-center text-sublabel">Unauthorized access is logged and prosecuted.</p>

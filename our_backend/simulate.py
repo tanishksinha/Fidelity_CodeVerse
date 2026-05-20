@@ -76,7 +76,7 @@ def run_simulation():
                 
                 print(f"[SENDING] {sid} | Time: {s['time']}s | Rage: {s['rage']} | Thrash: {s['thrash']}")
                 try:
-                    res = requests.post(ENDPOINT, json=payload, timeout=2)
+                    res = requests.post(ENDPOINT, json=payload, timeout=10)
                     if res.status_code != 200:
                         print(f"  [!] HTTP {res.status_code}")
                 except Exception as e:

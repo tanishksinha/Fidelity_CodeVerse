@@ -87,7 +87,7 @@ def _analyze_hesitation(hesitation_zones: list) -> dict:
         }
 
     count = len(hesitation_zones)
-    durations = [z.get("dwell_ms", 0) / 1000.0 for z in hesitation_zones]  # convert to seconds
+    durations = [z.get("dwell_duration_ms", z.get("dwell_ms", 0)) / 1000.0 for z in hesitation_zones]  # convert to seconds
     avg_duration = sum(durations) / count
 
     element_ids = [z.get("element_id", "") for z in hesitation_zones]
@@ -143,6 +143,7 @@ def should_we_nudge(telemetry_data: dict) -> bool:
 
     # Build the feature DataFrame (must match training column order exactly)
     try:
+        friction_score = (rage_clicks * 10) + (total_time_seconds / 2.0)
         live_features = pd.DataFrame([[
             stage["is_kyc"],
             stage["is_application"],
@@ -156,12 +157,13 @@ def should_we_nudge(telemetry_data: dict) -> bool:
             hesitate["avg_hesitation_duration"],
             form_count,
             input_count,
+            friction_score,
         ]], columns=[
             'is_kyc', 'is_application', 'is_transaction',
             'rage_clicks', 'scroll_thrash_count', 'erratic_mouse_movements',
             'total_time_seconds', 'max_scroll_depth_percent',
             'hesitation_zone_count', 'avg_hesitation_duration',
-            'form_count', 'input_count'
+            'form_count', 'input_count', 'friction_score'
         ])
 
         logger.info(
@@ -231,18 +233,19 @@ def analyze_session(telemetry_data: dict, past_events: int = 0, unique_pages: in
         churn_prob   = min(0.95, (rage_clicks * 0.2) + (scroll_thrash_count * 0.1))
     else:
         try:
+            friction_score = (rage_clicks * 10) + (total_time_seconds / 2.0)
             live_features = pd.DataFrame([[
                 stage["is_kyc"], stage["is_application"], stage["is_transaction"],
                 rage_clicks, scroll_thrash_count, erratic_mouse_movements,
                 total_time_seconds, max_scroll_depth_percent,
                 hesitate["hesitation_zone_count"], hesitate["avg_hesitation_duration"],
-                form_count, input_count,
+                form_count, input_count, friction_score,
             ]], columns=[
                 'is_kyc', 'is_application', 'is_transaction',
                 'rage_clicks', 'scroll_thrash_count', 'erratic_mouse_movements',
                 'total_time_seconds', 'max_scroll_depth_percent',
                 'hesitation_zone_count', 'avg_hesitation_duration',
-                'form_count', 'input_count'
+                'form_count', 'input_count', 'friction_score'
             ])
 
             prediction  = model.predict(live_features)

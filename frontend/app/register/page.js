@@ -53,7 +53,7 @@ export default function RegisterPage() {
               <ShieldCheck size={22} />
             </span>
             <span>
-              <span className="block text-xl font-bold tracking-tight text-fidelity-dark">FIDELITY</span>
+              <span className="block text-xl font-bold tracking-tight text-fidelity-dark">SYNAPTIC</span>
               <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-500">
                 Wealth Services
               </span>
@@ -65,7 +65,7 @@ export default function RegisterPage() {
         <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
           <h1 className="text-2xl font-bold tracking-tight text-gray-950">Create your account</h1>
           <p className="mt-2 text-sm text-gray-500">
-            Join Fidelity to start your investment journey.
+            Join Synaptic to start your investment journey.
           </p>
 
           {error && (

@@ -1,36 +1,67 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Users, Clock, MousePointer, Mail, Zap } from 'lucide-react';
 import { AuthService } from '@/services/auth';
+import { useSocket } from '@/contexts/SocketContext';
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
 
 export default function UserBehaviorTable() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { socket } = useSocket();
+  const reloadTimeoutRef = useRef(null);
+
+  const fetchUsers = async () => {
+    try {
+      const token = AuthService.getAccessToken();
+      const res = await fetch(`${BACKEND_URL}/api/admin/users`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUsers(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch users:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const token = AuthService.getAccessToken();
-        const res = await fetch(`${BACKEND_URL}/api/admin/users`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setUsers(data);
-        }
-      } catch (err) {
-        console.error('Failed to fetch users:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchUsers();
     const interval = setInterval(fetchUsers, 8000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleUserReload = () => {
+      console.log('[SOCKET] User behavior update event. Debouncing fetchUsers...');
+      if (reloadTimeoutRef.current) {
+        clearTimeout(reloadTimeoutRef.current);
+      }
+      reloadTimeoutRef.current = setTimeout(() => {
+        fetchUsers();
+      }, 700);
+    };
+
+    socket.on('admin_update', handleUserReload);
+    socket.on('identity_sync', handleUserReload);
+    socket.on('admin_user_update', handleUserReload);
+
+    return () => {
+      if (reloadTimeoutRef.current) {
+        clearTimeout(reloadTimeoutRef.current);
+      }
+      socket.off('admin_update', handleUserReload);
+      socket.off('identity_sync', handleUserReload);
+      socket.off('admin_user_update', handleUserReload);
+    };
+  }, [socket]);
 
   if (loading) {
     return (

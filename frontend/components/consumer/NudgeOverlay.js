@@ -81,7 +81,7 @@ export default function NudgeOverlay() {
           <div>
             <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-fidelity-green">
               <ShieldCheck size={12} />
-              Fidelity Wealth Advisor
+              Synaptic Wealth Advisor
             </div>
             
             {isPreset && (

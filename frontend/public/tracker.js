@@ -119,7 +119,7 @@
     card.innerHTML = [
       '<div style="text-align:center;margin-bottom:20px;">',
       '<div style="font-size:28px;">🛡️</div>',
-      '<h2 style="margin:8px 0 4px;font-size:18px;color:#111;">Fidelity AI Advisor</h2>',
+      '<h2 style="margin:8px 0 4px;font-size:18px;color:#111;">Synaptic AI Advisor</h2>',
       '<p style="margin:0;font-size:13px;color:#666;">Enter your details to receive personalized alerts</p>',
       '</div>',
       '<input id="fid-phone" type="tel" placeholder="WhatsApp Number (e.g. +919...)" ',
@@ -134,7 +134,7 @@
       'Activate AI Alerts',
       '</button>',
       '<p style="text-align:center;font-size:11px;color:#999;margin:10px 0 0;">',
-      'Powered by Fidelity Behavioral AI',
+      'Powered by Synaptic Behavioral AI',
       '</p>'
     ].join('');
 
@@ -221,7 +221,7 @@
       '<div style="display:flex;align-items:flex-start;gap:12px;">',
       '<span style="font-size:22px;">🛡️</span>',
       '<div>',
-      '<div style="font-size:11px;font-weight:700;letter-spacing:0.1em;opacity:0.8;margin-bottom:4px;">FIDELITY AI ADVISOR</div>',
+      '<div style="font-size:11px;font-weight:700;letter-spacing:0.1em;opacity:0.8;margin-bottom:4px;">SYNAPTIC AI ADVISOR</div>',
       '<div style="font-size:14px;line-height:1.5;">' + message + '</div>',
       '<div style="font-size:11px;opacity:0.7;margin-top:8px;">Tap to connect with an advisor →</div>',
       '</div>',

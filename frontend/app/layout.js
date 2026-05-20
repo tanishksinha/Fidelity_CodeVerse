@@ -18,7 +18,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata = {
-  title: "Fidelity Investments | Wealth Management",
+  title: "Synaptic Investments | Wealth Management",
   description: "Institutional-grade wealth management and financial planning.",
 };
 
