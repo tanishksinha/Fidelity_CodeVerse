@@ -190,7 +190,7 @@ async def handle_telemetry_sync(request: Request, background_tasks: BackgroundTa
     
     return {"status": "ignored"}
 
-async def handle_disengaged_timeout(session_id: str, nudge_message: str, contact_info: dict, wait_seconds: int = 60):
+async def handle_disengaged_timeout(session_id: str, nudge_message: str, contact_info: dict, wait_seconds: int = 30):
     """Waits, then checks if user remained disengaged before firing WhatsApp."""
     logger.info(f"[CASCADE] Timer started for {session_id}: waiting {wait_seconds}s...")
     await asyncio.sleep(wait_seconds)
@@ -199,8 +199,8 @@ async def handle_disengaged_timeout(session_id: str, nudge_message: str, contact
     current_behavior = getattr(app, "latest_behavior", {}).get(session_id, "UNKNOWN")
     time_since_ping = time.time() - last_ping
     
-    # If they haven't pinged in >30s (closed tab) OR they are still staring blankly
-    if time_since_ping > 30 or current_behavior == "DISENGAGING":
+    # If they haven't pinged in >15s (closed tab) OR they are still staring blankly
+    if time_since_ping > 15 or current_behavior == "DISENGAGING":
         logger.info(f"[CASCADE] {session_id} remained disengaged. Escalating to WhatsApp.")
         contact_info["send_whatsapp"] = True
         contact_info["send_email"] = False
@@ -374,7 +374,7 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
         
         if session_analysis["behavior_type"] == "DISENGAGING":
             # Launch temporal cascade instead of standard cascade
-            asyncio.create_task(handle_disengaged_timeout(session_id, nudge_package["message"], contact_info, wait_seconds=60))
+            asyncio.create_task(handle_disengaged_timeout(session_id, nudge_package["message"], contact_info, wait_seconds=30))
         else:
             background_tasks.add_task(trigger_priority_cascade, session_id, nudge_package["message"], contact_info)
 

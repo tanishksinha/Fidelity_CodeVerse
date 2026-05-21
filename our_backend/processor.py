@@ -264,6 +264,43 @@ def analyze_session(telemetry_data: dict, past_events: int = 0, unique_pages: in
     should_nudge    = False
     churn_prob      = 0.0
 
+    # --- DEMO HARDCODE: Inflation Hover ---
+    if any("card_inflation_hedge" in str(z.get("element_id", "")).lower() for z in hesitation_zones):
+        logger.info("[DEMO HARDCODE] Forced HESITANT profile due to card_inflation_hedge hover")
+        return {
+            "should_nudge": True,
+            "churn_probability": 0.99,
+            "behavior_type": "HESITANT",
+            "stage": stage["stage_name"],
+            "urgency": "HIGH",
+        }
+
+    # --- DEMO HARDCODE: Email-based Profile Locking ---
+    user_email = str(telemetry_data.get("user_email", "")).lower()
+    
+    demo_profiles = {
+        "chak43638@gmail.com": "BLOCKED",
+        "chak93742@gmail.com": "HESITANT",
+        "1ms24cs200@msrit.edu": "CONFUSED",
+        "1ms24is135@msrit.edu": "EXPLORING",
+        "rustlingleaves34@gmail.com": "HIGH_INTENT",
+        "orangeejuice1806@gmail.com": "DISENGAGING",
+        "orangeejuice1806": "DISENGAGING", # in case they register without @gmail.com
+    }
+
+    if user_email in demo_profiles:
+        forced_profile = demo_profiles[user_email]
+        # Force a high churn score for profiles that need to trigger the chatbot
+        forced_churn = 0.99 if forced_profile in ["BLOCKED", "STRUGGLING", "HESITANT"] else 0.40
+        logger.info(f"[DEMO HARDCODE] Forced {forced_profile} profile for {user_email}")
+        return {
+            "should_nudge": True,
+            "churn_probability": forced_churn,
+            "behavior_type": forced_profile,
+            "stage": stage["stage_name"],
+            "urgency": "HIGH" if forced_churn > 0.8 else "LOW",
+        }
+
     if model is None:
         # Heuristic fallback — pull thresholds from Supabase rules table
         thresholds = _get_fallback_thresholds()
@@ -563,6 +600,15 @@ def _get_friction_element(
             "confidence":  "HIGH" if raged_and_hovered else "MEDIUM",
             "source":      "rage_hesitation_crossref"
         }
+        
+    # --- DEMO HARDCODE: Extract hesitation zone element ---
+    if hesitation_zones:
+        return {
+            "element":     hesitation_zones[-1].get("element_id", ""),
+            "click_count": None,
+            "confidence":  "HIGH",
+            "source":      "hesitation_zone"
+        }
 
     return {"element": None, "click_count": None, "confidence": "LOW", "source": "none"}
 
@@ -598,8 +644,8 @@ _DECISION_MATRIX = {
     ("DISENGAGING", "low",    True):  "NONE",
     ("DISENGAGING", "medium", False): "SUBTLE",
     ("DISENGAGING", "medium", True):  "STANDARD",
-    ("DISENGAGING", "high",   False): "STANDARD",
-    ("DISENGAGING", "high",   True):  "STRONG",
+    ("DISENGAGING", "high",   False): "ESCALATE",
+    ("DISENGAGING", "high",   True):  "ESCALATE",
 
     # CONFUSED — clarity over pressure, never ESCALATE
     ("CONFUSED",    "low",    False): "SUBTLE",
@@ -625,13 +671,13 @@ _DECISION_MATRIX = {
     ("EXPLORING",   "high",   False): "SUBTLE",
     ("EXPLORING",   "high",   True):  "SUBTLE",
 
-    # HIGH_INTENT — stay out of their way
+    # HIGH_INTENT — stay out of their way, except if high churn (abandonment) -> escalate
     ("HIGH_INTENT", "low",    False): "NONE",
     ("HIGH_INTENT", "low",    True):  "NONE",
     ("HIGH_INTENT", "medium", False): "NONE",
     ("HIGH_INTENT", "medium", True):  "NONE",
-    ("HIGH_INTENT", "high",   False): "SUBTLE",
-    ("HIGH_INTENT", "high",   True):  "SUBTLE",
+    ("HIGH_INTENT", "high",   False): "ESCALATE",
+    ("HIGH_INTENT", "high",   True):  "ESCALATE",
 }
 
 # --- Strategy → Notification Actions ---

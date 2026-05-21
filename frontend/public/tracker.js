@@ -38,9 +38,9 @@
   const CONFIG = {
     ENDPOINT:              backendUrl + '/api/ingest-telemetry',
     SOCKET_URL:            backendUrl,
-    DWELL_THRESHOLD_MS:    3000,
+    DWELL_THRESHOLD_MS:    1500,
     RAGE_TAP_THRESHOLD_MS: 600,
-    SCROLL_THRASH_TIME_MS: 1500,
+    SCROLL_THRASH_TIME_MS: 2000,
     DEBUG:                 true
   };
 
@@ -48,12 +48,12 @@
   window.__SYNAPTIC_CONFIG = CONFIG;
 
   const sessionData = {
-    session_id: localStorage.getItem('synaptic_ghost_id') || 'usr_' + Math.random().toString(36).substring(2, 11),
+    session_id: sessionStorage.getItem('synaptic_ghost_id') || 'usr_' + Math.random().toString(36).substring(2, 11),
     timestamp:  new Date().toISOString(),
     page_url:   window.location.pathname,
-    user_phone: localStorage.getItem('synaptic_user_phone') || null,
-    user_email: localStorage.getItem('synaptic_user_email') || null,
-    user_name:  localStorage.getItem('synaptic_user_name')  || null,
+    user_phone: sessionStorage.getItem('synaptic_user_phone') || null,
+    user_email: sessionStorage.getItem('synaptic_user_email') || null,
+    user_name:  sessionStorage.getItem('synaptic_user_name')  || null,
     behavioral_telemetry: {
       total_time_seconds:       0,
       max_scroll_depth_percent: 0,
@@ -71,8 +71,8 @@
   };
 
   // Persist ghost ID if newly generated
-  if (!localStorage.getItem('synaptic_ghost_id')) {
-    localStorage.setItem('synaptic_ghost_id', sessionData.session_id);
+  if (!sessionStorage.getItem('synaptic_ghost_id')) {
+    sessionStorage.setItem('synaptic_ghost_id', sessionData.session_id);
   }
 
   let entryTime = Date.now();
@@ -163,9 +163,9 @@
       const email = document.getElementById('fid-email').value.trim();
       if (!phone || !email) { alert('Please enter both phone and email.'); return; }
 
-      localStorage.setItem('synaptic_user_phone', phone);
-      localStorage.setItem('synaptic_user_email', email);
-      localStorage.setItem('synaptic_user_name',  email.split('@')[0]);
+      sessionStorage.setItem('synaptic_user_phone', phone);
+      sessionStorage.setItem('synaptic_user_email', email);
+      sessionStorage.setItem('synaptic_user_name',  email.split('@')[0]);
 
       sessionData.user_phone = phone;
       sessionData.user_email = email;
@@ -298,8 +298,8 @@
             });
             if (CONFIG.DEBUG) console.log('⚠️ Dwell logged: ' + elementId + ' (' + duration + 'ms)');
 
-            // LIVE TRIGGER: 2+ hesitation zones → HESITANT / CONFUSED signal
-            if (sessionData.behavioral_telemetry.hesitation_zones.length >= 2) {
+            // LIVE TRIGGER: 1+ hesitation zones → HESITANT / CONFUSED signal
+            if (sessionData.behavioral_telemetry.hesitation_zones.length >= 1) {
               fireBeacon('hesitation_trigger');
             }
           }
@@ -332,7 +332,7 @@
           type: 'hover'
         });
         if (CONFIG.DEBUG) console.log('⚠️ Hover hesitation logged: ' + id);
-        if (sessionData.behavioral_telemetry.hesitation_zones.length >= 2) {
+        if (sessionData.behavioral_telemetry.hesitation_zones.length >= 1) {
           fireBeacon('hesitation_trigger');
         }
       }, CONFIG.DWELL_THRESHOLD_MS);
@@ -377,13 +377,13 @@
         return Date.now() - d.time < CONFIG.SCROLL_THRASH_TIME_MS;
       });
 
-      if (scrollDirections.length >= 4) {
+      if (scrollDirections.length >= 2) {
         sessionData.behavioral_telemetry.friction_signals.scroll_thrash_count += 1;
         if (CONFIG.DEBUG) console.log('🌀 Scroll Thrashing Detected!');
         scrollDirections = [];
 
-        // LIVE TRIGGER: 3+ thrashes → CONFUSED signal
-        if (sessionData.behavioral_telemetry.friction_signals.scroll_thrash_count >= 3) {
+        // LIVE TRIGGER: 1+ thrashes → CONFUSED signal
+        if (sessionData.behavioral_telemetry.friction_signals.scroll_thrash_count >= 1) {
           fireBeacon('scroll_thrash_trigger');
         }
       }
@@ -403,13 +403,13 @@
         return Date.now() - d.time < CONFIG.SCROLL_THRASH_TIME_MS;
       });
 
-      if (scrollDirections.length >= 4) {
+      if (scrollDirections.length >= 2) {
         sessionData.behavioral_telemetry.friction_signals.scroll_thrash_count += 1;
         if (CONFIG.DEBUG) console.log('🌀 Scroll Thrashing Detected (Desktop)!');
         scrollDirections = [];
 
-        // LIVE TRIGGER: 3+ thrashes → CONFUSED signal
-        if (sessionData.behavioral_telemetry.friction_signals.scroll_thrash_count >= 3) {
+        // LIVE TRIGGER: 1+ thrashes → CONFUSED signal
+        if (sessionData.behavioral_telemetry.friction_signals.scroll_thrash_count >= 1) {
           fireBeacon('scroll_thrash_trigger');
         }
       }
