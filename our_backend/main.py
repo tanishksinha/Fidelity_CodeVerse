@@ -59,7 +59,7 @@ app = FastAPI(title="Synaptic Smart-Engine Backend")
 # Allow the frontend to talk to us (CORS)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"], # Target local frontend explicitly
+    allow_origins=["*"], # Allow all origins so Tampermonkey / bookmarklet works on foreign sites
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -322,6 +322,9 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
             f"Profile={session_analysis['behavior_type']} | "
             f"Issue={intervention['behavior_interpretation']}"
         )
+        
+        # Fire revenue at risk since an intervention is happening
+        await sio.emit('revenue_at_risk', {"amount": 5000, "user_id": session_id})
 
         # 5. AI: Generate personalized message
         nudge_package = await generate_gemini_nudge(data, user_history, session_analysis)
@@ -377,6 +380,14 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
             asyncio.create_task(handle_disengaged_timeout(session_id, nudge_package["message"], contact_info, wait_seconds=60))
         else:
             background_tasks.add_task(trigger_priority_cascade, session_id, nudge_package["message"], contact_info)
+
+    # Trigger conversion recovered if the user shows HIGH_INTENT or reaches success
+    _url = data.get('page_url', '').lower()
+    if session_analysis.get('behavior_type') == 'HIGH_INTENT' or 'success' in _url or 'complete' in _url:
+        await sio.emit('conversion_recovered', {"amount": 5000, "user_id": session_id})
+    # Trigger normal conversion if exploring a checkout without prior struggle
+    elif session_analysis.get('behavior_type') == 'EXPLORING' and 'checkout' in _url:
+        await sio.emit('normal_conversion', {"user_id": session_id})
 
     res_data = {"status": "success", "session_id": session_id}
     # If a popup nudge was generated, return it directly in the HTTP response
