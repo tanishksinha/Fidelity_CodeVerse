@@ -45,10 +45,17 @@ export default function NudgeOverlay() {
   }, [messages, isTyping]);
 
   // ── Socket connection ──────────────────────────────────────────────────────
-  useEffect(() => {
-    if (pathname && pathname.toLowerCase().startsWith('/admin')) return;
+  // Pages where nudges should never appear
+  const isExcludedPage = pathname && (
+    pathname.toLowerCase().startsWith('/admin') ||
+    pathname.toLowerCase().startsWith('/login') ||
+    pathname.toLowerCase().startsWith('/register')
+  );
 
-    let consumerId = sessionStorage.getItem('synaptic_ghost_id');
+  useEffect(() => {
+    if (isExcludedPage) return;
+
+    let consumerId = localStorage.getItem('synaptic_ghost_id') || sessionStorage.getItem('synaptic_ghost_id');
     if (!consumerId) {
       consumerId = `USR_${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
       sessionStorage.setItem('synaptic_ghost_id', consumerId);
@@ -74,7 +81,7 @@ export default function NudgeOverlay() {
   }, [pathname]);
 
   // ── Guard: never render on admin pages ────────────────────────────────────
-  if (pathname && pathname.toLowerCase().startsWith('/admin')) return null;
+  if (isExcludedPage) return null;
 
   // ── Handlers ───────────────────────────────────────────────────────────────
   const handleCTAClick = () => {

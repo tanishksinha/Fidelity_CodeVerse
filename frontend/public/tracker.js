@@ -31,17 +31,17 @@
         } else {
           backendUrl = url.origin;
         }
-      } catch (e) {}
+      } catch (e) { }
     }
   }
 
   const CONFIG = {
-    ENDPOINT:              backendUrl + '/api/ingest-telemetry',
-    SOCKET_URL:            backendUrl,
-    DWELL_THRESHOLD_MS:    1500,
+    ENDPOINT: backendUrl + '/api/ingest-telemetry',
+    SOCKET_URL: backendUrl,
+    DWELL_THRESHOLD_MS: 1500,
     RAGE_TAP_THRESHOLD_MS: 600,
     SCROLL_THRASH_TIME_MS: 2000,
-    DEBUG:                 true
+    DEBUG: true
   };
 
   // Expose CONFIG so bookmarklet can override ENDPOINT + SOCKET_URL after script load
@@ -49,24 +49,24 @@
 
   const sessionData = {
     session_id: localStorage.getItem('synaptic_ghost_id') || sessionStorage.getItem('synaptic_ghost_id') || 'usr_' + Math.random().toString(36).substring(2, 11),
-    timestamp:  new Date().toISOString(),
-    page_url:   window.location.pathname,
+    timestamp: new Date().toISOString(),
+    page_url: window.location.pathname,
     user_phone: localStorage.getItem('synaptic_user_phone') || sessionStorage.getItem('synaptic_user_phone') || null,
     user_email: localStorage.getItem('synaptic_user_email') || sessionStorage.getItem('synaptic_user_email') || null,
-    user_name:  localStorage.getItem('synaptic_user_name') || sessionStorage.getItem('synaptic_user_name')  || null,
+    user_name: localStorage.getItem('synaptic_user_name') || sessionStorage.getItem('synaptic_user_name') || null,
     behavioral_telemetry: {
-      total_time_seconds:       0,
+      total_time_seconds: 0,
       max_scroll_depth_percent: 0,
-      hesitation_zones:         [],
+      hesitation_zones: [],
       friction_signals: {
         erratic_mouse_movements: 0,
-        scroll_thrash_count:     0,
-        rage_clicks:             0,
-        highlighted_text:        null
+        scroll_thrash_count: 0,
+        rage_clicks: 0,
+        highlighted_text: null
       },
       last_rage_element: null,
-      exit_condition:    null,
-      exit_velocity:     'normal'
+      exit_condition: null,
+      exit_velocity: 'normal'
     }
   };
 
@@ -101,12 +101,12 @@
       .slice(0, 5);
 
     return {
-      page_title:  document.title,
-      page_url:    window.location.href,
-      headings:    headings,
-      buttons:     buttons,
+      page_title: document.title,
+      page_url: window.location.href,
+      headings: headings,
+      buttons: buttons,
       form_fields: formFields,
-      form_count:  document.querySelectorAll('form').length,
+      form_count: document.querySelectorAll('form').length,
       input_count: document.querySelectorAll('input').length
     };
   }
@@ -165,11 +165,11 @@
 
       localStorage.setItem('synaptic_user_phone', phone);
       localStorage.setItem('synaptic_user_email', email);
-      localStorage.setItem('synaptic_user_name',  email.split('@')[0]);
+      localStorage.setItem('synaptic_user_name', email.split('@')[0]);
 
       sessionData.user_phone = phone;
       sessionData.user_email = email;
-      sessionData.user_name  = email.split('@')[0];
+      sessionData.user_name = email.split('@')[0];
 
       document.body.removeChild(overlay);
       if (CONFIG.DEBUG) console.log('[Synaptic] Identity captured:', email);
@@ -179,8 +179,8 @@
 
   // PATCH — Risk 2: Detect own site — skip identity popup
   const isOwnSite = window.location.hostname === 'localhost' ||
-                    window.location.hostname.includes('synaptic') ||
-                    !!window.__NEXT_DATA__;
+    window.location.hostname.includes('synaptic') ||
+    !!window.__NEXT_DATA__;
 
   if (!sessionData.user_phone && !isOwnSite) {
     showIdentityPopup(function (phone, email) {
@@ -190,12 +190,12 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             consumer_id: sessionData.session_id,
-            user_phone:  phone,
-            user_email:  email,
-            user_name:   email.split('@')[0]
+            user_phone: phone,
+            user_email: email,
+            user_name: email.split('@')[0]
           })
-        }).catch(function () {});
-      } catch (e) {}
+        }).catch(function () { });
+      } catch (e) { }
     });
   }
 
@@ -259,10 +259,10 @@
   window.addEventListener('scroll', function () {
     if (scrollTimeout) return;
     scrollTimeout = setTimeout(function () {
-      const scrollTop   = window.scrollY || document.documentElement.scrollTop;
-      const docHeight   = document.documentElement.scrollHeight;
-      const winHeight   = window.innerHeight;
-      const scrollPct   = Math.round((scrollTop / (docHeight - winHeight)) * 100);
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const docHeight = document.documentElement.scrollHeight;
+      const winHeight = window.innerHeight;
+      const scrollPct = Math.round((scrollTop / (docHeight - winHeight)) * 100);
       if (scrollPct > sessionData.behavioral_telemetry.max_scroll_depth_percent) {
         sessionData.behavioral_telemetry.max_scroll_depth_percent = scrollPct;
       }
@@ -293,7 +293,7 @@
 
           if (duration >= CONFIG.DWELL_THRESHOLD_MS) {
             sessionData.behavioral_telemetry.hesitation_zones.push({
-              element_id:       elementId,
+              element_id: elementId,
               dwell_duration_ms: duration
             });
             if (CONFIG.DEBUG) console.log('⚠️ Dwell logged: ' + elementId + ' (' + duration + 'ms)');
@@ -319,13 +319,13 @@
   }, 2000);
 
   const hoverTimers = {};
-  document.addEventListener('mouseover', function(e) {
+  document.addEventListener('mouseover', function (e) {
     const target = e.target.closest('button, a, input, [data-track]');
     if (!target) return;
     const id = target.getAttribute('data-track') || (target.innerText ? target.innerText.substring(0, 30) : null) || target.id || target.tagName;
-    
+
     if (!hoverTimers[id]) {
-      hoverTimers[id] = setTimeout(function() {
+      hoverTimers[id] = setTimeout(function () {
         sessionData.behavioral_telemetry.hesitation_zones.push({
           element_id: id,
           dwell_duration_ms: CONFIG.DWELL_THRESHOLD_MS,
@@ -339,10 +339,10 @@
     }
   });
 
-  document.addEventListener('mouseout', function(e) {
+  document.addEventListener('mouseout', function (e) {
     const target = e.target.closest('button, a, input, [data-track]');
     if (!target) return;
-    
+
     // Ignore internal movements (wiggling mouse inside the block)
     if (e.relatedTarget && target.contains(e.relatedTarget)) {
       return;
@@ -360,9 +360,9 @@
   // --- 7. MOBILE FRICTION: SCROLL THRASHING ---
   // LIVE TRIGGER: Fires beacon after 3rd scroll thrash event.
   // =====================================================================
-  let lastTouchY        = 0;
-  let scrollDirections  = [];
-  let currentDirection  = null;
+  let lastTouchY = 0;
+  let scrollDirections = [];
+  let currentDirection = null;
 
   document.addEventListener('touchmove', function (e) {
     const currentY = e.touches[0].clientY;
@@ -425,11 +425,11 @@
 
   const handleRageEvent = function (e) {
     const trackedParent = e.target.closest('[data-track]');
-    const target        = e.target;
+    const target = e.target;
 
     let elementText = target.innerText ? target.innerText.trim().substring(0, 30) : null;
     const dataTrack = target.getAttribute('data-track') ||
-                      (trackedParent && trackedParent.getAttribute('data-track'));
+      (trackedParent && trackedParent.getAttribute('data-track'));
     const elementKey = dataTrack || elementText || target.id || target.tagName;
 
     if (!tapHistory[elementKey]) tapHistory[elementKey] = [];
@@ -440,9 +440,9 @@
 
     const lowerText = (elementText || '').toLowerCase();
     const threshold = (lowerText.indexOf('quote') !== -1 ||
-                       lowerText.indexOf('apply') !== -1 ||
-                       lowerText.indexOf('submit') !== -1 ||
-                       lowerText.indexOf('buy') !== -1) ? 2 : 3;
+      lowerText.indexOf('apply') !== -1 ||
+      lowerText.indexOf('submit') !== -1 ||
+      lowerText.indexOf('buy') !== -1) ? 2 : 3;
 
     if (tapHistory[elementKey].length >= threshold) {
       sessionData.behavioral_telemetry.friction_signals.rage_clicks += 1;
@@ -454,13 +454,13 @@
   };
 
   document.addEventListener('touchstart', handleRageEvent, { passive: true });
-  document.addEventListener('mousedown',  handleRageEvent, { passive: true });
+  document.addEventListener('mousedown', handleRageEvent, { passive: true });
 
 
   // =====================================================================
   // --- 9. LEGACY DESKTOP FRICTION (erratic mouse + text highlight) ---
   // =====================================================================
-  let lastMouseY           = 0;
+  let lastMouseY = 0;
   let mouseVelocityTracker = [];
   let mouseTimeout;
 
@@ -474,7 +474,7 @@
       if (avg > 150) {
         sessionData.behavioral_telemetry.friction_signals.erratic_mouse_movements += 1;
       }
-      lastMouseY   = e.clientY;
+      lastMouseY = e.clientY;
       mouseTimeout = null;
     }, 100);
   }, { passive: true });
@@ -498,7 +498,7 @@
 
   let idleFired = false;
   setInterval(function () {
-    const idleSecs  = Math.round((Date.now() - lastInteractionTime) / 1000);
+    const idleSecs = Math.round((Date.now() - lastInteractionTime) / 1000);
     const totalSecs = Math.round((Date.now() - entryTime) / 1000);
     if (idleSecs >= 30 && totalSecs >= 60 && !idleFired) {
       idleFired = true;
@@ -516,8 +516,14 @@
   // Reads ENDPOINT from CONFIG so bookmarklet can override it.
   // =====================================================================
   const fireBeacon = function (exitCondition) {
+    // Always refresh page_url to current path (critical for SPA client-side navigation)
+    sessionData.page_url = window.location.pathname;
+    // Refresh user identity (may have been set after login, post tracker init)
+    sessionData.user_email = localStorage.getItem('synaptic_user_email') || sessionStorage.getItem('synaptic_user_email') || sessionData.user_email;
+    sessionData.user_phone = localStorage.getItem('synaptic_user_phone') || sessionStorage.getItem('synaptic_user_phone') || sessionData.user_phone;
+    sessionData.user_name  = localStorage.getItem('synaptic_user_name')  || sessionStorage.getItem('synaptic_user_name')  || sessionData.user_name;
     sessionData.behavioral_telemetry.total_time_seconds = Math.round((Date.now() - entryTime) / 1000);
-    sessionData.behavioral_telemetry.exit_condition     = exitCondition;
+    sessionData.behavioral_telemetry.exit_condition = exitCondition;
 
     if (lastMouseY > 0 && lastMouseY < 50) sessionData.behavioral_telemetry.exit_velocity = 'high';
 
@@ -560,7 +566,7 @@
         query: { consumer_id: sessionData.session_id }
       });
 
-      socket.on('connect',    function () { if (CONFIG.DEBUG) console.log('[Synaptic] Socket connected:', socket.id); });
+      socket.on('connect', function () { if (CONFIG.DEBUG) console.log('[Synaptic] Socket connected:', socket.id); });
       socket.on('disconnect', function () { if (CONFIG.DEBUG) console.log('[Synaptic] Socket disconnected.'); });
 
       socket.on('receive_nudge', function (data) {
