@@ -48,12 +48,12 @@
   window.__SYNAPTIC_CONFIG = CONFIG;
 
   const sessionData = {
-    session_id: sessionStorage.getItem('synaptic_ghost_id') || 'usr_' + Math.random().toString(36).substring(2, 11),
+    session_id: localStorage.getItem('synaptic_ghost_id') || sessionStorage.getItem('synaptic_ghost_id') || 'usr_' + Math.random().toString(36).substring(2, 11),
     timestamp:  new Date().toISOString(),
     page_url:   window.location.pathname,
-    user_phone: sessionStorage.getItem('synaptic_user_phone') || null,
-    user_email: sessionStorage.getItem('synaptic_user_email') || null,
-    user_name:  sessionStorage.getItem('synaptic_user_name')  || null,
+    user_phone: localStorage.getItem('synaptic_user_phone') || sessionStorage.getItem('synaptic_user_phone') || null,
+    user_email: localStorage.getItem('synaptic_user_email') || sessionStorage.getItem('synaptic_user_email') || null,
+    user_name:  localStorage.getItem('synaptic_user_name') || sessionStorage.getItem('synaptic_user_name')  || null,
     behavioral_telemetry: {
       total_time_seconds:       0,
       max_scroll_depth_percent: 0,
@@ -163,9 +163,9 @@
       const email = document.getElementById('fid-email').value.trim();
       if (!phone || !email) { alert('Please enter both phone and email.'); return; }
 
-      sessionStorage.setItem('synaptic_user_phone', phone);
-      sessionStorage.setItem('synaptic_user_email', email);
-      sessionStorage.setItem('synaptic_user_name',  email.split('@')[0]);
+      localStorage.setItem('synaptic_user_phone', phone);
+      localStorage.setItem('synaptic_user_email', email);
+      localStorage.setItem('synaptic_user_name',  email.split('@')[0]);
 
       sessionData.user_phone = phone;
       sessionData.user_email = email;
