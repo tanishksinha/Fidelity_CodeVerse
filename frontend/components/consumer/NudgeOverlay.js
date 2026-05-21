@@ -48,7 +48,8 @@ export default function NudgeOverlay() {
   useEffect(() => {
     if (pathname && pathname.toLowerCase().startsWith('/admin')) return;
 
-    let consumerId = sessionStorage.getItem('synaptic_ghost_id');
+    // Read from localStorage first (set by login), fallback to sessionStorage
+    let consumerId = localStorage.getItem('synaptic_ghost_id') || sessionStorage.getItem('synaptic_ghost_id');
     if (!consumerId) {
       consumerId = `USR_${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
       sessionStorage.setItem('synaptic_ghost_id', consumerId);
