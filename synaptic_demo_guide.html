@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Synaptic — Live Demo Guide</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Inter',sans-serif;background:#fff;color:#0a1008;font-size:11pt;line-height:1.6;}
+  @media print{
+    .page-break{page-break-before:always;}
+    body{font-size:10pt;}
+    .no-print{display:none;}
+  }
+  /* COVER */
+  .cover{background:linear-gradient(135deg,#071a0e 0%,#0d2e18 60%,#003b1e 100%);color:#fff;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:60px 40px;}
+  .cover .logo{font-size:48pt;font-weight:900;letter-spacing:-2px;color:#00e060;}
+  .cover .tagline{font-size:13pt;opacity:0.7;margin-top:8px;letter-spacing:0.15em;text-transform:uppercase;}
+  .cover .doc-title{font-size:18pt;font-weight:700;margin-top:50px;color:#fff;}
+  .cover .doc-sub{font-size:11pt;opacity:0.6;margin-top:10px;}
+  .cover .divider{width:60px;height:3px;background:#00e060;margin:30px auto;}
+  .cover .chips{display:flex;gap:12px;margin-top:40px;flex-wrap:wrap;justify-content:center;}
+  .cover .chip{background:rgba(0,224,96,0.12);border:1px solid rgba(0,224,96,0.3);color:#00e060;padding:6px 18px;border-radius:20px;font-size:9pt;letter-spacing:0.08em;}
+  /* CONTENT */
+  .content{max-width:780px;margin:0 auto;padding:50px 40px;}
+  h1{font-size:20pt;font-weight:900;color:#071a0e;margin-bottom:6px;}
+  h2{font-size:14pt;font-weight:700;color:#003b1e;margin:32px 0 10px;padding-left:12px;border-left:4px solid #00b050;}
+  h3{font-size:11pt;font-weight:700;color:#00822e;margin:20px 0 6px;text-transform:uppercase;letter-spacing:0.08em;}
+  p{margin-bottom:10px;color:#222;}
+  .subtitle{font-size:10pt;color:#666;margin-bottom:30px;}
+  /* Checklist */
+  .checklist{list-style:none;padding:0;}
+  .checklist li{padding:8px 12px 8px 36px;position:relative;border-bottom:1px solid #f0f0f0;}
+  .checklist li:before{content:'☐';position:absolute;left:10px;font-size:14px;color:#00b050;}
+  /* Steps */
+  .step{background:#f8fdf9;border:1px solid #d4edd9;border-radius:10px;padding:18px 20px;margin:12px 0;}
+  .step-header{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+  .step-num{background:#00b050;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:10pt;flex-shrink:0;}
+  .step-title{font-weight:700;font-size:11pt;color:#071a0e;}
+  .step-time{margin-left:auto;font-size:9pt;color:#00b050;font-weight:600;font-family:'JetBrains Mono',monospace;}
+  .do{background:#e8f8ef;border-left:3px solid #00b050;padding:8px 12px;border-radius:0 6px 6px 0;margin:8px 0;font-size:10pt;}
+  .do strong{color:#005c22;}
+  .say{background:#fff8e6;border-left:3px solid #f0a500;padding:8px 12px;border-radius:0 6px 6px 0;margin:8px 0;font-size:10pt;font-style:italic;}
+  .say strong{color:#b07200;font-style:normal;}
+  .result{background:#071a0e;color:#00e060;font-family:'JetBrains Mono',monospace;font-size:9pt;padding:10px 14px;border-radius:6px;margin:8px 0;}
+  /* Warning / Tip */
+  .tip{background:#fffbe6;border:1px solid #f0d060;border-radius:8px;padding:14px 18px;margin:16px 0;}
+  .tip-title{font-weight:700;color:#7a5c00;margin-bottom:4px;font-size:10pt;}
+  .warn{background:#fff0f0;border:1px solid #f0a0a0;border-radius:8px;padding:14px 18px;margin:16px 0;}
+  .warn-title{font-weight:700;color:#8b0000;margin-bottom:4px;font-size:10pt;}
+  /* Table */
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:10pt;}
+  th{background:#071a0e;color:#00e060;padding:10px 12px;text-align:left;font-weight:600;}
+  td{padding:9px 12px;border-bottom:1px solid #eee;}
+  tr:nth-child(even) td{background:#f8fdf9;}
+  /* Section badge */
+  .section-badge{display:inline-block;background:#00b050;color:#fff;padding:4px 14px;border-radius:20px;font-size:9pt;font-weight:700;letter-spacing:0.1em;margin-bottom:10px;}
+  .page-label{font-size:9pt;color:#999;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;}
+  .print-btn{position:fixed;bottom:30px;right:30px;background:#00b050;color:#fff;border:none;padding:14px 24px;border-radius:30px;font-size:11pt;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(0,176,80,0.4);font-family:'Inter',sans-serif;}
+  .print-btn:hover{background:#009940;}
+</style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">⬇ Save as PDF</button>
+
+<!-- COVER PAGE -->
+<div class="cover">
+  <div class="logo">SYNAPTIC</div>
+  <div class="tagline">Behavioral AI for Financial Platforms</div>
+  <div class="divider"></div>
+  <div class="doc-title">Live Demo Runbook &amp; Video Script</div>
+  <div class="doc-sub">Hackathon Presentation Guide — Confidential</div>
+  <div class="chips">
+    <div class="chip">Native Platform Demo</div>
+    <div class="chip">Universal Ghost SDK</div>
+    <div class="chip">AI War Room Dashboard</div>
+    <div class="chip">8-Min Video Script</div>
+  </div>
+</div>
+
+<!-- PAGE 2 — CHECKLIST -->
+<div class="page-break"></div>
+<div class="content">
+  <div class="page-label">Pre-Demo</div>
+  <h1>Pre-Demo Checklist</h1>
+  <p class="subtitle">Complete every item at least 5 minutes before judges arrive. Do not skip.</p>
+
+  <h2>Services Running</h2>
+  <ul class="checklist">
+    <li><code>npm run dev</code> is running → <strong>localhost:3000</strong> loads without errors</li>
+    <li><code>python main.py</code> is running → terminal is visible and shows startup log</li>
+    <li><code>npx ngrok http 8080</code> is running → ngrok URL is live and accessible</li>
+    <li>Tampermonkey extension is installed in Chrome</li>
+    <li>God-Mode Synaptic script is pasted into Tampermonkey and <strong>enabled</strong></li>
+  </ul>
+
+  <h2>Browser Setup</h2>
+  <ul class="checklist">
+    <li>Tab 1 open: <strong>localhost:3000</strong></li>
+    <li>Tab 2 open: <strong>wikipedia.org</strong> (or Vanguard)</li>
+    <li>F12 Console open on Wikipedia tab — confirm log says: <code>🛡️ SYNAPTIC GOD-MODE TAMPERMONKEY INJECTION STARTING...</code></li>
+    <li>Run <code>localStorage.clear()</code> in console on <strong>both</strong> tabs → fresh state</li>
+    <li>Backend terminal is visible (split screen or second monitor)</li>
+  </ul>
+
+  <div class="warn">
+    <div class="warn-title">⚠️ 30-Second Cooldown Warning</div>
+    The backend enforces a 30-second cooldown between AI interventions per session. If you already triggered a nudge while testing, <strong>wait 30 seconds or restart the backend</strong> before your live demo begins.
+  </div>
+
+  <div class="tip">
+    <div class="tip-title">💡 Backup Plan</div>
+    If the popup doesn't fire, open F12 console → type <code>localStorage.clear()</code> → reload the page → triple-click again. This resets the session instantly.
+  </div>
+</div>
+
+<!-- PAGE 3 — LIVE DEMO SCRIPT -->
+<div class="page-break"></div>
+<div class="content">
+  <div class="page-label">Live Demo Script</div>
+  <h1>Live Demo Runbook</h1>
+  <p class="subtitle">Follow this step-by-step during your live presentation. Keep on second monitor.</p>
+
+  <div class="section-badge">PART 1</div>
+  <h2>The Problem Setup</h2>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div class="step-title">Open the Homepage</div>
+      <div class="step-time">~1 min</div>
+    </div>
+    <div class="do"><strong>DO:</strong> Navigate to <code>localhost:3000</code>. Pan the screen slowly across the homepage.</div>
+    <div class="say"><strong>SAY:</strong> "This is Synaptic — a modern wealth management platform. Users land here, browse investment plans and insurance products. But like every financial platform, a huge percentage of them leave without converting. Our system catches them before they do."</div>
+  </div>
+
+  <div class="section-badge">PART 2</div>
+  <h2>User Registration &amp; Identity Capture</h2>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">2</div>
+      <div class="step-title">Register as a New User</div>
+      <div class="step-time">~1.5 min</div>
+    </div>
+    <div class="do"><strong>DO:</strong> Click Register. Fill: Name = "Demo User", Email = <code>demo@synaptic.ai</code>, Phone = any number. Hit Register.</div>
+    <div class="say"><strong>SAY:</strong> "The moment a user registers, our system silently assigns a Ghost ID — a persistent anonymous token that ties every behavioral signal back to this identity."</div>
+    <div class="do"><strong>DO:</strong> Open F12 Console → type: <code>localStorage.getItem('synaptic_ghost_id')</code> → show output to camera.</div>
+    <div class="say"><strong>SAY:</strong> "There it is. The session has begun. Every action from this point is tracked."</div>
+  </div>
+
+  <div class="section-badge">PART 3</div>
+  <h2>Browsing Behavior — Native Platform</h2>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">3</div>
+      <div class="step-title">Navigate Through Pages</div>
+      <div class="step-time">~2 min</div>
+    </div>
+    <div class="do"><strong>DO:</strong> Click <strong>Investments</strong> → scroll slowly → pause 3 sec on the SIP chart.</div>
+    <div class="say"><strong>SAY:</strong> "Every scroll depth, every pause, every hesitation zone is being recorded silently by the behavioral engine."</div>
+    <div class="do"><strong>DO:</strong> Click <strong>Insurance</strong> → hover over a product card for 4 seconds without clicking.</div>
+    <div class="say"><strong>SAY:</strong> "Hesitation detected. The user lingered here — a key churn signal on a high-stakes decision page."</div>
+    <div class="do"><strong>DO:</strong> Navigate to <strong>Checkout / KYC page</strong> → start filling the form → pause midway.</div>
+    <div class="say"><strong>SAY:</strong> "The KYC form. This is where 60% of users on financial platforms drop off. Now watch."</div>
+    <div class="do"><strong>DO:</strong> <strong>Triple-click rapidly</strong> on the submit button (3 fast clicks). Then wait 2–3 seconds silently.</div>
+    <div class="result">✅ Synaptic AI Advisor popup slides in from top-right</div>
+    <div class="say"><strong>SAY:</strong> "Rage click detected. The ML engine scored this session at 87% churn risk, classified the user as Blocked, and Gemini generated this personalized intervention in under 2 seconds."</div>
+    <div class="do"><strong>DO:</strong> Point to the backend terminal. Show these lines:</div>
+    <div class="result">[TRIGGER] Intervening for USR_DEMO | Strategy=high_value_save | Churn=87.50%<br>[GEMINI] Message: "I see you're having trouble with..."</div>
+  </div>
+
+  <div class="section-badge">PART 4 — THE KILLER FEATURE</div>
+  <h2>The Universal Ghost SDK</h2>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">4</div>
+      <div class="step-title">Switch to Wikipedia</div>
+      <div class="step-time">~2 min</div>
+    </div>
+    <div class="do"><strong>DO:</strong> Switch to the Wikipedia tab. Let it sit for 2 seconds.</div>
+    <div class="say"><strong>SAY:</strong> "This is Wikipedia. We own no part of this. No SDK pre-installed. Standard Content Security Policy active. But our Ghost SDK is already here."</div>
+    <div class="do"><strong>DO:</strong> Point to the Tampermonkey icon in the Chrome toolbar.</div>
+    <div class="say"><strong>SAY:</strong> "In production, this is a Chrome Extension installed by a financial advisory firm. In the browser console you can see the SDK has already injected itself silently."</div>
+    <div class="do"><strong>DO:</strong> Show F12 Console → point to:</div>
+    <div class="result">🛡️ SYNAPTIC GOD-MODE TAMPERMONKEY INJECTION STARTING...</div>
+    <div class="do"><strong>DO:</strong> <strong>Triple-click rapidly</strong> on any Wikipedia heading. Watch the console.</div>
+    <div class="result">💢 Rage Click Detected on: [Heading Text]</div>
+    <div class="do"><strong>DO:</strong> Wait 2–3 seconds.</div>
+    <div class="result">✅ Green Synaptic AI Advisor toast appears</div>
+    <div class="say"><strong>SAY:</strong> "Gemini just read the live page structure — the headings and title of this Wikipedia article — and generated a message specific to what this user was reading and struggling with. On a domain we have zero control over."</div>
+    <div class="do"><strong>DO:</strong> Show the backend terminal again. Point to the cross-domain session trace.</div>
+    <div class="say"><strong>SAY:</strong> "And the full trace is here. Churn score. Behavior profile. AI intervention. All in real time. Across any website on the internet."</div>
+  </div>
+
+  <div class="section-badge">PART 5</div>
+  <h2>Closing Statement</h2>
+  <div class="step">
+    <div class="step-header">
+      <div class="step-num">5</div>
+      <div class="step-title">The Close</div>
+      <div class="step-time">~30 sec</div>
+    </div>
+    <div class="say"><strong>SAY:</strong> "Synaptic doesn't wait for users to abandon their journey. It intervenes at the exact moment of friction — on our platform, or any website on the internet. Behavioral AI that works silently, precisely, and universally. Thank you."</div>
+  </div>
+</div>
+
+<!-- PAGE 4 — VIDEO SCRIPT -->
+<div class="page-break"></div>
+<div class="content">
+  <div class="page-label">Video Demo</div>
+  <h1>8-Minute Video Script</h1>
+  <p class="subtitle">Use this for the pre-recorded video demonstration. Narrate over screen recordings.</p>
+
+  <h2>Timing Breakdown</h2>
+  <table>
+    <tr><th>Segment</th><th>Duration</th><th>What To Show</th></tr>
+    <tr><td>The Hook</td><td>0:45</td><td>Blank screen → Homepage fade-in. Narrate the problem.</td></tr>
+    <tr><td>Clip 1: Native Portal</td><td>2:15</td><td>Register → Browse → Checkout Rage Click → AI Popup</td></tr>
+    <tr><td>Transition</td><td>0:20</td><td>Title card: "But what about every other website?"</td></tr>
+    <tr><td>Clip 2: Ghost SDK</td><td>3:10</td><td>Wikipedia → SDK injection log → Rage click → Nudge → Terminal</td></tr>
+    <tr><td>Architecture</td><td>1:00</td><td>Show tech stack diagram. Narrate data flow.</td></tr>
+    <tr><td>Closing</td><td>0:30</td><td>Fade out with tagline.</td></tr>
+    <tr><td><strong>Total</strong></td><td><strong>8:00</strong></td><td></td></tr>
+  </table>
+
+  <h2>Title Cards for Each Clip</h2>
+  <p>Use a dark background <code>#0a0f0d</code> with Synaptic Green <code>#00b050</code> text. Recommended: 2–3 seconds on screen.</p>
+  <table>
+    <tr><th>Clip</th><th>Main Title</th><th>Subtitle</th></tr>
+    <tr><td>Clip 1</td><td>THE SYNAPTIC CLIENT PORTAL</td><td>Native Wealth Platform with Built-in Behavioral AI</td></tr>
+    <tr><td>Clip 2</td><td>THE UNIVERSAL GHOST SDK</td><td>Zero-Install AI Interventions on Any Website</td></tr>
+    <tr><td>Clip 3</td><td>SYNAPTIC COMMAND CENTER</td><td>Real-Time ML Telemetry &amp; Advisor War Room</td></tr>
+  </table>
+
+  <h2>Hook Narration Script</h2>
+  <div class="say" style="font-style:normal;font-size:10.5pt;padding:14px 16px;">
+    "Every financial platform loses users silently. They browse, they hesitate, they rage click — and then they leave. Forever. The platform never knows why. <strong>Synaptic changes that.</strong>"
+  </div>
+
+  <h2>Ghost SDK Narration Script</h2>
+  <div class="say" style="font-style:normal;font-size:10.5pt;padding:14px 16px;">
+    "This is Vanguard's website. We have no control over this. But our Ghost SDK has silently injected itself. It is now watching. Three rapid clicks — frustration detected. The SDK extracts the live DOM context and fires it to our backend. Gemini reads what this user is actually looking at and generates a message specific to their exact moment of friction. On a domain we have zero control over."
+  </div>
+
+  <h2>Closing Narration Script</h2>
+  <div class="say" style="font-style:normal;font-size:10.5pt;padding:14px 16px;">
+    "Synaptic doesn't wait for users to abandon their journey. It intervenes at the exact moment of friction — on our platform, or any other. We are not building a chatbot. We are building the nervous system for the next generation of financial advisory."
+  </div>
+</div>
+
+<!-- PAGE 5 — ADMIN DASHBOARD SPEC -->
+<div class="page-break"></div>
+<div class="content">
+  <div class="page-label">Coming Soon</div>
+  <h1>AI War Room — Admin Dashboard</h1>
+  <p class="subtitle">Feature specification for Clip 3. These features will be added to the live demo when implementation is complete.</p>
+
+  <h2>🦋 Butterfly Effect Calculator</h2>
+  <p>A live financial ticker in the dashboard header showing <strong>revenue retained by AI in real-time</strong>. Every time the ML model catches a high-intent user about to bounce and the AI intervenes successfully, the counter increments.</p>
+  <div class="result">REVENUE RETAINED BY AI: $145,200 &nbsp;|&nbsp; Active Session Saves: 34</div>
+
+  <h2>🌌 Universal Constellation Map</h2>
+  <p>A dark-mode <strong>star map showing every live user</strong> across any injected website. Five "galaxies" represent the five funnel stages:</p>
+  <table>
+    <tr><th>Stage</th><th>Dot Color</th><th>Meaning</th></tr>
+    <tr><td>Exploration</td><td>White</td><td>Calm, browsing</td></tr>
+    <tr><td>Planning</td><td>Light Blue</td><td>Comparing options</td></tr>
+    <tr><td>Application</td><td>Yellow</td><td>Starting to convert</td></tr>
+    <tr><td>KYC</td><td>Orange</td><td>Hesitating on forms</td></tr>
+    <tr><td>Transaction</td><td>Glowing Red</td><td>About to bounce — AI intervenes</td></tr>
+  </table>
+
+  <h2>🧠 Explainability Pulse (XAI Feed)</h2>
+  <p>A live terminal-style feed showing the AI's internal reasoning so judges can see it is not a black box:</p>
+  <div class="result">
+    [09:41:02] 🌐 DOM Extractor: New site detected.<br>
+    [09:41:04] 🧠 Semantic Mapper: Classified unknown form as KYC_STAGE.<br>
+    [09:41:15] ⚠️ ML Engine: User 402 Churn Risk hit 88%. Behavior: Cautious.<br>
+    [09:41:16] 💬 Decision Engine: Auto-dispatched 'Trust Badge' Intervention.
+  </div>
+
+  <h2>👻 Session Ghost + God Mode Override</h2>
+  <p>Click any red dot on the constellation map → a side panel opens showing:</p>
+  <ul style="padding-left:20px;margin-top:8px;">
+    <li><strong>Session Ghost:</strong> Live read-out of what the user is struggling with (e.g., "Rage clicked PAN input 4 times")</li>
+    <li><strong>God Mode Override:</strong> A <code>FORCE INTERVENTION</code> button — manually push an AI-drafted tooltip directly to the user's screen, bypassing automatic thresholds</li>
+  </ul>
+
+  <h2>🔌 The Full Demo Narrative (Zero Integration Pitch)</h2>
+  <div class="say" style="font-style:normal;padding:16px;font-size:10.5pt;">
+    "We inject a bookmarklet on any unknown banking site → instantly a dot appears on the War Room → Semantic Mapper classifies the page → ML detects stress → AI auto-dispatches a popup → session saved."
+  </div>
+
+  <div class="tip">
+    <div class="tip-title">📋 Demo Note for Clip 3</div>
+    When the dashboard is ready, navigate to it after the Ghost SDK demo. Click a red glowing dot on the Constellation Map, show the Session Ghost read-out of the Wikipedia rage-click session you just performed live, then hit Force Intervention to push a manual nudge. This closes the full loop in front of the judges.
+  </div>
+</div>
+
+<!-- PAGE 6 — QUICK REF -->
+<div class="page-break"></div>
+<div class="content">
+  <div class="page-label">Quick Reference</div>
+  <h1>Quick Reference Card</h1>
+  <p class="subtitle">Print this page and keep it on the desk. Refer to it during the live demo.</p>
+
+  <h2>Demo Step Sequence</h2>
+  <table>
+    <tr><th>#</th><th>Action</th><th>Expected Result</th></tr>
+    <tr><td>1</td><td>Run <code>localStorage.clear()</code> on both tabs</td><td>Fresh state — no old session data</td></tr>
+    <tr><td>2</td><td>Register on <code>localhost:3000</code></td><td>Ghost ID assigned to this session</td></tr>
+    <tr><td>3</td><td>Show GhostID: <code>localStorage.getItem('synaptic_ghost_id')</code></td><td>ID printed in console</td></tr>
+    <tr><td>4</td><td>Browse: Investments → Insurance → Checkout</td><td>Tracker silently active</td></tr>
+    <tr><td>5</td><td>Triple-click rapidly on Checkout page</td><td>AI Advisor popup in top-right</td></tr>
+    <tr><td>6</td><td>Show backend terminal</td><td>Churn score + Gemini message logged</td></tr>
+    <tr><td>7</td><td>Switch to Wikipedia tab</td><td>SDK console log visible</td></tr>
+    <tr><td>8</td><td>Triple-click on Wikipedia heading</td><td>Synaptic toast appears</td></tr>
+    <tr><td>9</td><td>Show terminal again</td><td>Cross-domain session trace visible</td></tr>
+  </table>
+
+  <h2>Tech Stack Cheat Sheet</h2>
+  <table>
+    <tr><th>Layer</th><th>Technology</th><th>Role</th></tr>
+    <tr><td>Frontend</td><td>Next.js 14</td><td>Native wealth platform UI</td></tr>
+    <tr><td>Ghost SDK</td><td>Vanilla JS + Tampermonkey</td><td>Universal cross-domain injection</td></tr>
+    <tr><td>Backend</td><td>FastAPI + Socket.IO</td><td>Telemetry ingestion &amp; WebSocket events</td></tr>
+    <tr><td>AI</td><td>Google Gemini API</td><td>Context-aware nudge generation</td></tr>
+    <tr><td>ML Model</td><td>Scikit-learn Random Forest</td><td>Real-time churn probability scoring</td></tr>
+    <tr><td>Semantic Mapper</td><td>Custom NLP (Python)</td><td>Classifies unknown site pages into funnel stages</td></tr>
+    <tr><td>Notifications</td><td>Email + WhatsApp API</td><td>Escalation cascade for high-churn sessions</td></tr>
+  </table>
+
+  <div class="warn">
+    <div class="warn-title">⚠️ Remember After the Rebranding</div>
+    All localStorage keys are now <code>synaptic_ghost_id</code>, <code>synaptic_user_phone</code>, etc. — not fidelity_*. If you see old data or no popup, run <code>localStorage.clear()</code> to wipe the old keys and start fresh.
+  </div>
+
+  <div class="tip">
+    <div class="tip-title">🎯 Closing Line to Memorize</div>
+    "Synaptic doesn't wait for users to abandon their journey. It intervenes at the exact moment of friction — on our platform, or any website on the internet. We are not building a chatbot. We are building the nervous system for the next generation of financial advisory."
+  </div>
+</div>
+
+</body>
+</html>

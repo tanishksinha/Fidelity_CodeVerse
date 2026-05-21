@@ -124,7 +124,17 @@ def generate_intervention(user_context: dict) -> BrainResponse:
         logger.info("[DEMO HARDCODE] Returning fixed message for inflation hover")
         return BrainResponse(
             message="Hey, you seem worried about inflation. I can help you structure your portfolio to outpace it.",
-            xai_explanation="Detected hesitation on inflation hedge."
+            xai_explanation="Detected hesitation on inflation hedge.",
+            recommended_action="Click the 'Live Chat' icon for immediate assistance."
+        )
+
+    if clean_context.get('behavior_type') == 'BLOCKED':
+        friction = clean_context.get('last_rage_element') or "the current step"
+        logger.info("[DEMO HARDCODE] Returning fixed message for BLOCKED")
+        return BrainResponse(
+            message=f"It looks like you're having trouble with {friction}. Let me help you complete this step.",
+            xai_explanation="Detected severe blockage on critical UI element.",
+            recommended_action="Engage with Chatbot"
         )
 
     dom = clean_context.get('dom_context', {})

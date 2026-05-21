@@ -310,7 +310,8 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
 
     # --- COOLDOWN CHECK ---
     if intervention['show_popup'] or intervention['send_email'] or intervention['send_whatsapp']:
-        if now - last_time < 30:
+        is_demo_user = bool(session_analysis.get('is_demo_user'))
+        if not is_demo_user and now - last_time < 30:
             logger.info(f"[COOLDOWN] Suppressing intervention for {session_id} to prevent spam.")
             return {"status": "success", "session_id": session_id, "message": "cooldown active"}
             

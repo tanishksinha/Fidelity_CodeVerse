@@ -299,6 +299,7 @@ def analyze_session(telemetry_data: dict, past_events: int = 0, unique_pages: in
             "behavior_type": forced_profile,
             "stage": stage["stage_name"],
             "urgency": "HIGH" if forced_churn > 0.8 else "LOW",
+            "is_demo_user": True,
         }
 
     if model is None:
