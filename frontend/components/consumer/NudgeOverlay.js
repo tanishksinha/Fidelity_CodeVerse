@@ -48,9 +48,9 @@ export default function NudgeOverlay() {
   useEffect(() => {
     if (pathname && pathname.toLowerCase().startsWith('/admin')) return;
 
-    let consumerId = sessionStorage.getItem('synaptic_ghost_id');
+    let consumerId = localStorage.getItem('synaptic_ghost_id') || sessionStorage.getItem('synaptic_ghost_id');
     if (!consumerId) {
-      consumerId = `USR_${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+      consumerId = `usr_${Math.random().toString(36).substr(2, 9)}`;
       sessionStorage.setItem('synaptic_ghost_id', consumerId);
     }
 
@@ -65,9 +65,20 @@ export default function NudgeOverlay() {
 
     socket.on('receive_nudge', (data) => {
       console.log('[GHOST] Received nudge:', data);
-      setNudge(data);
-      // Auto-dismiss toast after 15 s (only relevant for UI_WIDGET route)
-      setTimeout(() => setNudge(null), 15000);
+      
+      if (data.routing_target === 'CHATBOT') {
+        // Forcefully slide in the chatbot
+        setMessages([{ role: 'bot', text: data.message, ts: Date.now() }]);
+        setChatContext({
+          behavior_type:    data.behavior_type    || '',
+          friction_element: data.friction_element || '',
+        });
+        setChatOpen(true);
+      } else {
+        setNudge(data);
+        // Auto-dismiss toast after 15 s (only relevant for UI_WIDGET route)
+        setTimeout(() => setNudge(null), 15000);
+      }
     });
 
     return () => socket.disconnect();
