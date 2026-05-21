@@ -15,8 +15,9 @@ uv pip install -r requirements.txt
 # Verify imports
 python -c "import fastapi, uvicorn, supabase, httpx, sklearn, pandas; print('✅ Backend dependencies installed successfully')"
 
-# Start Backend in a new window
-Start-Process powershell -ArgumentList "-NoExit -Command `"cd 'd:\@codes\New folder (11)\our_backend'; . .venv\Scripts\activate; uvicorn main:app --port 8080 --reload`""
+# Run Backend in a new window
+Write-Host "Starting Backend..."
+Start-Process powershell -ArgumentList "-NoExit -Command `"cd 'd:\@codes\New folder (11)\our_backend'; . .venv\Scripts\activate; uvicorn main:socket_app --port 8080 --reload`""
 
 # 2. Setup and Start Frontend
 cd "d:\@codes\New folder (11)\frontend"

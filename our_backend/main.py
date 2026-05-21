@@ -731,7 +731,11 @@ async def chat_message(request: Request):
 # Startup / Entry point
 # ─────────────────────────────────────────────────────────────────────────────
 
+# CRITICAL HOTFIX: Replace the FastAPI `app` with the Socket.io `socket_app` wrapper.
+# This ensures that `uvicorn main:app` (as called in run_all.ps1) correctly mounts the WebSocket endpoints!
+app = socket_app
+
 if __name__ == "__main__":
     import uvicorn
     logger.info("Starting Synaptic Smart-Engine on port 8080...")
-    uvicorn.run("main:socket_app", host="0.0.0.0", port=8080, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=True)
