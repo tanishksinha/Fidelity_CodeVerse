@@ -281,7 +281,7 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
     # Check if a new intervention is actually being dispatched in this call
     should_pulse = (
         (intervention['show_popup'] or intervention['send_email'] or intervention['send_whatsapp'])
-        and (now - last_time >= 30)
+        and (now - last_time >= 5)
     )
     
     activity_data = {
@@ -310,7 +310,7 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
 
     # --- COOLDOWN CHECK ---
     if intervention['show_popup'] or intervention['send_email'] or intervention['send_whatsapp']:
-        if now - last_time < 30:
+        if now - last_time < 5:
             logger.info(f"[COOLDOWN] Suppressing intervention for {session_id} to prevent spam.")
             return {"status": "success", "session_id": session_id, "message": "cooldown active"}
             

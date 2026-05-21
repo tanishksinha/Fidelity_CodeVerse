@@ -23,7 +23,7 @@ for k, v in os.environ.items():
         groq_keys.append(v.strip())
 
 groq_keys = list(dict.fromkeys(groq_keys))
-groq_clients = [Groq(api_key=k) for k in groq_keys]
+groq_clients = [Groq(api_key=k, max_retries=0) for k in groq_keys]
 current_groq_index = 0
 
 if not groq_clients:
