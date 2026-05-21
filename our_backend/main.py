@@ -11,7 +11,7 @@ import socketio
 from database import (save_telemetry_event, get_user_history,       # Person 3
                       update_event_intelligence, save_user_identity, supabase) # Person 3 (new)
 from processor import analyze_session, decide_intervention           # ML + Behavior + Decision Engine
-from brain import generate_intervention                              # Person 4
+from brain import generate_intervention, generate_chat_response   # Person 4
 from notifications import trigger_priority_cascade                   # Person 4
 from semantic_mapper import classify_page_structure                  # Foreign site stage classifier
 from auth import router as auth_router                               # JWT Auth
@@ -100,11 +100,12 @@ async def handle_manual_nudge(sid, data):
     logger.info(f"[SOCKET] Manual nudge received for {session_id}: {message}")
 
     toast_data = {
-        "message":      message,
-        "type":         nudge_type,
-        "offerLabel":   "Admin Override Offer" if nudge_type != "custom" else "Advisor Nudge",
-        "offerAdvisor": True,
-        "delayMs":      0,
+        "message":        message,
+        "type":           nudge_type,
+        "offerLabel":     "Admin Override Offer" if nudge_type != "custom" else "Advisor Nudge",
+        "offerAdvisor":   True,
+        "delayMs":        0,
+        "routing_target": "UI_WIDGET",  # Manual nudges always use standard widget
     }
     # 1. Send immediately to consumer tab
     await sio.emit('receive_nudge', toast_data, room=session_id)
@@ -328,12 +329,24 @@ async def handle_telemetry(request: Request, background_tasks: BackgroundTasks):
 
         # 6. WEBSOCKET: Fire toast (only if show_popup=True)
         if intervention['show_popup']:
+            # Determine routing target based on the detected behavior profile
+            _chatbot_profiles = {"BLOCKED", "STRUGGLING", "HESITANT"}
+            _behavior = session_analysis.get('behavior_type', '')
+            _routing_target = "CHATBOT" if _behavior in _chatbot_profiles else "UI_WIDGET"
+            # Extract friction element for Phase 2 chat context injection
+            _friction_element = intervention.get('friction_element', {})
+            if isinstance(_friction_element, dict):
+                _friction_element = _friction_element.get('element', '')
+
             toast_data = {
-                "message":      nudge_package["message"],
-                "type":         intervention["popup_intensity"],    # gentle / standard / urgent
-                "offerLabel":   f"AI Insight — {session_analysis['behavior_type'].title()}",
-                "offerAdvisor": intervention["offer_advisor"],       # show "Talk to advisor" button
-                "delayMs":      intervention["popup_delay_ms"],      # frontend delays the popup
+                "message":        nudge_package["message"],
+                "type":           intervention["popup_intensity"],    # gentle / standard / urgent
+                "offerLabel":     f"AI Insight — {session_analysis['behavior_type'].title()}",
+                "offerAdvisor":   intervention["offer_advisor"],       # show "Talk to advisor" button
+                "delayMs":        intervention["popup_delay_ms"],      # frontend delays the popup
+                "routing_target": _routing_target,                    # CHATBOT or UI_WIDGET
+                "behavior_type":  _behavior,                          # pass through for frontend logging
+                "friction_element": _friction_element,                # specific UI element user was stuck on
             }
             await sio.emit('receive_nudge', toast_data, room=session_id)
 
@@ -656,6 +669,61 @@ async def get_intervention_log():
     except Exception as e:
         logger.error(f"[ADMIN] intervention-log error: {e}")
         return []
+
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 8.  PHASE 2 CHATBOT ENDPOINT  (live Groq with system prompt injection)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.post("/api/chat")
+async def chat_message(request: Request):
+    """
+    Phase 2 — Pre-Contextualized Chat endpoint.
+
+    Expected JSON body:
+    {
+        "message":          "User's typed message",
+        "behavior_type":    "BLOCKED" | "STRUGGLING" | "HESITANT" | ...,
+        "friction_element": "Upload Passport button",   // optional
+        "history": [                                    // optional, prior turns
+            {"role": "user",      "content": "..."},
+            {"role": "assistant", "content": "..."}
+        ]
+    }
+
+    Returns:
+    {
+        "status": "success",
+        "reply":  "AI-generated response string"
+    }
+    """
+    try:
+        data = await request.json()
+    except Exception:
+        return {"status": "error", "reply": "Invalid request body."}
+
+    user_message     = (data.get("message") or "").strip()
+    behavior_type    = (data.get("behavior_type") or "UNKNOWN").strip().upper()
+    friction_element = (data.get("friction_element") or "").strip()
+    chat_history     = data.get("history") or []
+
+    if not user_message:
+        return {"status": "error", "reply": "Message is required."}
+
+    logger.info(
+        f"[CHAT] New message | behavior={behavior_type} | "
+        f"friction={friction_element!r} | msg={user_message[:60]!r}"
+    )
+
+    reply = generate_chat_response(
+        user_message=user_message,
+        behavior_type=behavior_type,
+        friction_element=friction_element,
+        chat_history=chat_history,
+    )
+
+    return {"status": "success", "reply": reply}
 
 
 # ─────────────────────────────────────────────────────────────────────────────

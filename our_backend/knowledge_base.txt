@@ -1,0 +1,98 @@
+# ============================================================
+# SYNAPTIC WEALTH — KNOWLEDGE BASE
+# This file is injected verbatim into the AI system prompt
+# for every chat session. Update this file to keep the bot
+# accurate about products, fees, and support procedures.
+# ============================================================
+
+## About Synaptic Wealth
+Synaptic Wealth is a next-generation AI-powered financial advisory platform built for modern Indian investors. We combine behavioral analytics, machine-learning portfolio optimization, and real-time market intelligence to help you invest smarter. Our platform is fully SEBI-registered and regulated.
+
+## Account Types & Minimums
+- **Starter Plan:** Minimum investment ₹1,000. No lock-in. Access to curated mutual funds and index ETFs.
+- **Growth Plan:** Minimum investment ₹25,000. Includes SIP automation, tax-loss harvesting, and quarterly advisor calls.
+- **Wealth Plan:** Minimum investment ₹5,00,000. Dedicated human advisor, bespoke portfolio construction, priority support, and estate planning guidance.
+- All plans are interchangeable — you can upgrade or downgrade at any time without penalties.
+
+## Fees & Charges
+- **Advisory Fee:** 0.5% per annum on Assets Under Management (AUM) for Starter; 0.35% for Growth; 0.20% for Wealth.
+- **Transaction Fee:** Zero. We do not charge per trade or per SIP installment.
+- **Withdrawal Fee:** Zero. Withdrawals process within 1-3 business days with no exit load from Synaptic's side (fund-level exit loads may apply per SEBI regulations for the first year on certain ELSS funds).
+- **GST:** 18% GST is applicable on the advisory fee as per Government of India regulations.
+- There are NO hidden fees, no account maintenance charges, and no minimum balance penalties.
+
+## KYC (Know Your Customer) Process
+- KYC is mandatory under SEBI and PMLA regulations for all investment accounts.
+- **Documents Required:**
+  1. Government-issued Photo ID: Aadhaar Card, Passport, Voter ID, or Driving License.
+  2. PAN Card (mandatory for investments above ₹50,000 per year).
+  3. A selfie or live photo for liveness verification.
+  4. Bank account details (cancelled cheque or bank statement) for fund settlement.
+- **How to upload:** Go to the KYC section, tap "Upload Document," select the document type, and either take a live photo or upload from gallery. Supported formats: JPG, PNG, PDF. Maximum file size: 5 MB per document.
+- **Common Upload Issues:**
+  - If the "Submit ID" button is unresponsive, ensure your file is under 5 MB and in a supported format.
+  - If the button shows a spinner indefinitely, try refreshing the page and re-uploading. Your previously uploaded documents are saved.
+  - iOS Safari users: enable camera permissions in Settings → Safari → Camera.
+  - If errors persist, use our live chat or email support@synaptic.ai.
+- **KYC Verification Time:** Typically 1-2 business days via CKYC registry. Express verification (same-day) is available for Wealth Plan members.
+- E-KYC via Aadhaar OTP is available for instant verification without document upload — look for the "Verify with Aadhaar" option.
+
+## Investments & Portfolio
+- **Mutual Funds:** Access to 5,000+ direct mutual fund schemes across AMCs including HDFC, ICICI Prudential, SBI, Mirae, and Nippon.
+- **ETFs:** Synaptic supports index ETFs tracking NIFTY 50, SENSEX, NIFTY Next 50, and international indices.
+- **SIP (Systematic Investment Plan):** Set up automated monthly investments from ₹500/month. SIP dates can be chosen between the 1st and 28th of each month.
+- **Portfolio Rebalancing:** AI-powered quarterly rebalancing recommendations at no extra cost for Growth and Wealth plans.
+- **Tax Optimization:** Our engine automatically suggests tax-loss harvesting opportunities and ELSS fund allocations to help you save on Section 80C.
+
+## Security & Data Privacy
+- All data is encrypted at rest (AES-256) and in transit (TLS 1.3).
+- We are ISO 27001 certified and conduct quarterly third-party security audits.
+- Your investment data is stored on servers located in India, compliant with DPDP Act 2023.
+- Two-Factor Authentication (2FA) is mandatory for all transactions. We support TOTP apps (Google Authenticator, Authy) and SMS OTP.
+- Synaptic never shares your personal or financial data with third parties without your explicit consent.
+- We are registered with SEBI as an Investment Advisor (IA) under registration number INA000XXXXX.
+
+## Payments & Withdrawals
+- **Adding Funds:** Via UPI (GPay, PhonePe, Paytm), Net Banking, or NEFT/RTGS. UPI transfers are instant; Net Banking may take up to 4 hours.
+- **Minimum Withdrawal:** ₹500.
+- **Withdrawal Timeline:** Redemption requests placed before 3:00 PM IST on business days are processed the same day. Funds reach your bank account in 1-3 business days depending on the fund category (liquid funds: T+1, equity funds: T+3).
+- **Payment Failures:** If a UPI payment fails, the amount is automatically refunded to your source account within 24-48 hours. For Net Banking failures, please check with your bank.
+
+## Customer Support
+- **Live Chat:** Available on the platform, Mon–Sat, 9:00 AM – 6:00 PM IST.
+- **Email:** support@synaptic.ai — response within 4 business hours.
+- **Phone:** 1800-XXX-XXXX (toll-free), Mon–Fri, 10:00 AM – 5:00 PM IST.
+- **Dedicated Advisor (Wealth Plan):** Direct WhatsApp access to your personal advisor.
+
+## Common Technical Issues & Resolutions
+- **App not loading:** Clear browser cache and cookies, or try incognito mode.
+- **Login issues:** Use "Forgot Password" to reset via email OTP. Accounts are locked after 5 failed attempts for 30 minutes.
+- **OTP not received:** Check spam folder; wait 60 seconds and request a new OTP; ensure your registered mobile number is active.
+- **Portfolio not updating:** Portfolio NAVs update once daily after market close (around 10:00 PM IST). Intraday prices are indicative only.
+- **SIP failure:** If a SIP installment fails due to insufficient balance, it is retried once. After two failures, the SIP is paused — you can resume it from the SIP section.
+
+## Regulatory Disclosures
+- Investments in mutual funds are subject to market risk. Please read all scheme-related documents carefully before investing.
+- Past performance is not indicative of future returns.
+- Synaptic Wealth Pvt. Ltd. is not responsible for market-driven losses.
+- SEBI Investor Awareness: For grievances, contact SEBI at sebi.gov.in or call 1800-266-7575.
+
+## Frequently Asked Questions
+
+**Q: Is my money safe with Synaptic?**
+A: Yes. Your investments are held directly in your name in your demat/folio account — Synaptic never holds your funds. We act as your advisor, not a custodian. Even if Synaptic ceased operations, your investments would remain intact and accessible.
+
+**Q: Can I invest in US stocks?**
+A: Currently, we offer US-market exposure through International Fund of Funds (FoF) listed in India. Direct US stock trading is on our roadmap for Q3 2025.
+
+**Q: How does the AI advisor work?**
+A: Our AI analyzes your risk tolerance, investment horizon, tax bracket, and existing portfolio to recommend optimal fund allocations. Recommendations are reviewed by certified advisors before being surfaced to you.
+
+**Q: What is the lock-in period?**
+A: Only ELSS (tax-saving) funds have a mandatory 3-year lock-in under Section 80C. All other fund categories have no lock-in on our platform.
+
+**Q: Can I have joint accounts?**
+A: Joint accounts are currently not supported. This feature is planned for Q4 2025.
+
+**Q: How do I close my account?**
+A: Redeem all your investments first, then go to Settings → Account → Close Account. Closure is processed within 5 business days.
