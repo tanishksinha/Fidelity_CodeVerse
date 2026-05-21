@@ -489,7 +489,7 @@
 
   // =====================================================================
   // --- 10. IDLE DETECTION ---
-  // LIVE TRIGGER: DISENGAGING signal fires after 30s idle + 60s on page.
+  // LIVE TRIGGER: DISENGAGING signal fires after 15s idle for demo purposes.
   // =====================================================================
   let lastInteractionTime = Date.now();
   ['click', 'scroll', 'mousemove', 'keydown', 'touchstart'].forEach(function (evt) {
@@ -500,7 +500,7 @@
   setInterval(function () {
     const idleSecs  = Math.round((Date.now() - lastInteractionTime) / 1000);
     const totalSecs = Math.round((Date.now() - entryTime) / 1000);
-    if (idleSecs >= 30 && totalSecs >= 60 && !idleFired) {
+    if (idleSecs >= 15 && !idleFired) {
       idleFired = true;
       sessionData.behavioral_telemetry.inactivity_seconds = idleSecs;
       if (CONFIG.DEBUG) console.log('💤 Idle: ' + idleSecs + 's — firing DISENGAGING beacon');

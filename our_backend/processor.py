@@ -291,7 +291,7 @@ def analyze_session(telemetry_data: dict, past_events: int = 0, unique_pages: in
     if user_email in demo_profiles:
         forced_profile = demo_profiles[user_email]
         # Force a high churn score for profiles that need to trigger the chatbot
-        forced_churn = 0.99 if forced_profile in ["BLOCKED", "STRUGGLING", "HESITANT"] else 0.40
+        forced_churn = 0.99 if forced_profile in ["BLOCKED", "STRUGGLING", "HESITANT"] else (0.60 if forced_profile == "DISENGAGING" else 0.40)
         logger.info(f"[DEMO HARDCODE] Forced {forced_profile} profile for {user_email}")
         return {
             "should_nudge": True,

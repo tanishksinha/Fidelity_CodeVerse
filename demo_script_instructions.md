@@ -83,3 +83,8 @@ You cannot fail. Even if you get nervous and move the mouse the "wrong" way, the
 > **Pitching the Timeline to the Judges:**
 > If a judge asks why a WhatsApp message fired in 30 seconds instead of hours, say this: 
 > *"For this live demonstration, we accelerated our temporal thresholds. In a production environment, the engine waits 2 to 24 hours before sending an email or WhatsApp cascade. Today, we’ve condensed those timelines down to seconds so you can see the multi-channel dispatch happen in real-time."*
+> [!IMPORTANT]
+> **Pitching the Timeline to the Judges:**
+> If a judge asks why a WhatsApp message fired in 30 seconds instead of hours, say this: 
+> *"For this live demonstration, we accelerated our temporal thresholds. In a production environment, the engine waits 2 to 24 hours before sending an email or WhatsApp cascade. Today, we’ve condensed those timelines down to seconds so you can see the multi-channel dispatch happen in real-time."*
+vid
