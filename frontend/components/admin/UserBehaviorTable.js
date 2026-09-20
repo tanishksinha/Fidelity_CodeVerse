@@ -2,10 +2,8 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { Users, Clock, MousePointer, Mail, Zap } from 'lucide-react';
-import { AuthService } from '@/services/auth';
 import { useSocket } from '@/contexts/SocketContext';
-
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
+import { fetchUsers as fetchAdminUsers } from '@/services/api';
 
 export default function UserBehaviorTable() {
   const [users, setUsers] = useState([]);
@@ -15,14 +13,8 @@ export default function UserBehaviorTable() {
 
   const fetchUsers = async () => {
     try {
-      const token = AuthService.getAccessToken();
-      const res = await fetch(`${BACKEND_URL}/api/admin/users`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setUsers(data);
-      }
+      const data = await fetchAdminUsers();
+      setUsers(data);
     } catch (err) {
       console.error('Failed to fetch users:', err);
     } finally {

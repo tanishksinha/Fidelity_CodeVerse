@@ -478,28 +478,40 @@ async def get_funnel_stats():
 async def get_admin_users():
     """
     Returns registered users with aggregated/simulated behavior telemetry
-    statistics for the User Behavior Table.
+    statistics for the User Behavior Table. Now synced with live simulated sessions.
     """
-    if not supabase:
-        return []
     try:
-        result = supabase.table("users").select("*").execute()
-        users = result.data or []
-        
-        # Enforce schemas and provide realistic behavioral analytics
+        sessions = await get_bounced_sessions()
         formatted_users = []
-        for u in users:
+        seen_ids = set()
+        
+        for s in sessions:
+            user_id = s.get("session_id") or s.get("id")
+            if user_id in seen_ids:
+                continue
+            seen_ids.add(user_id)
+            
+            # Map session to a realistic User profile
+            is_live = "LIVE" in str(user_id).upper() or "SIM_" in str(user_id).upper()
+            name = "Live Simulated User" if is_live else "Demo User"
+            email_prefix = str(user_id).lower().replace("usr_", "")
+            email = f"{email_prefix}@fidelity.com"
+            
+            # Calculate mock stats grounded in the session data
+            rules = 1 if (s.get("erratic_mouse") or s.get("confidence", 0) > 0.8) else 0
+            
             formatted_users.append({
-                "id":              u.get("id"),
-                "name":            u.get("name") or "Anonymous User",
-                "email":           u.get("email") or "no-email@fidelity.com",
-                "last_visit":      u.get("last_login") or u.get("created_at"),
+                "id":              user_id,
+                "name":            name,
+                "email":           email,
+                "last_visit":      "Active Session",
                 "pages_visited":   random.randint(2, 6),
-                "total_events":    random.randint(15, 45),
+                "total_events":    random.randint(15, 45) if is_live else random.randint(5, 15),
                 "total_clicks":    random.randint(8, 22),
-                "rules_triggered": random.randint(1, 4) if random.random() > 0.3 else 0,
-                "emails_sent":     random.randint(1, 2) if random.random() > 0.4 else 0
+                "rules_triggered": rules,
+                "emails_sent":     1 if s.get("dispatch_status") == "processed" else 0
             })
+            
         return formatted_users
     except Exception as e:
         logger.error(f"[ADMIN] users error: {e}")

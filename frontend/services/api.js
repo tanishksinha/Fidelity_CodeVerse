@@ -34,6 +34,7 @@ export const fetchFunnelStats = () => api.get('/admin/funnel-stats').then(res =>
 export const fetchBouncedSessions = () => api.get('/admin/bounced-sessions').then(res => res.data);
 export const runEngine = () => api.post('/admin/run-engine').then(res => res.data);
 export const dispatchInterventions = () => api.post('/admin/dispatch').then(res => res.data);
+export const fetchUsers = () => api.get('/admin/users').then(res => res.data);
 export const loginAdmin = (username, password) => 
   api.post('/auth/login', { username, password }).then(res => {
     AuthService.setSession(res.data.access_token);

@@ -5,7 +5,7 @@ import { io } from 'socket.io-client';
 
 const SocketContext = createContext(null);
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8080';
+const BACKEND_URL = 'http://localhost:8080';
 
 /**
  * SocketProvider — Singleton WebSocket connection to the FastAPI/Socket.io backend.
